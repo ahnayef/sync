@@ -1,12 +1,176 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+/* ─── Real CSS custom properties (used by inline styles & regular CSS) ─── */
+:root,
+html {
+  /* Backgrounds */
+  --color-bg-base:     #080c10;
+  --color-bg-surface:  #0d1117;
+  --color-bg-elevated: #161b22;
+  --color-bg-subtle:   #1c2128;
+
+  /* Borders */
+  --color-border:      #21262d;
+  --color-border-muted:#161b22;
+
+  /* Accent */
+  --color-accent:      #4f8ef7;
+  --color-accent-glow: rgba(79, 142, 247, 0.15);
+  --color-accent-muted:rgba(79, 142, 247, 0.1);
+
+  /* Text */
+  --color-text-primary:   #e6edf3;
+  --color-text-secondary: #8b949e;
+  --color-text-muted:     #484f58;
+
+  /* Status */
+  --color-success: #3fb950;
+  --color-warning: #d29922;
+  --color-danger:  #f85149;
+  --color-lab:     #a371f7;
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  /* Force dark color scheme so browser UI (scrollbars, inputs) goes dark */
+  color-scheme: dark;
+}
+
+/* ─── Tailwind v4 theme tokens (for Tailwind utility classes) ─── */
+@theme {
+  --color-bg-base:     #080c10;
+  --color-bg-surface:  #0d1117;
+  --color-bg-elevated: #161b22;
+  --color-bg-subtle:   #1c2128;
+  --color-border:      #21262d;
+  --color-accent:      #4f8ef7;
+  --color-text-primary:#e6edf3;
+  --color-text-secondary:#8b949e;
+  --color-text-muted:  #484f58;
+  --color-success:     #3fb950;
+  --color-warning:     #d29922;
+  --color-danger:      #f85149;
+  --color-lab:         #a371f7;
+  --font-sans:         "Inter", system-ui, sans-serif;
+}
+
+/* ─── Global resets ─── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Force dark background immediately — prevents white flash on any route */
+html {
+  background-color: #080c10;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Native form element overrides (browsers default inputs to white) ─── */
+input,
+textarea,
+select {
+  color-scheme: dark;
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-surface); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* ─── Selection ─── */
+::selection {
+  background: var(--color-accent-glow);
+  color: var(--color-accent);
+}
+
+/* ─── Focus ─── */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Animations ─── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(79, 142, 247, 0.2); }
+  50%       { box-shadow: 0 0 40px rgba(79, 142, 247, 0.4); }
+}
+
+.animate-fade-in  { animation: fadeIn  0.4s ease-out forwards; }
+.animate-slide-in { animation: slideIn 0.3s ease-out forwards; }
+.animate-float    { animation: float   4s ease-in-out infinite; }
+.animate-glow     { animation: glow-pulse 3s ease-in-out infinite; }
+
+/* ─── Utilities ─── */
+.glass {
+  background: rgba(13, 17, 23, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #4f8ef7 0%, #a371f7 50%, #4f8ef7 100%);
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+.glow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success);
+  animation: pulse-dot 2s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--color-success);
 }

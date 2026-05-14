@@ -1,7 +1,14 @@
+import AdminSidebar from "@/components/AdminSidebar";
+
 export default function AdminLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    return <div>{children}</div>;
+  return (
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-bg-base)" }}>
+      <AdminSidebar />
+      <main style={{ flex: 1, overflowX: "hidden" }}>{children}</main>
+    </div>
+  );
 }
