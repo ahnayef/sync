@@ -21,9 +21,9 @@ const inputCls =
 
 function courseRowCls(selected: boolean) {
   return [
-    "group flex w-full cursor-pointer flex-col gap-4 rounded-[18px] border px-5 py-4 text-left transition-all duration-200",
+    "group flex h-full min-h-[172px] w-full cursor-pointer flex-col justify-between gap-3 rounded-xl border px-4 py-4 text-left transition-all duration-200",
     selected
-      ? "border-blue-400/30 bg-blue-500/[0.06] shadow-[0_0_0_1px_rgba(79,142,247,0.12)] hover:border-blue-400/40"
+      ? "border-blue-400/30 bg-blue-500/[0.06]"
       : "border-[var(--color-border)] bg-[var(--color-bg-surface)] hover:border-white/10 hover:bg-[var(--color-bg-elevated)]",
   ].join(" ");
 }
@@ -34,6 +34,8 @@ export default function CoursesPage() {
   );
   const [search, setSearch] = useState("");
   const [saved, setSaved] = useState(false);
+  const selectedCount = selected.size;
+  const availableCount = AVAILABLE_COURSES.length;
 
   const filtered = useMemo(
     () =>
@@ -60,12 +62,18 @@ export default function CoursesPage() {
     <div className="min-h-screen bg-[var(--color-bg-base)]">
       <UserNavbar />
 
-      <main className="mx-auto max-w-[980px] px-5 pt-10 pb-24">
-        <div className="mb-6 flex items-start justify-between gap-4">
+      <main className="mx-auto max-w-[1100px] px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
+        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-muted)]">
+              Student portal
+            </p>
+            <h1 className="mt-2 text-2xl font-bold tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-3xl">
               Course Selection
             </h1>
+            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+              {selectedCount} selected · {availableCount} available
+            </p>
           </div>
 
           <button
@@ -73,10 +81,10 @@ export default function CoursesPage() {
             type="button"
             onClick={() => setSaved(true)}
             className={[
-              "inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border-0 px-6 py-2.5 text-sm font-semibold text-white transition-all duration-300",
+              "inline-flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors sm:w-auto",
               saved
-                ? "bg-success shadow-[0_0_20px_rgba(63,185,80,0.35)]"
-                : "cursor-pointer bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.35)] hover:scale-[1.02] active:scale-[0.98]",
+                ? "border-success/30 bg-success/15 text-success"
+                : "border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]",
             ].join(" ")}
           >
             {saved ? (
@@ -92,7 +100,7 @@ export default function CoursesPage() {
           </button>
         </div>
 
-        <div className="relative mb-6">
+        <div className="mb-5 relative">
           <svg
             width="16"
             height="16"
@@ -112,13 +120,13 @@ export default function CoursesPage() {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search courses…"
+            placeholder="Search courses"
             className={inputCls}
           />
         </div>
 
         {filtered.length === 0 ? (
-          <div className="rounded-[18px] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] px-8 py-14 text-center">
+          <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] px-6 py-12 text-center">
             <div className="mb-3 text-4xl">📭</div>
             <h3 className="mb-1 text-base font-semibold text-[var(--color-text-primary)]">
               No courses match
@@ -134,11 +142,11 @@ export default function CoursesPage() {
             ) : null}
           </div>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" role="list">
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             {filtered.map((course) => {
               const isSelected = selected.has(course.code);
               return (
-                <li key={course.code}>
+                <li key={course.code} className="h-full">
                   <button
                     type="button"
                     id={`course-${course.code.toLowerCase()}`}
@@ -146,7 +154,7 @@ export default function CoursesPage() {
                     className={courseRowCls(isSelected)}
                     aria-pressed={isSelected}
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <span
                           className={[
@@ -185,11 +193,11 @@ export default function CoursesPage() {
                       </span>
                     </div>
 
-                    <div className="min-w-0">
-                      <p className="truncate text-[15px] font-semibold text-[var(--color-text-primary)]">
+                    <div className="min-w-0 space-y-1.5">
+                      <p className="text-[14px] font-semibold leading-5 text-[var(--color-text-primary)]">
                         {course.title}
                       </p>
-                      <p className="mt-1 flex items-center gap-2 text-[13px] text-[var(--color-text-secondary)]">
+                      <p className="flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)]">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 opacity-60">
                           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                           <circle cx="12" cy="7" r="4" />
