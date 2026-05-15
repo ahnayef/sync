@@ -59,8 +59,6 @@ const previewCards = [
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-bg-base)]">
-      <Navbar />
-
       {/* ── Hero ── */}
       <section className="relative overflow-hidden px-6 pb-[100px] pt-[120px] text-center">
         {/* Glow blobs */}

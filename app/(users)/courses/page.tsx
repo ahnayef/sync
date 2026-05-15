@@ -61,7 +61,6 @@ export default function CoursesPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
-      <UserNavbar />
 
       <main className="mx-auto max-w-[1100px] px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
         <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

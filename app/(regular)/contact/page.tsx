@@ -55,7 +55,6 @@ const inputCls =
 export default function ContactPage() {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-bg-base)]">
-      <Navbar />
 
       <main className="flex-1 px-6 py-20">
         <div className="mx-auto max-w-[900px]">

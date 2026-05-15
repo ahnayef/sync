@@ -125,7 +125,6 @@ export default function RoutinePage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
-      <UserNavbar />
 
       {/* Focus mode FAB */}
       <button
