@@ -160,12 +160,12 @@ export default function ManageSchedulePage() {
   };
 
   return (
-    <div className="p-8 max-w-[1100px]">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--color-text-primary)] tracking-[-0.02em] mb-1.5">
+    <div className="p-8 max-w-[1200px] mx-auto">
+      <div className="mb-10">
+        <h1 className="text-3xl font-bold text-[var(--color-text-primary)] tracking-[-0.02em] mb-2">
           Schedule Import
         </h1>
-        <p className="text-sm text-[var(--color-text-secondary)]">
+        <p className="text-base text-[var(--color-text-secondary)] max-w-2xl">
           Upload a pre-formatted Excel or CSV file to automatically extract and
           import schedule data
         </p>
@@ -188,11 +188,11 @@ export default function ManageSchedulePage() {
               <div key={label} className="flex items-center">
                 <div className="flex flex-col items-center gap-1.5">
                   <div
-                    className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                    className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
                       isActive
-                        ? "border-[#4f8ef7] bg-[rgba(79,142,247,0.15)]"
+                        ? "border-[#4f8ef7] bg-[rgba(79,142,247,0.15)] shadow-[0_0_12px_rgba(79,142,247,0.2)]"
                         : isDone
-                          ? "border-[#3fb950] bg-[rgba(63,185,80,0.12)]"
+                          ? "border-[#3fb950] bg-[rgba(63,185,80,0.12)] shadow-[0_0_12px_rgba(63,185,80,0.15)]"
                           : `border-[var(--color-border)] bg-transparent`
                     }`}
                   >
@@ -250,10 +250,10 @@ export default function ManageSchedulePage() {
           }}
           onDragLeave={() => setDragging(false)}
           onDrop={handleFileDrop}
-          className={`rounded-2xl border-2 border-dashed px-10 py-20 text-center transition-all ${
+          className={`rounded-2xl border-2 border-dashed px-10 py-24 text-center transition-all duration-200 ${
             dragging
-              ? "border-[#4f8ef7] bg-[rgba(79,142,247,0.05)]"
-              : "border-[var(--color-border)] bg-[var(--color-bg-surface)]"
+              ? "border-[#4f8ef7] bg-[rgba(79,142,247,0.08)] shadow-[inset_0_0_24px_rgba(79,142,247,0.1)]"
+              : "border-[var(--color-border)] bg-[var(--color-bg-surface)] hover:border-[var(--color-accent)] hover:bg-[rgba(79,142,247,0.02)]"
           }`}
         >
           <div className="mb-5">
@@ -267,7 +267,7 @@ export default function ManageSchedulePage() {
           </p>
           <label
             htmlFor="schedule-file-input"
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-[10px] cursor-pointer text-base font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_24px_rgba(79,142,247,0.3)]"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-[10px] cursor-pointer text-base font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_24px_rgba(79,142,247,0.3)] hover:shadow-[0_0_32px_rgba(79,142,247,0.4)] transition-shadow duration-200 active:scale-95"
           >
             <svg
               width="16"
@@ -309,16 +309,16 @@ export default function ManageSchedulePage() {
               placeholder="Paste Google Sheet link or ID"
               value={googleUrl}
               onChange={(e) => setGoogleUrl(e.target.value)}
-              className="min-w-[260px] flex-1 px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]"
+              className="min-w-[260px] flex-1 px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[#4f8ef7] focus:ring-offset-1 transition-all"
             />
             <button
               id="load-google-sheet"
               onClick={handleLoadGoogleSheet}
               disabled={loadingSheet}
-              className={`px-3.5 py-2 rounded-lg border-none text-white font-semibold ${
+              className={`px-3.5 py-2 rounded-lg border-none text-white font-semibold transition-all duration-200 ${
                 loadingSheet
                   ? "bg-[rgba(79,142,247,0.16)] cursor-wait"
-                  : "bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] cursor-pointer"
+                  : "bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] cursor-pointer hover:shadow-lg active:scale-95"
               }`}
             >
               {loadingSheet ? "Loading…" : "Load from Google Sheet"}
@@ -331,7 +331,7 @@ export default function ManageSchedulePage() {
       {step === "preview" && (
         <div>
           {/* File info bar */}
-          <div className="flex items-center justify-between px-5 py-3.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] mb-5 flex-wrap gap-3">
+          <div className="flex items-center justify-between px-6 py-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] mb-6 flex-wrap gap-4 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-[9px] bg-[rgba(79,142,247,0.12)] border border-[rgba(79,142,247,0.25)] flex items-center justify-center">
                 <svg
@@ -370,7 +370,7 @@ export default function ManageSchedulePage() {
                     background: `${s.color}15`,
                     borderColor: `${s.color}30`,
                   }}
-                  className="text-xs font-semibold px-2.5 py-1 border rounded"
+                  className="text-xs font-semibold px-3 py-1.5 border rounded-lg transition-all"
                 >
                   {s.count} {s.label}
                 </span>
@@ -379,8 +379,8 @@ export default function ManageSchedulePage() {
           </div>
 
           {/* Preview table */}
-          <div className="rounded-[14px] border border-[var(--color-border)] overflow-hidden mb-5">
-            <div className="overflow-x-auto">
+          <div className="rounded-[14px] border border-[var(--color-border)] overflow-hidden mb-6 shadow-sm">
+            <div className="overflow-x-auto bg-[var(--color-bg-surface)]">
               <table className="w-full border-collapse min-w-[800px]">
                 <thead>
                   <tr className="bg-[var(--color-bg-elevated)] border-b border-[var(--color-border)]">
@@ -427,7 +427,7 @@ export default function ManageSchedulePage() {
                               background: sc.bg,
                               borderColor: sc.border,
                             }}
-                            className="text-[11px] font-semibold px-2 py-[3px] border rounded"
+                            className="text-[11px] font-semibold px-2.5 py-1 border rounded-lg inline-block"
                           >
                             {sc.label}
                           </span>
@@ -491,7 +491,7 @@ export default function ManageSchedulePage() {
             <button
               id="schedule-back"
               onClick={() => setStep("upload")}
-              className="px-6 py-[11px] rounded-[9px] border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm cursor-pointer"
+              className="px-6 py-[11px] rounded-[9px] border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95"
             >
               <span className="inline-flex items-center gap-2">
                 <FiArrowLeft /> Back
@@ -501,7 +501,7 @@ export default function ManageSchedulePage() {
               <button
                 id="schedule-fix-errors"
                 onClick={() => setStep("fixing")}
-                className="px-6 py-[11px] rounded-[9px] border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-sm font-semibold cursor-pointer"
+                className="px-6 py-[11px] rounded-[9px] border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-sm font-semibold cursor-pointer hover:bg-[rgba(248,81,73,0.12)] transition-colors duration-200 active:scale-95"
               >
                 Fix {errorCount} error{errorCount > 1 ? "s" : ""}
               </button>
@@ -509,7 +509,7 @@ export default function ManageSchedulePage() {
             <button
               id="schedule-import"
               onClick={() => setStep("done")}
-              className="px-7 py-[11px] rounded-[9px] border-none bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white text-sm font-semibold cursor-pointer"
+              className="px-7 py-[11px] rounded-[9px] border-none bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-all duration-200 active:scale-95"
             >
               <span className="inline-flex items-center gap-2">
                 Import {okCount} valid entries <FiArrowRight />
@@ -522,7 +522,7 @@ export default function ManageSchedulePage() {
       {/* Fixing Step */}
       {step === "fixing" && (
         <div>
-          <div className="px-5 py-3.5 rounded-xl border border-[rgba(248,81,73,0.25)] bg-[rgba(248,81,73,0.05)] mb-6 flex items-center gap-3">
+          <div className="px-6 py-4 rounded-xl border border-[rgba(248,81,73,0.25)] bg-[rgba(248,81,73,0.05)] mb-6 flex items-center gap-3 shadow-sm">
             <svg
               width="18"
               height="18"
@@ -549,7 +549,7 @@ export default function ManageSchedulePage() {
               .map((row) => (
                 <div
                   key={row.id}
-                  className="rounded-xl border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.04)] p-5"
+                  className="rounded-xl border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.04)] p-5 transition-all hover:shadow-md hover:border-[rgba(248,81,73,0.4)]"
                 >
                   <div className="flex justify-between items-start mb-3.5 flex-wrap gap-2.5">
                     <div>
@@ -568,7 +568,7 @@ export default function ManageSchedulePage() {
                       onClick={() =>
                         setFixingId(row.id === fixingId ? null : row.id)
                       }
-                      className="px-4 py-[7px] rounded-lg border border-[rgba(248,81,73,0.4)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-xs font-medium cursor-pointer"
+                      className="px-4 py-[7px] rounded-lg border border-[rgba(248,81,73,0.4)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-xs font-medium cursor-pointer hover:bg-[rgba(248,81,73,0.12)] transition-colors duration-200 active:scale-95"
                     >
                       {fixingId === row.id ? (
                         "Cancel"
@@ -585,7 +585,7 @@ export default function ManageSchedulePage() {
                         id={`fix-teacher-${row.id}`}
                         type="text"
                         placeholder="Enter teacher name..."
-                        className="flex-1 px-3.5 py-2 rounded-lg border border-[rgba(248,81,73,0.4)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none"
+                        className="flex-1 px-3.5 py-2 rounded-lg border border-[rgba(248,81,73,0.4)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:ring-2 focus:ring-[#f85149] focus:ring-offset-1 transition-all placeholder-[var(--color-text-muted)]"
                       />
                       <button
                         id={`fix-save-${row.id}`}
@@ -604,7 +604,7 @@ export default function ManageSchedulePage() {
                             setFixingId(null);
                           }
                         }}
-                        className="px-4.5 py-2 rounded-lg border-none bg-[#3fb950] text-white text-sm font-semibold cursor-pointer"
+                        className="px-4.5 py-2 rounded-lg border-none bg-[#3fb950] text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-all duration-200 active:scale-95"
                       >
                         Apply
                       </button>
@@ -617,7 +617,7 @@ export default function ManageSchedulePage() {
           <div className="flex gap-3 justify-end">
             <button
               onClick={() => setStep("preview")}
-              className="px-6 py-[11px] rounded-[9px] border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm cursor-pointer"
+              className="px-6 py-[11px] rounded-[9px] border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95"
             >
               <span className="inline-flex items-center gap-2">
                 <FiArrowLeft /> Back to Preview
@@ -626,7 +626,7 @@ export default function ManageSchedulePage() {
             <button
               id="fixing-continue"
               onClick={() => setStep("done")}
-              className="px-7 py-[11px] rounded-[9px] border-none bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white text-sm font-semibold cursor-pointer"
+              className="px-7 py-[11px] rounded-[9px] border-none bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-all duration-200 active:scale-95"
             >
               <span className="inline-flex items-center gap-2">
                 Continue <FiArrowRight />
@@ -638,8 +638,8 @@ export default function ManageSchedulePage() {
 
       {/* Done Step */}
       {step === "done" && (
-        <div className="text-center px-10 py-20 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)]">
-          <div className="w-18 h-18 rounded-full bg-[rgba(63,185,80,0.12)] border-2 border-[rgba(63,185,80,0.4)] flex items-center justify-center mx-auto mb-5 shadow-[0_0_30px_rgba(63,185,80,0.2)]">
+        <div className="text-center px-10 py-24 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-sm">
+          <div className="w-18 h-18 rounded-full bg-[rgba(63,185,80,0.12)] border-2 border-[rgba(63,185,80,0.4)] flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(63,185,80,0.2)] animate-pulse">
             <svg
               width="32"
               height="32"
@@ -666,7 +666,7 @@ export default function ManageSchedulePage() {
               setStep("upload");
               setFileName("");
             }}
-            className="px-7 py-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] text-base font-medium cursor-pointer"
+            className="px-7 py-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] text-base font-medium cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95"
           >
             Import another file
           </button>
