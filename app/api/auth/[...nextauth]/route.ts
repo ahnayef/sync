@@ -40,20 +40,27 @@ const handler = NextAuth({
       }
       return true;
     },
-    async session({ session, token }) {
-      if (session.user?.email) {
+    async jwt({ token, user }) {
+      if (token.email) {
         try {
           const [rows] = await db.execute<RowDataPacket[]>(
-            "SELECT * FROM users WHERE email = ?",
-            [session.user.email]
+            "SELECT id, role FROM users WHERE email = ?",
+            [token.email]
           );
           if (rows.length > 0) {
-            (session.user as any).role = rows[0].role;
-            (session.user as any).id = rows[0].id;
+            token.role = rows[0].role;
+            token.id = rows[0].id;
           }
         } catch (error) {
-          console.error("Error fetching user session:", error);
+          console.error("Error fetching user for jwt:", error);
         }
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).role = token.role;
+        (session.user as any).id = token.id;
       }
       return session;
     },

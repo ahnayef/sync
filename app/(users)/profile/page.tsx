@@ -1,15 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiEdit2, FiCamera, FiUser, FiMail, FiHash, FiShield, FiX, FiCheck } from "react-icons/fi";
+import { useSession } from "next-auth/react";
 
 export default function ProfilePage() {
+  const { data: session, update } = useSession();
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState("Jane Doe");
-  const [email, setEmail] = useState("jane.doe@university.edu");
-  const [role] = useState("student");
-  const [studentId, setStudentId] = useState("STU-2024-001");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("student");
+  const [studentId, setStudentId] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+
+  useEffect(() => {
+    if (session?.user) {
+      setName(session.user.name || "");
+      setEmail(session.user.email || "");
+      setAvatarUrl(session.user.image || "");
+      setRole((session.user as any).role || "student");
+      setStudentId((session.user as any).student_id || "");
+    }
+  }, [session]);
 
   const handleSave = () => {
     // In a real app, this would make an API call

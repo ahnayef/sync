@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 
 const adminNavItems = [
   {
@@ -90,6 +91,7 @@ const adminNavItems = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <aside className="sticky top-0 flex h-screen w-[240px] min-h-screen flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-6">
@@ -144,18 +146,23 @@ export default function AdminSidebar() {
       <div className="mt-auto flex flex-col gap-3 border-t border-[var(--color-border)] pt-6">
         {/* Admin badge */}
         <div className="flex items-center gap-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2.5">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-muted)] text-[13px] font-bold text-[var(--color-accent)]">
-            A
-          </div>
+          {session?.user?.image ? (
+            <img src={session.user.image} alt="Avatar" className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full object-cover" />
+          ) : (
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-muted)] text-[13px] font-bold text-[var(--color-accent)]">
+              {session?.user?.name?.[0]?.toUpperCase() || "A"}
+            </div>
+          )}
           <div>
             <p className="text-[13px] font-semibold text-[var(--color-text-primary)]">
-              Admin
+              {session?.user?.name || "Admin"}
             </p>
-            <p className="text-[11px] text-[var(--color-text-muted)]">admin@loop.edu</p>
+            <p className="text-[11px] text-[var(--color-text-muted)] truncate max-w-[130px]">{session?.user?.email || "admin@loop.edu"}</p>
           </div>
         </div>
         <button
           id="admin-logout"
+          onClick={() => signOut({ callbackUrl: "/" })}
           className="flex items-center gap-2 rounded-lg border border-[rgba(248,81,73,0.2)] bg-transparent px-3 py-2.5 text-left text-sm font-medium text-[var(--color-danger)] transition-all duration-200 hover:bg-[rgba(248,81,73,0.06)]"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
