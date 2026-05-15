@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { FiInbox, FiStar } from "react-icons/fi";
 import UserNavbar from "@/components/UserNavbar";
 import { RoutineBox } from "@/components/RoutineBox";
 import { RoutineSchema } from "@/app/types/routine";
@@ -193,14 +194,16 @@ export default function RoutinePage() {
         {isWeekend ? (
           !focusMode && (
             <div className="mt-8 flex flex-col items-center gap-2.5 text-[17px] font-semibold text-success">
-              No classes today <span className="text-[28px]">🎉</span>
+              No classes today <FiStar className="ml-2 text-2xl text-[var(--color-accent)]" />
             </div>
           )
         ) : changingDay ? (
           <Skeleton />
         ) : filteredRoutines.length === 0 ? (
           <div className="rounded-[18px] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] px-8 py-[72px] text-center">
-            <div className="mb-3 text-[40px]">📭</div>
+            <div className="mb-3">
+              <FiInbox className="mx-auto text-[36px] text-[var(--color-text-muted)]" />
+            </div>
             <h3 className="mb-1.5 text-[17px] font-semibold text-[var(--color-text-primary)]">
               No classes on {today}
             </h3>

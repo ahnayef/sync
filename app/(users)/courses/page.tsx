@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { FiInbox } from "react-icons/fi";
 import UserNavbar from "@/components/UserNavbar";
 
 const AVAILABLE_COURSES = [
@@ -127,7 +128,9 @@ export default function CoursesPage() {
 
         {filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] px-6 py-12 text-center">
-            <div className="mb-3 text-4xl">📭</div>
+            <div className="mb-3">
+              <FiInbox className="mx-auto text-3xl text-[var(--color-text-muted)]" />
+            </div>
             <h3 className="mb-1 text-base font-semibold text-[var(--color-text-primary)]">
               No courses match
             </h3>

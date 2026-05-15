@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { FiCalendar, FiBook, FiZap, FiUsers, FiHome, FiMoon } from "react-icons/fi";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,37 +12,37 @@ export const metadata: Metadata = {
 
 const features = [
   {
-    icon: "📅",
+    icon: <FiCalendar />,
     title: "Daily Routine View",
     desc: "See your class schedule for any day at a glance, with gaps, room info, and teacher details.",
     color: "#4f8ef7",
   },
   {
-    icon: "📚",
+    icon: <FiBook />,
     title: "Course Selection",
     desc: "Pick the courses that matter to you. Your routine automatically updates to match.",
     color: "#3fb950",
   },
   {
-    icon: "⚡",
+    icon: <FiZap />,
     title: "Smart Import",
     desc: "Admins can upload Excel sheets and Loop intelligently parses and validates schedule data.",
     color: "#a371f7",
   },
   {
-    icon: "👥",
+    icon: <FiUsers />,
     title: "Multi-role Access",
     desc: "Students get a clean view. Admins get powerful management tools. Everyone gets what they need.",
     color: "#d29922",
   },
   {
-    icon: "🏫",
+    icon: <FiHome />,
     title: "Room & Teacher Mgmt",
     desc: "Manage all rooms, teachers, and courses from a single clean admin dashboard.",
     color: "#f85149",
   },
   {
-    icon: "🌙",
+    icon: <FiMoon />,
     title: "Dark & Minimal",
     desc: "Beautiful dark interface that's easy on the eyes, whether it's 8 AM or midnight.",
     color: "#4f8ef7",

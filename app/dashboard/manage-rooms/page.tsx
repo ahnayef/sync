@@ -22,108 +22,221 @@ export default function ManageRoomsPage() {
   const [newType, setNewType] = useState("Classroom");
   const [newFloor, setNewFloor] = useState("1");
 
-  const filtered = rooms.filter((r) =>
-    r.number.toLowerCase().includes(search.toLowerCase()) ||
-    r.type.toLowerCase().includes(search.toLowerCase())
+  const filtered = rooms.filter(
+    (r) =>
+      r.number.toLowerCase().includes(search.toLowerCase()) ||
+      r.type.toLowerCase().includes(search.toLowerCase()),
   );
 
   const addRoom = () => {
     if (!newNumber) return;
-    setRooms([...rooms, { id: Date.now(), number: newNumber, capacity: parseInt(newCapacity), type: newType, floor: parseInt(newFloor) }]);
-    setNewNumber(""); setShowModal(false);
-  };
-
-  const inputStyle = {
-    width: "100%", padding: "10px 14px", borderRadius: "9px",
-    border: "1px solid var(--color-border)", background: "var(--color-bg-elevated)",
-    color: "var(--color-text-primary)", fontSize: "14px", outline: "none",
+    setRooms([
+      ...rooms,
+      {
+        id: Date.now(),
+        number: newNumber,
+        capacity: parseInt(newCapacity),
+        type: newType,
+        floor: parseInt(newFloor),
+      },
+    ]);
+    setNewNumber("");
+    setShowModal(false);
   };
 
   return (
-    <div style={{ padding: "32px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
+    <div className="p-8">
+      <div className="flex justify-between items-start mb-8 flex-wrap gap-4">
         <div>
-          <h1 style={{ fontSize: "26px", fontWeight: 700, color: "var(--color-text-primary)", letterSpacing: "-0.02em", marginBottom: "6px" }}>
+          <h1 className="text-[26px] font-bold text-[var(--color-text-primary)] mb-1">
             Room Management
           </h1>
-          <p style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}>{rooms.length} rooms registered</p>
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            {rooms.length} rooms registered
+          </p>
         </div>
-        <button id="add-room-btn" onClick={() => setShowModal(true)}
-          style={{ padding: "10px 20px", borderRadius: "9px", border: "none", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "white", background: "linear-gradient(135deg, #4f8ef7, #6f6bf7)", display: "flex", alignItems: "center", gap: "8px" }}>
+        <button
+          id="add-room-btn"
+          onClick={() => setShowModal(true)}
+          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-4 py-2.5 text-sm font-semibold text-white"
+        >
           + Add Room
         </button>
       </div>
 
-      <div style={{ position: "relative", marginBottom: "20px", maxWidth: "400px" }}>
-        <input id="room-search" type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search rooms..."
-          style={{ ...inputStyle, paddingLeft: "42px" }} />
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      <div className="relative mb-5 max-w-[400px]">
+        <input
+          id="room-search"
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search rooms..."
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 pr-4 pl-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]"
+        />
+        <svg
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
       </div>
 
-      {/* Room cards grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "14px" }}>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-[14px]">
         {filtered.map((room) => (
-          <div key={room.id} id={`room-card-${room.id}`}
-            style={{ borderRadius: "12px", border: "1px solid var(--color-border)", background: "var(--color-bg-surface)", padding: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+          <div
+            key={room.id}
+            id={`room-card-${room.id}`}
+            className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5"
+          >
+            <div className="flex justify-between items-start mb-3">
               <div
-                style={{ width: "42px", height: "42px", borderRadius: "10px", background: room.type === "Lab" ? "rgba(163,113,247,0.15)" : "rgba(79,142,247,0.12)", border: `1px solid ${room.type === "Lab" ? "rgba(163,113,247,0.3)" : "rgba(79,142,247,0.25)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={room.type === "Lab" ? "#a371f7" : "#4f8ef7"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                className={`w-11 h-11 rounded-[10px] flex items-center justify-center ${room.type === "Lab" ? "bg-[rgba(163,113,247,0.15)] border border-[rgba(163,113,247,0.3)]" : "bg-[rgba(79,142,247,0.12)] border border-[rgba(79,142,247,0.25)]"}`}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={room.type === "Lab" ? "#a371f7" : "#4f8ef7"}
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
                 </svg>
               </div>
-              <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", color: room.type === "Lab" ? "#a371f7" : "#4f8ef7", background: room.type === "Lab" ? "rgba(163,113,247,0.1)" : "rgba(79,142,247,0.1)", border: `1px solid ${room.type === "Lab" ? "rgba(163,113,247,0.3)" : "rgba(79,142,247,0.25)"}`, padding: "3px 8px", borderRadius: "5px", textTransform: "uppercase" }}>
+              <span
+                className={`text-[11px] font-bold tracking-[0.08em] px-2 py-0.5 rounded uppercase ${room.type === "Lab" ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)] border border-[rgba(163,113,247,0.3)]" : "text-[var(--color-accent)] bg-[var(--color-accent-muted)] border border-[rgba(79,142,247,0.25)]"}`}
+              >
                 {room.type}
               </span>
             </div>
-            <h3 style={{ fontSize: "22px", fontWeight: 800, color: "var(--color-text-primary)", letterSpacing: "-0.02em", marginBottom: "4px" }}>
+            <h3 className="text-[22px] font-black text-[var(--color-text-primary)] mb-1">
               {room.number}
             </h3>
-            <p style={{ fontSize: "13px", color: "var(--color-text-muted)", marginBottom: "16px" }}>Floor {room.floor} · Capacity: {room.capacity}</p>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button id={`room-edit-${room.id}`} style={{ flex: 1, padding: "7px", borderRadius: "7px", border: "1px solid var(--color-border)", background: "transparent", color: "var(--color-text-secondary)", fontSize: "12px", cursor: "pointer" }}>Edit</button>
-              <button id={`room-delete-${room.id}`} onClick={() => setRooms(rooms.filter((r) => r.id !== room.id))}
-                style={{ flex: 1, padding: "7px", borderRadius: "7px", border: "1px solid rgba(248,81,73,0.3)", background: "rgba(248,81,73,0.06)", color: "var(--color-danger)", fontSize: "12px", cursor: "pointer" }}>Delete</button>
+            <p className="text-sm text-[var(--color-text-muted)] mb-4">
+              Floor {room.floor} · Capacity: {room.capacity}
+            </p>
+            <div className="flex gap-2">
+              <button
+                id={`room-edit-${room.id}`}
+                className="flex-1 px-2 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs"
+              >
+                Edit
+              </button>
+              <button
+                id={`room-delete-${room.id}`}
+                onClick={() => setRooms(rooms.filter((r) => r.id !== room.id))}
+                className="flex-1 px-2 py-1.5 rounded-md border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.06)] text-[var(--color-danger)] text-xs"
+              >
+                Delete
+              </button>
             </div>
           </div>
         ))}
       </div>
 
       {showModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "24px" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}>
-          <div style={{ width: "100%", maxWidth: "440px", borderRadius: "16px", border: "1px solid var(--color-border)", background: "var(--color-bg-surface)", padding: "32px" }}>
-            <h2 style={{ fontSize: "18px", fontWeight: 700, color: "var(--color-text-primary)", marginBottom: "24px" }}>Add Room</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowModal(false);
+          }}
+        >
+          <div className="w-full max-w-[440px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8">
+            <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-6">
+              Add Room
+            </h2>
+            <div className="flex flex-col gap-4">
               <div>
-                <label htmlFor="modal-room-number" style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--color-text-secondary)", marginBottom: "8px" }}>Room Number</label>
-                <input id="modal-room-number" type="text" value={newNumber} onChange={(e) => setNewNumber(e.target.value)} placeholder="e.g. 404 or Lab-4" style={inputStyle} />
+                <label
+                  htmlFor="modal-room-number"
+                  className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2"
+                >
+                  Room Number
+                </label>
+                <input
+                  id="modal-room-number"
+                  type="text"
+                  value={newNumber}
+                  onChange={(e) => setNewNumber(e.target.value)}
+                  placeholder="e.g. 404 or Lab-4"
+                  className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
+                />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="modal-room-capacity" style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--color-text-secondary)", marginBottom: "8px" }}>Capacity</label>
-                  <input id="modal-room-capacity" type="number" value={newCapacity} onChange={(e) => setNewCapacity(e.target.value)} style={inputStyle} />
+                  <label
+                    htmlFor="modal-room-capacity"
+                    className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2"
+                  >
+                    Capacity
+                  </label>
+                  <input
+                    id="modal-room-capacity"
+                    type="number"
+                    value={newCapacity}
+                    onChange={(e) => setNewCapacity(e.target.value)}
+                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
+                  />
                 </div>
                 <div>
-                  <label htmlFor="modal-room-floor" style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--color-text-secondary)", marginBottom: "8px" }}>Floor</label>
-                  <input id="modal-room-floor" type="number" value={newFloor} onChange={(e) => setNewFloor(e.target.value)} style={inputStyle} />
+                  <label
+                    htmlFor="modal-room-floor"
+                    className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2"
+                  >
+                    Floor
+                  </label>
+                  <input
+                    id="modal-room-floor"
+                    type="number"
+                    value={newFloor}
+                    onChange={(e) => setNewFloor(e.target.value)}
+                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
+                  />
                 </div>
               </div>
               <div>
-                <label htmlFor="modal-room-type" style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--color-text-secondary)", marginBottom: "8px" }}>Room Type</label>
-                <select id="modal-room-type" value={newType} onChange={(e) => setNewType(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                <label
+                  htmlFor="modal-room-type"
+                  className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2"
+                >
+                  Room Type
+                </label>
+                <select
+                  id="modal-room-type"
+                  value={newType}
+                  onChange={(e) => setNewType(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none cursor-pointer"
+                >
                   <option value="Classroom">Classroom</option>
                   <option value="Lab">Lab</option>
                 </select>
               </div>
-              <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
-                <button id="modal-room-cancel" onClick={() => setShowModal(false)}
-                  style={{ flex: 1, padding: "11px", borderRadius: "9px", border: "1px solid var(--color-border)", background: "transparent", color: "var(--color-text-secondary)", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
-                <button id="modal-room-save" onClick={addRoom}
-                  style={{ flex: 1, padding: "11px", borderRadius: "9px", border: "none", background: "linear-gradient(135deg, #4f8ef7, #6f6bf7)", color: "white", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>Save</button>
+              <div className="flex gap-3 mt-2">
+                <button
+                  id="modal-room-cancel"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  id="modal-room-save"
+                  onClick={addRoom}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white font-semibold"
+                >
+                  Save
+                </button>
               </div>
             </div>
           </div>
