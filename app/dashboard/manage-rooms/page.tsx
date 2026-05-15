@@ -58,7 +58,7 @@ export default function ManageRoomsPage() {
         <button
           id="add-room-btn"
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-4 py-2.5 text-sm font-semibold text-white"
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
         >
           + Add Room
         </button>
@@ -129,14 +129,14 @@ export default function ManageRoomsPage() {
             <div className="flex gap-2">
               <button
                 id={`room-edit-${room.id}`}
-                className="flex-1 px-2 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs"
+                className="flex-1 px-2 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs transition-colors hover:bg-[var(--color-bg-elevated)]"
               >
                 Edit
               </button>
               <button
                 id={`room-delete-${room.id}`}
                 onClick={() => setRooms(rooms.filter((r) => r.id !== room.id))}
-                className="flex-1 px-2 py-1.5 rounded-md border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.06)] text-[var(--color-danger)] text-xs"
+                className="flex-1 px-2 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs transition-colors hover:bg-[rgba(248,81,73,0.06)]"
               >
                 Delete
               </button>
@@ -226,14 +226,14 @@ export default function ManageRoomsPage() {
                 <button
                   id="modal-room-cancel"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)]"
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]"
                 >
                   Cancel
                 </button>
                 <button
                   id="modal-room-save"
                   onClick={addRoom}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white font-semibold"
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
                 >
                   Save
                 </button>

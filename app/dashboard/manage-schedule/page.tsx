@@ -87,22 +87,22 @@ const MOCK_PREVIEW = [
 
 const STATUS_CONFIG = {
   ok: {
-    color: "#3fb950",
+    color: "var(--color-success)",
     label: "Valid",
     bg: "rgba(63,185,80,0.08)",
-    border: "rgba(63,185,80,0.25)",
+    border: "rgba(63,185,80,0.2)",
   },
   error: {
-    color: "#f85149",
+    color: "var(--color-danger)",
     label: "Error",
     bg: "rgba(248,81,73,0.08)",
-    border: "rgba(248,81,73,0.25)",
+    border: "rgba(248,81,73,0.2)",
   },
   warning: {
-    color: "#d29922",
+    color: "var(--color-warning)",
     label: "Warning",
     bg: "rgba(210,153,34,0.08)",
-    border: "rgba(210,153,34,0.25)",
+    border: "rgba(210,153,34,0.2)",
   },
 };
 
@@ -267,7 +267,7 @@ export default function ManageSchedulePage() {
           </p>
           <label
             htmlFor="schedule-file-input"
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-[10px] cursor-pointer text-base font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_24px_rgba(79,142,247,0.3)] hover:shadow-[0_0_32px_rgba(79,142,247,0.4)] transition-shadow duration-200 active:scale-95"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-[10px] cursor-pointer text-base font-semibold text-white bg-[var(--color-accent)] shadow-[0_10px_24px_rgba(79,142,247,0.18)] hover:bg-[#5d95f7] hover:shadow-[0_14px_30px_rgba(79,142,247,0.22)] transition-all duration-200 active:scale-95"
           >
             <svg
               width="16"
@@ -318,7 +318,7 @@ export default function ManageSchedulePage() {
               className={`px-3.5 py-2 rounded-lg border-none text-white font-semibold transition-all duration-200 ${
                 loadingSheet
                   ? "bg-[rgba(79,142,247,0.16)] cursor-wait"
-                  : "bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] cursor-pointer hover:shadow-lg active:scale-95"
+                  : "bg-[var(--color-accent)] cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg active:scale-95"
               }`}
             >
               {loadingSheet ? "Loading…" : "Load from Google Sheet"}
@@ -509,7 +509,7 @@ export default function ManageSchedulePage() {
             <button
               id="schedule-import"
               onClick={() => setStep("done")}
-              className="px-7 py-[11px] rounded-[9px] border-none bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-all duration-200 active:scale-95"
+              className="px-7 py-[11px] rounded-[9px] border-none bg-[var(--color-accent)] text-white text-sm font-semibold cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg transition-all duration-200 active:scale-95"
             >
               <span className="inline-flex items-center gap-2">
                 Import {okCount} valid entries <FiArrowRight />
@@ -626,7 +626,7 @@ export default function ManageSchedulePage() {
             <button
               id="fixing-continue"
               onClick={() => setStep("done")}
-              className="px-7 py-[11px] rounded-[9px] border-none bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-all duration-200 active:scale-95"
+              className="px-7 py-[11px] rounded-[9px] border-none bg-[var(--color-accent)] text-white text-sm font-semibold cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg transition-all duration-200 active:scale-95"
             >
               <span className="inline-flex items-center gap-2">
                 Continue <FiArrowRight />

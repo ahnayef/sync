@@ -63,93 +63,31 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside
-      style={{
-        width: "240px",
-        minHeight: "100vh",
-        borderRight: "1px solid var(--color-border)",
-        background: "var(--color-bg-surface)",
-        display: "flex",
-        flexDirection: "column",
-        padding: "24px 12px",
-        position: "sticky",
-        top: 0,
-        height: "100vh",
-        overflowY: "auto",
-      }}
-    >
+    <aside className="sticky top-0 flex h-screen w-[240px] min-h-screen flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-6">
       {/* Logo */}
       <Link
         href="/"
         id="admin-sidebar-logo"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          textDecoration: "none",
-          padding: "8px 12px",
-          marginBottom: "24px",
-        }}
+        className="mb-6 flex items-center gap-2.5 px-3 py-2 no-underline"
       >
-        <div
-          style={{
-            width: "32px",
-            height: "32px",
-            borderRadius: "8px",
-            background: "linear-gradient(135deg, #4f8ef7, #a371f7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "16px",
-            fontWeight: 700,
-            color: "white",
-            boxShadow: "0 0 20px rgba(79, 142, 247, 0.3)",
-            flexShrink: 0,
-          }}
-        >
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-[var(--color-accent-muted)] text-[16px] font-bold text-[var(--color-accent)] shadow-[0_0_18px_rgba(79,142,247,0.18)]">
           L
         </div>
         <div>
-          <span
-            style={{
-              fontSize: "17px",
-              fontWeight: 700,
-              color: "var(--color-text-primary)",
-              letterSpacing: "-0.02em",
-              display: "block",
-            }}
-          >
+          <span className="block text-[17px] font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">
             Loop
           </span>
-          <span
-            style={{
-              fontSize: "10px",
-              fontWeight: 600,
-              color: "var(--color-accent)",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-            }}
-          >
+          <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-accent)]">
             Admin
           </span>
         </div>
       </Link>
 
       {/* Nav Items */}
-      <p
-        style={{
-          fontSize: "10px",
-          fontWeight: 600,
-          color: "var(--color-text-muted)",
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
-          padding: "0 12px",
-          marginBottom: "8px",
-        }}
-      >
+      <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-text-muted)]">
         Management
       </p>
-      <nav style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+      <nav className="flex flex-col gap-1">
         {adminNavItems.map((item) => {
           const isActive =
             item.href === "/dashboard"
@@ -160,20 +98,11 @@ export default function AdminSidebar() {
               key={item.href}
               href={item.href}
               id={`admin-nav-${item.label.toLowerCase()}`}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "10px 12px",
-                borderRadius: "8px",
-                textDecoration: "none",
-                fontSize: "14px",
-                fontWeight: 500,
-                color: isActive ? "var(--color-accent)" : "var(--color-text-secondary)",
-                background: isActive ? "var(--color-accent-muted)" : "transparent",
-                transition: "all 0.2s ease",
-                border: isActive ? "1px solid rgba(79, 142, 247, 0.2)" : "1px solid transparent",
-              }}
+              className={`flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-sm font-medium no-underline transition-all duration-200 ${
+                isActive
+                  ? "border-[rgba(79,142,247,0.2)] bg-[var(--color-accent-muted)] text-[var(--color-accent)]"
+                  : "border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"
+              }`}
             >
               {item.icon}
               {item.label}
@@ -183,69 +112,22 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Bottom */}
-      <div
-        style={{
-          marginTop: "auto",
-          paddingTop: "24px",
-          borderTop: "1px solid var(--color-border)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-        }}
-      >
+      <div className="mt-auto flex flex-col gap-3 border-t border-[var(--color-border)] pt-6">
         {/* Admin badge */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            padding: "10px 12px",
-            borderRadius: "8px",
-            background: "var(--color-bg-subtle)",
-            border: "1px solid var(--color-border)",
-          }}
-        >
-          <div
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #4f8ef7, #a371f7)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "13px",
-              fontWeight: 700,
-              color: "white",
-              flexShrink: 0,
-            }}
-          >
+        <div className="flex items-center gap-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2.5">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-muted)] text-[13px] font-bold text-[var(--color-accent)]">
             A
           </div>
           <div>
-            <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-text-primary)" }}>
+            <p className="text-[13px] font-semibold text-[var(--color-text-primary)]">
               Admin
             </p>
-            <p style={{ fontSize: "11px", color: "var(--color-text-muted)" }}>admin@loop.edu</p>
+            <p className="text-[11px] text-[var(--color-text-muted)]">admin@loop.edu</p>
           </div>
         </div>
         <button
           id="admin-logout"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "10px 12px",
-            borderRadius: "8px",
-            background: "transparent",
-            border: "none",
-            color: "var(--color-danger)",
-            fontSize: "14px",
-            fontWeight: 500,
-            cursor: "pointer",
-            textAlign: "left",
-            transition: "all 0.2s ease",
-          }}
+          className="flex items-center gap-2 rounded-lg border border-[rgba(248,81,73,0.2)] bg-transparent px-3 py-2.5 text-left text-sm font-medium text-[var(--color-danger)] transition-all duration-200 hover:bg-[rgba(248,81,73,0.06)]"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>

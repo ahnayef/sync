@@ -10,7 +10,7 @@ const statCards = [
     label: "Total Students",
     value: "2,418",
     change: "+12%",
-    colorClass: "text-blue-400 bg-blue-500/10 border-blue-400/20",
+    colorClass: "text-[var(--color-accent)] bg-[var(--color-accent-muted)] border-[rgba(79,142,247,0.2)]",
     icon: (
       <svg
         width="20"
@@ -33,7 +33,7 @@ const statCards = [
     label: "Active Courses",
     value: "48",
     change: "+3",
-    colorClass: "text-green-400 bg-green-500/10 border-green-400/20",
+    colorClass: "text-[var(--color-success)] bg-[rgba(63,185,80,0.08)] border-[rgba(63,185,80,0.18)]",
     icon: (
       <svg
         width="20"
@@ -54,7 +54,7 @@ const statCards = [
     label: "Teachers",
     value: "42",
     change: "+2",
-    colorClass: "text-violet-400 bg-violet-500/10 border-violet-400/20",
+    colorClass: "text-[var(--color-lab)] bg-[rgba(163,113,247,0.08)] border-[rgba(163,113,247,0.18)]",
     icon: (
       <svg
         width="20"
@@ -75,7 +75,7 @@ const statCards = [
     label: "Rooms",
     value: "28",
     change: "0",
-    colorClass: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+    colorClass: "text-[var(--color-warning)] bg-[rgba(210,153,34,0.08)] border-[rgba(210,153,34,0.18)]",
     icon: (
       <svg
         width="20"
@@ -99,37 +99,37 @@ const recentActivity = [
     action: "Schedule imported",
     detail: "Fall 2026 — CSE Dept",
     time: "2 min ago",
-    colorClass: "bg-blue-500/20",
+    colorClass: "bg-[rgba(79,142,247,0.65)]",
   },
   {
     action: "New teacher added",
     detail: "Dr. Sara Ali — Mathematics",
     time: "1 hr ago",
-    colorClass: "bg-green-500/20",
+    colorClass: "bg-[rgba(63,185,80,0.65)]",
   },
   {
     action: "Course updated",
     detail: "CSE405 — Software Engineering",
     time: "3 hr ago",
-    colorClass: "bg-violet-500/20",
+    colorClass: "bg-[rgba(163,113,247,0.65)]",
   },
   {
     action: "Room 404 added",
     detail: "Capacity: 60",
     time: "Yesterday",
-    colorClass: "bg-amber-500/20",
+    colorClass: "bg-[rgba(210,153,34,0.65)]",
   },
   {
     action: "Schedule conflict detected",
     detail: "CSE301 & CSE303 — Room 401",
     time: "Yesterday",
-    colorClass: "bg-red-500/20",
+    colorClass: "bg-[rgba(248,81,73,0.65)]",
   },
 ];
 
 export default function DashboardPage() {
   return (
-    <div className="p-8">
+    <div className="mx-auto max-w-[1400px] p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-[26px] font-bold text-[var(--color-text-primary)] -tracking-[0.02em] mb-1">
@@ -155,7 +155,7 @@ export default function DashboardPage() {
                 {card.icon}
               </div>
               <span
-                className={`text-xs font-semibold ${card.change.startsWith("+") ? "text-green-400 bg-green-500/10" : card.change === "0" ? "text-[var(--color-text-muted)] bg-transparent" : "text-red-500 bg-red-500/10"} px-2.5 py-1 rounded`}
+                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${card.change.startsWith("+") ? "text-[var(--color-success)] bg-[rgba(63,185,80,0.08)]" : card.change === "0" ? "text-[var(--color-text-muted)] bg-transparent" : "text-[var(--color-danger)] bg-[rgba(248,81,73,0.08)]"}`}
               >
                 {card.change.startsWith("+")
                   ? card.change
@@ -214,25 +214,25 @@ export default function DashboardPage() {
               {
                 label: "Import Schedule",
                 href: "/dashboard/manage-schedule",
-                colorClass: "bg-blue-500/10 border-blue-500/20",
+                colorClass: "bg-[var(--color-accent-muted)] border-[rgba(79,142,247,0.18)]",
                 desc: "Upload Excel file",
               },
               {
                 label: "Add Teacher",
                 href: "/dashboard/manage-teachers",
-                colorClass: "bg-green-500/10 border-green-500/20",
+                colorClass: "bg-[rgba(63,185,80,0.08)] border-[rgba(63,185,80,0.18)]",
                 desc: "New staff member",
               },
               {
                 label: "Add Course",
                 href: "/dashboard/manage-courses",
-                colorClass: "bg-violet-500/10 border-violet-500/20",
+                colorClass: "bg-[rgba(163,113,247,0.08)] border-[rgba(163,113,247,0.18)]",
                 desc: "Create course entry",
               },
               {
                 label: "Add Room",
                 href: "/dashboard/manage-rooms",
-                colorClass: "bg-amber-500/10 border-amber-500/20",
+                colorClass: "bg-[rgba(210,153,34,0.08)] border-[rgba(210,153,34,0.18)]",
                 desc: "Register a room",
               },
             ].map((action) => (

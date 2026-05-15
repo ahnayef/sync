@@ -31,7 +31,14 @@ export default function ManageTeachersPage() {
     setTeachers([...teachers, { id: Date.now(), name: newName, short: newShort.toUpperCase(), dept: newDept, courses: 0 }]);
     setNewName(""); setNewShort(""); setShowModal(false);
   };
-  const AVATAR_BG = ["bg-blue-500","bg-green-500","bg-violet-500","bg-amber-500","bg-pink-500","bg-indigo-500"];
+  const AVATAR_BG = [
+    "bg-[var(--color-accent-muted)] text-[var(--color-accent)]",
+    "bg-[rgba(63,185,80,0.1)] text-[var(--color-success)]",
+    "bg-[rgba(163,113,247,0.1)] text-[var(--color-lab)]",
+    "bg-[rgba(210,153,34,0.1)] text-[var(--color-warning)]",
+    "bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)]",
+    "bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]",
+  ];
   const getAvatarClass = (id: number) => AVATAR_BG[id % AVATAR_BG.length];
 
   return (
@@ -41,7 +48,7 @@ export default function ManageTeachersPage() {
           <h1 className="text-[26px] font-bold text-[var(--color-text-primary)] mb-1">Teacher Management</h1>
           <p className="text-sm text-[var(--color-text-secondary)]">{teachers.length} teachers registered</p>
         </div>
-        <button id="add-teacher-btn" onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-4 py-2.5 text-sm font-semibold text-white">
+        <button id="add-teacher-btn" onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">
           + Add Teacher
         </button>
       </div>
@@ -69,13 +76,13 @@ export default function ManageTeachersPage() {
                     <span className="text-sm font-medium text-[var(--color-text-primary)]">{t.name}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3"><code className="text-xs font-semibold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">{t.short}</code></td>
+                <td className="px-4 py-3"><code className="text-xs font-semibold text-[var(--color-accent)] bg-[var(--color-accent-muted)] px-2 py-0.5 rounded">{t.short}</code></td>
                 <td className="px-4 py-3"><span className="text-sm text-[var(--color-text-secondary)]">{t.dept}</span></td>
                 <td className="px-4 py-3"><span className="text-sm text-[var(--color-text-secondary)]">{t.courses}</span></td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button id={`teacher-edit-${t.id}`} className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm">Edit</button>
-                    <button id={`teacher-delete-${t.id}`} onClick={() => setTeachers(teachers.filter((x) => x.id !== t.id))} className="px-3 py-1.5 rounded-md border border-red-300 bg-red-50 text-red-500 text-sm">Delete</button>
+                    <button id={`teacher-delete-${t.id}`} onClick={() => setTeachers(teachers.filter((x) => x.id !== t.id))} className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]">Delete</button>
                   </div>
                 </td>
               </tr>
@@ -102,8 +109,8 @@ export default function ManageTeachersPage() {
                 </select>
               </div>
               <div className="flex gap-3 mt-2">
-                <button id="modal-cancel" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)]">Cancel</button>
-                <button id="modal-save" onClick={addTeacher} className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white font-semibold">Save</button>
+                <button id="modal-cancel" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]">Cancel</button>
+                <button id="modal-save" onClick={addTeacher} className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">Save</button>
               </div>
             </div>
           </div>

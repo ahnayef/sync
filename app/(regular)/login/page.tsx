@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { FcGoogle } from "react-icons/fc";
 
 export const metadata: Metadata = {
   title: "Log in",
-  description: "Log in to your Loop account.",
+  description: "Log in to your Loop account with Google or admin email and password.",
 };
 
 const inputCls =
@@ -45,8 +46,25 @@ export default function LoginPage() {
             Welcome back
           </h1>
           <p className="mb-8 text-sm text-[var(--color-text-secondary)]">
-            Log in to access your schedule
+            Use Google for student access or email and password for admin login.
           </p>
+
+          <div className="mb-6 flex flex-col gap-4">
+            <button
+              id="login-google"
+              type="button"
+              className="inline-flex items-center justify-center gap-3 rounded-[9px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-[13px] text-[15px] font-semibold text-[var(--color-text-primary)] shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition-all duration-200 hover:border-[var(--color-accent)] hover:bg-[rgba(79,142,247,0.06)] hover:shadow-[0_14px_34px_rgba(0,0,0,0.22)] active:scale-[0.99]"
+            >
+              <FcGoogle className="text-2xl" />
+              Continue with Google
+            </button>
+
+            <div className="relative flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+              <span className="h-px flex-1 bg-[var(--color-border)]" />
+              Admin login below
+              <span className="h-px flex-1 bg-[var(--color-border)]" />
+            </div>
+          </div>
 
           <form className="flex flex-col gap-[18px]">
             {/* Email / Student ID */}
@@ -55,12 +73,12 @@ export default function LoginPage() {
                 htmlFor="login-email"
                 className="mb-2 block text-[13px] font-medium text-[var(--color-text-secondary)]"
               >
-                Email or Student ID
+                Admin email or Student ID
               </label>
               <input
                 id="login-email"
                 type="text"
-                placeholder="jane@university.edu"
+                placeholder="admin@university.edu"
                 className={inputCls}
               />
             </div>

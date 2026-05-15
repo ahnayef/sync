@@ -120,7 +120,7 @@ export default function ManageCoursesPage() {
         <button
           id="add-course-btn"
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-4 py-2.5 text-sm font-semibold text-white"
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
         >
           + Add Course
         </button>
@@ -157,7 +157,7 @@ export default function ManageCoursesPage() {
               key={f}
               id={`filter-${f}`}
               onClick={() => setFilterLab(f)}
-              className={`px-3 py-1.5 rounded-md text-sm ${filterLab === f ? "font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7]" : "font-normal text-[var(--color-text-secondary)] bg-transparent"}`}
+              className={`px-3 py-1.5 rounded-md text-sm transition-colors ${filterLab === f ? "font-semibold text-[var(--color-accent)] bg-[var(--color-accent-muted)] border border-[rgba(79,142,247,0.2)]" : "font-normal text-[var(--color-text-secondary)] bg-transparent hover:bg-[var(--color-bg-surface)]"}`}
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
@@ -223,7 +223,7 @@ export default function ManageCoursesPage() {
                       onClick={() =>
                         setCourses(courses.filter((x) => x.id !== c.id))
                       }
-                      className="px-3 py-1.5 rounded-md border border-red-300 bg-red-50 text-red-500 text-sm"
+                      className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]"
                     >
                       Delete
                     </button>
@@ -316,7 +316,7 @@ export default function ManageCoursesPage() {
                 <button
                   id="modal-course-save"
                   onClick={addCourse}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white font-semibold"
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
                 >
                   Save
                 </button>

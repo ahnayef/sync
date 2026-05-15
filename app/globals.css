@@ -5,30 +5,30 @@
 :root,
 html {
   /* Backgrounds */
-  --color-bg-base: #080c10;
-  --color-bg-surface: #0d1117;
-  --color-bg-elevated: #161b22;
-  --color-bg-subtle: #1c2128;
+  --color-bg-base: #0b1015;
+  --color-bg-surface: #111720;
+  --color-bg-elevated: #151c25;
+  --color-bg-subtle: #1a222d;
 
   /* Borders */
-  --color-border: #21262d;
-  --color-border-muted: #161b22;
+  --color-border: #263244;
+  --color-border-muted: #1a222d;
 
   /* Accent */
-  --color-accent: #4f8ef7;
-  --color-accent-glow: rgba(79, 142, 247, 0.15);
-  --color-accent-muted: rgba(79, 142, 247, 0.1);
+  --color-accent: #6f93da;
+  --color-accent-glow: rgba(111, 147, 218, 0.12);
+  --color-accent-muted: rgba(111, 147, 218, 0.08);
 
   /* Text */
-  --color-text-primary: #e6edf3;
-  --color-text-secondary: #8b949e;
-  --color-text-muted: #484f58;
+  --color-text-primary: #d7dee6;
+  --color-text-secondary: #9aa4af;
+  --color-text-muted: #60707f;
 
   /* Status */
-  --color-success: #3fb950;
-  --color-warning: #d29922;
-  --color-danger: #f85149;
-  --color-lab: #a371f7;
+  --color-success: #67b66b;
+  --color-warning: #c59d4a;
+  --color-danger: #d96b64;
+  --color-lab: #9a7bd9;
 
   /* Typography */
   --font-sans: "Inter", system-ui, sans-serif;
@@ -39,31 +39,32 @@ html {
 
 /* ─── Tailwind v4 theme tokens (for Tailwind utility classes) ─── */
 @theme {
-  --color-bg-base: #080c10;
-  --color-bg-surface: #0d1117;
-  --color-bg-elevated: #161b22;
-  --color-bg-subtle: #1c2128;
-  --color-border: #21262d;
-  --color-accent: #4f8ef7;
-  --color-text-primary: #e6edf3;
-  --color-text-secondary: #8b949e;
-  --color-text-muted: #484f58;
-  --color-success: #3fb950;
-  --color-warning: #d29922;
-  --color-danger: #f85149;
-  --color-lab: #a371f7;
+  --color-bg-base: #0b1015;
+  --color-bg-surface: #111720;
+  --color-bg-elevated: #151c25;
+  --color-bg-subtle: #1a222d;
+  --color-border: #263244;
+  --color-accent: #6f93da;
+  --color-text-primary: #d7dee6;
+  --color-text-secondary: #9aa4af;
+  --color-text-muted: #60707f;
+  --color-success: #67b66b;
+  --color-warning: #c59d4a;
+  --color-danger: #d96b64;
+  --color-lab: #9a7bd9;
   --font-sans: "Inter", system-ui, sans-serif;
 }
 
 
 /* Force dark background immediately — prevents white flash on any route */
 html {
-  background-color: #080c10;
+  background-color: #0b1015;
   scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--color-bg-base);
+  background-image: radial-gradient(circle at top, rgba(111, 147, 218, 0.08), transparent 42%);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   min-height: 100vh;

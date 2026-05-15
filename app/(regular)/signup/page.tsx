@@ -1,20 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { FcGoogle } from "react-icons/fc";
 
 export const metadata: Metadata = {
   title: "Sign up",
-  description: "Create your Loop account.",
+  description: "Create your Loop account with Google.",
 };
-
-const nameFields = [
-  { id: "signup-first-name", label: "First Name", placeholder: "Jane" },
-  { id: "signup-last-name",  label: "Last Name",  placeholder: "Doe" },
-];
-
-const inputCls =
-  "w-full rounded-[9px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3.5 py-[11px] text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 focus:border-blue-400/50";
-
-const labelCls = "mb-2 block text-[13px] font-medium text-[var(--color-text-secondary)]";
 
 export default function SignupPage() {
   return (
@@ -49,65 +40,27 @@ export default function SignupPage() {
         {/* Card */}
         <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-9 py-10 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
           <h1 className="mb-2 text-2xl font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">
-            Create your account
+            Sign up with Google
           </h1>
           <p className="mb-8 text-sm text-[var(--color-text-secondary)]">
-            Join Loop and take control of your schedule
+            Google is the only supported sign-up method for student accounts.
           </p>
 
-          <form className="flex flex-col gap-[18px]">
-            {/* First / Last name */}
-            <div className="grid grid-cols-2 gap-3.5">
-              {nameFields.map((f) => (
-                <div key={f.id}>
-                  <label htmlFor={f.id} className={labelCls}>{f.label}</label>
-                  <input id={f.id} type="text" placeholder={f.placeholder} className={inputCls} />
-                </div>
-              ))}
-            </div>
-
-            {/* Student ID */}
-            <div>
-              <label htmlFor="signup-student-id" className={labelCls}>Student ID</label>
-              <input
-                id="signup-student-id"
-                type="text"
-                placeholder="e.g. STU-2024-001"
-                className={inputCls}
-              />
-            </div>
-
-            {/* Email */}
-            <div>
-              <label htmlFor="signup-email" className={labelCls}>Email Address</label>
-              <input
-                id="signup-email"
-                type="email"
-                placeholder="jane@university.edu"
-                className={inputCls}
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label htmlFor="signup-password" className={labelCls}>Password</label>
-              <input
-                id="signup-password"
-                type="password"
-                placeholder="••••••••"
-                className={inputCls}
-              />
-            </div>
-
-            {/* Submit */}
+          <div className="flex flex-col gap-4">
             <button
-              id="signup-submit"
-              type="submit"
-              className="mt-2 cursor-pointer rounded-[9px] border-none bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] py-[13px] text-[15px] font-semibold text-white shadow-[0_0_24px_rgba(79,142,247,0.3)] transition-all duration-200 hover:shadow-[0_0_32px_rgba(79,142,247,0.5)]"
+              id="signup-google"
+              type="button"
+              className="inline-flex items-center justify-center gap-3 rounded-[9px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-[13px] text-[15px] font-semibold text-[var(--color-text-primary)] shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition-all duration-200 hover:border-[var(--color-accent)] hover:bg-[rgba(79,142,247,0.06)] hover:shadow-[0_14px_34px_rgba(0,0,0,0.22)] active:scale-[0.99]"
             >
-              Create account
+              <FcGoogle className="text-2xl" />
+              Continue with Google
             </button>
-          </form>
+
+            <div className="rounded-[14px] border border-[var(--color-border)] bg-[rgba(79,142,247,0.05)] px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+              Students sign up with Google only. If you are an admin, use the
+              login page with email and password.
+            </div>
+          </div>
 
           <p className="mt-6 text-center text-[13px] text-[var(--color-text-muted)]">
             Already have an account?{" "}
