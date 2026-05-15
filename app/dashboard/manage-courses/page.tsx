@@ -65,6 +65,7 @@ export default function ManageCoursesPage() {
   const [courses, setCourses] = useState(INITIAL);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [newCode, setNewCode] = useState("");
   const [newName, setNewName] = useState("");
   const [newIsLab, setNewIsLab] = useState(false);
@@ -79,21 +80,48 @@ export default function ManageCoursesPage() {
     return matchSearch && matchFilter;
   });
 
-  const addCourse = () => {
-    if (!newCode || !newName) return;
-    setCourses([
-      ...courses,
-      {
-        id: Date.now(),
-        code: newCode.toUpperCase(),
-        name: newName,
-        isLab: newIsLab,
-        dept: "CSE",
-      },
-    ]);
+  const openAdd = () => {
+    setEditingId(null);
     setNewCode("");
     setNewName("");
     setNewIsLab(false);
+    setShowModal(true);
+  };
+
+  const openEdit = (course: any) => {
+    setEditingId(course.id);
+    setNewCode(course.code);
+    setNewName(course.name);
+    setNewIsLab(course.isLab);
+    setShowModal(true);
+  };
+
+  const saveCourse = () => {
+    if (!newCode || !newName) return;
+    if (editingId) {
+      setCourses(
+        courses.map((c) =>
+          c.id === editingId
+            ? { ...c, code: newCode.toUpperCase(), name: newName, isLab: newIsLab }
+            : c
+        )
+      );
+    } else {
+      setCourses([
+        ...courses,
+        {
+          id: Date.now(),
+          code: newCode.toUpperCase(),
+          name: newName,
+          isLab: newIsLab,
+          dept: "CSE",
+        },
+      ]);
+    }
+    setNewCode("");
+    setNewName("");
+    setNewIsLab(false);
+    setEditingId(null);
     setShowModal(false);
   };
 
@@ -110,7 +138,7 @@ export default function ManageCoursesPage() {
         </div>
         <button
           id="add-course-btn"
-          onClick={() => setShowModal(true)}
+          onClick={openAdd}
           className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
         >
           + Add Course
@@ -200,6 +228,7 @@ export default function ManageCoursesPage() {
                   <div className="flex gap-2">
                     <button
                       id={`course-edit-${c.id}`}
+                      onClick={() => openEdit(c)}
                       className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm"
                     >
                       Edit
@@ -230,7 +259,7 @@ export default function ManageCoursesPage() {
         >
           <div className="w-full max-w-[440px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8">
             <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-6">
-              Add Course
+              {editingId ? "Edit Course" : "Add Course"}
             </h2>
             <div className="flex flex-col gap-4">
               <div>
@@ -301,10 +330,10 @@ export default function ManageCoursesPage() {
                 </button>
                 <button
                   id="modal-course-save"
-                  onClick={addCourse}
+                  onClick={saveCourse}
                   className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
                 >
-                  Save
+                  {editingId ? "Save Changes" : "Save"}
                 </button>
               </div>
             </div>

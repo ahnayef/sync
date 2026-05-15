@@ -13,6 +13,7 @@ export default function ManageBatchPage() {
   const [batches, setBatches] = useState(INITIAL);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
   const [newSession, setNewSession] = useState("");
   const [newDept, setNewDept] = useState("");
@@ -25,20 +26,47 @@ export default function ManageBatchPage() {
     );
   });
 
-  const addBatch = () => {
-    if (!newName || !newSession || !newDept) return;
-    setBatches([
-      ...batches,
-      {
-        id: Date.now(),
-        name: newName,
-        session: newSession,
-        dept: newDept.toUpperCase(),
-      },
-    ]);
+  const openAdd = () => {
+    setEditingId(null);
     setNewName("");
     setNewSession("");
     setNewDept("");
+    setShowModal(true);
+  };
+
+  const openEdit = (batch: any) => {
+    setEditingId(batch.id);
+    setNewName(batch.name);
+    setNewSession(batch.session);
+    setNewDept(batch.dept);
+    setShowModal(true);
+  };
+
+  const saveBatch = () => {
+    if (!newName || !newSession || !newDept) return;
+    if (editingId) {
+      setBatches(
+        batches.map((b) =>
+          b.id === editingId
+            ? { ...b, name: newName, session: newSession, dept: newDept.toUpperCase() }
+            : b
+        )
+      );
+    } else {
+      setBatches([
+        ...batches,
+        {
+          id: Date.now(),
+          name: newName,
+          session: newSession,
+          dept: newDept.toUpperCase(),
+        },
+      ]);
+    }
+    setNewName("");
+    setNewSession("");
+    setNewDept("");
+    setEditingId(null);
     setShowModal(false);
   };
 
@@ -55,7 +83,7 @@ export default function ManageBatchPage() {
         </div>
         <button
           id="add-batch-btn"
-          onClick={() => setShowModal(true)}
+          onClick={openAdd}
           className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
         >
           + Add Batch
@@ -129,6 +157,7 @@ export default function ManageBatchPage() {
                   <div className="flex gap-2">
                     <button
                       id={`batch-edit-${b.id}`}
+                      onClick={() => openEdit(b)}
                       className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm transition-colors hover:bg-[var(--color-bg-elevated)]"
                     >
                       Edit
@@ -166,7 +195,7 @@ export default function ManageBatchPage() {
         >
           <div className="w-full max-w-[440px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8">
             <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-6">
-              Add Batch
+              {editingId ? "Edit Batch" : "Add Batch"}
             </h2>
             <div className="flex flex-col gap-4">
               <div>
@@ -227,10 +256,10 @@ export default function ManageBatchPage() {
                 </button>
                 <button
                   id="modal-batch-save"
-                  onClick={addBatch}
+                  onClick={saveBatch}
                   className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
                 >
-                  Save
+                  {editingId ? "Save Changes" : "Save"}
                 </button>
               </div>
             </div>

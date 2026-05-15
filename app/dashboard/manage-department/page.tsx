@@ -13,6 +13,7 @@ export default function ManageDepartmentPage() {
   const [departments, setDepartments] = useState(INITIAL);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
   const [newFullName, setNewFullName] = useState("");
 
@@ -23,18 +24,43 @@ export default function ManageDepartmentPage() {
     );
   });
 
-  const addDepartment = () => {
-    if (!newName || !newFullName) return;
-    setDepartments([
-      ...departments,
-      {
-        id: Date.now(),
-        name: newName.toUpperCase(),
-        fullName: newFullName,
-      },
-    ]);
+  const openAdd = () => {
+    setEditingId(null);
     setNewName("");
     setNewFullName("");
+    setShowModal(true);
+  };
+
+  const openEdit = (dept: any) => {
+    setEditingId(dept.id);
+    setNewName(dept.name);
+    setNewFullName(dept.fullName);
+    setShowModal(true);
+  };
+
+  const saveDepartment = () => {
+    if (!newName || !newFullName) return;
+    if (editingId) {
+      setDepartments(
+        departments.map((d) =>
+          d.id === editingId
+            ? { ...d, name: newName.toUpperCase(), fullName: newFullName }
+            : d
+        )
+      );
+    } else {
+      setDepartments([
+        ...departments,
+        {
+          id: Date.now(),
+          name: newName.toUpperCase(),
+          fullName: newFullName,
+        },
+      ]);
+    }
+    setNewName("");
+    setNewFullName("");
+    setEditingId(null);
     setShowModal(false);
   };
 
@@ -51,7 +77,7 @@ export default function ManageDepartmentPage() {
         </div>
         <button
           id="add-dept-btn"
-          onClick={() => setShowModal(true)}
+          onClick={openAdd}
           className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
         >
           + Add Department
@@ -120,6 +146,7 @@ export default function ManageDepartmentPage() {
                   <div className="flex gap-2">
                     <button
                       id={`dept-edit-${d.id}`}
+                      onClick={() => openEdit(d)}
                       className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm transition-colors hover:bg-[var(--color-bg-elevated)]"
                     >
                       Edit
@@ -157,7 +184,7 @@ export default function ManageDepartmentPage() {
         >
           <div className="w-full max-w-[440px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8">
             <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-6">
-              Add Department
+              {editingId ? "Edit Department" : "Add Department"}
             </h2>
             <div className="flex flex-col gap-4">
               <div>
@@ -202,10 +229,10 @@ export default function ManageDepartmentPage() {
                 </button>
                 <button
                   id="modal-dept-save"
-                  onClick={addDepartment}
+                  onClick={saveDepartment}
                   className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
                 >
-                  Save
+                  {editingId ? "Save Changes" : "Save"}
                 </button>
               </div>
             </div>

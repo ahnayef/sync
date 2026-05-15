@@ -15,6 +15,7 @@ export default function ManageTeachersPage() {
   const [teachers, setTeachers] = useState(INITIAL);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   
   const [newName, setNewName] = useState("");
   const [newShort, setNewShort] = useState("");
@@ -27,20 +28,47 @@ export default function ManageTeachersPage() {
       t.dept.toLowerCase().includes(search.toLowerCase())
   );
 
-  const addTeacher = () => {
+  const openAdd = () => {
+    setEditingId(null);
+    setNewName("");
+    setNewShort("");
+    setNewDept("");
+    setShowModal(true);
+  };
+
+  const openEdit = (teacher: any) => {
+    setEditingId(teacher.id);
+    setNewName(teacher.name);
+    setNewShort(teacher.short);
+    setNewDept(teacher.dept);
+    setShowModal(true);
+  };
+
+  const saveTeacher = () => {
     if (!newName || !newShort) return;
-    setTeachers([
-      ...teachers, 
-      { 
-        id: Date.now(), 
-        name: newName, 
-        short: newShort.toUpperCase(), 
-        dept: newDept.toUpperCase(), 
-      }
-    ]);
+    if (editingId) {
+      setTeachers(
+        teachers.map((t) =>
+          t.id === editingId
+            ? { ...t, name: newName, short: newShort.toUpperCase(), dept: newDept.toUpperCase() }
+            : t
+        )
+      );
+    } else {
+      setTeachers([
+        ...teachers, 
+        { 
+          id: Date.now(), 
+          name: newName, 
+          short: newShort.toUpperCase(), 
+          dept: newDept.toUpperCase(), 
+        }
+      ]);
+    }
     setNewName(""); 
     setNewShort(""); 
     setNewDept(""); 
+    setEditingId(null);
     setShowModal(false);
   };
   
@@ -61,7 +89,7 @@ export default function ManageTeachersPage() {
           <h1 className="text-[26px] font-bold text-[var(--color-text-primary)] mb-1">Teacher Management</h1>
           <p className="text-sm text-[var(--color-text-secondary)]">{teachers.length} teachers registered</p>
         </div>
-        <button id="add-teacher-btn" onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">
+        <button id="add-teacher-btn" onClick={openAdd} className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">
           + Add Teacher
         </button>
       </div>
@@ -97,7 +125,7 @@ export default function ManageTeachersPage() {
                 </td>
                 <td className="px-4 py-3 w-[160px]">
                   <div className="flex gap-2">
-                    <button id={`teacher-edit-${t.id}`} className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm transition-colors hover:bg-[var(--color-bg-elevated)]">Edit</button>
+                    <button id={`teacher-edit-${t.id}`} onClick={() => openEdit(t)} className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm transition-colors hover:bg-[var(--color-bg-elevated)]">Edit</button>
                     <button id={`teacher-delete-${t.id}`} onClick={() => setTeachers(teachers.filter((x) => x.id !== t.id))} className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]">Delete</button>
                   </div>
                 </td>
@@ -117,7 +145,7 @@ export default function ManageTeachersPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6" onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}>
           <div className="w-full max-w-[500px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8">
-            <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-6">Add Teacher</h2>
+            <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-6">{editingId ? "Edit Teacher" : "Add Teacher"}</h2>
             <div className="flex flex-col gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Full Name</label>
@@ -135,7 +163,7 @@ export default function ManageTeachersPage() {
               </div>
               <div className="flex gap-3 mt-4">
                 <button id="modal-cancel" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]">Cancel</button>
-                <button id="modal-save" onClick={addTeacher} className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">Save</button>
+                <button id="modal-save" onClick={saveTeacher} className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">{editingId ? "Save Changes" : "Save"}</button>
               </div>
             </div>
           </div>

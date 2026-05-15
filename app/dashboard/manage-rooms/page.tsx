@@ -12,6 +12,7 @@ export default function ManageRoomsPage() {
   const [rooms, setRooms] = useState(INITIAL);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   
   const [newNumber, setNewNumber] = useState("");
   const [newBuilding, setNewBuilding] = useState("");
@@ -27,26 +28,67 @@ export default function ManageRoomsPage() {
       (r.title && r.title.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const addRoom = () => {
-    if (!newNumber || !newBuilding || !newFloor || !newCapacity) return;
-    setRooms([
-      ...rooms,
-      {
-        id: Date.now(),
-        number: parseInt(newNumber),
-        buildingName: newBuilding,
-        floorNumber: parseInt(newFloor),
-        title: newTitle,
-        roomType: newType,
-        capacity: parseInt(newCapacity),
-      },
-    ]);
+  const openAdd = () => {
+    setEditingId(null);
     setNewNumber("");
     setNewBuilding("");
     setNewFloor("");
     setNewTitle("");
     setNewType("classroom");
     setNewCapacity("");
+    setShowModal(true);
+  };
+
+  const openEdit = (room: any) => {
+    setEditingId(room.id);
+    setNewNumber(room.number.toString());
+    setNewBuilding(room.buildingName);
+    setNewFloor(room.floorNumber.toString());
+    setNewTitle(room.title || "");
+    setNewType(room.roomType);
+    setNewCapacity(room.capacity.toString());
+    setShowModal(true);
+  };
+
+  const saveRoom = () => {
+    if (!newNumber || !newBuilding || !newFloor || !newCapacity) return;
+    if (editingId) {
+      setRooms(
+        rooms.map((r) =>
+          r.id === editingId
+            ? {
+                ...r,
+                number: parseInt(newNumber),
+                buildingName: newBuilding,
+                floorNumber: parseInt(newFloor),
+                title: newTitle,
+                roomType: newType,
+                capacity: parseInt(newCapacity),
+              }
+            : r
+        )
+      );
+    } else {
+      setRooms([
+        ...rooms,
+        {
+          id: Date.now(),
+          number: parseInt(newNumber),
+          buildingName: newBuilding,
+          floorNumber: parseInt(newFloor),
+          title: newTitle,
+          roomType: newType,
+          capacity: parseInt(newCapacity),
+        },
+      ]);
+    }
+    setNewNumber("");
+    setNewBuilding("");
+    setNewFloor("");
+    setNewTitle("");
+    setNewType("classroom");
+    setNewCapacity("");
+    setEditingId(null);
     setShowModal(false);
   };
 
@@ -63,7 +105,7 @@ export default function ManageRoomsPage() {
         </div>
         <button
           id="add-room-btn"
-          onClick={() => setShowModal(true)}
+          onClick={openAdd}
           className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
         >
           + Add Room
@@ -137,6 +179,7 @@ export default function ManageRoomsPage() {
                   <div className="flex justify-end gap-2">
                     <button
                       id={`room-edit-${room.id}`}
+                      onClick={() => openEdit(room)}
                       className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs transition-colors hover:bg-[var(--color-bg-elevated)]"
                     >
                       Edit
@@ -165,7 +208,7 @@ export default function ManageRoomsPage() {
         >
           <div className="w-full max-w-[500px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8 my-8">
             <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-6">
-              Add Room
+              {editingId ? "Edit Room" : "Add Room"}
             </h2>
             <div className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-4">
@@ -206,7 +249,9 @@ export default function ManageRoomsPage() {
               
               <div className="flex gap-3 mt-4">
                 <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]">Cancel</button>
-                <button onClick={addRoom} className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">Save</button>
+                <button onClick={saveRoom} className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">
+                  {editingId ? "Save Changes" : "Save"}
+                </button>
               </div>
             </div>
           </div>
