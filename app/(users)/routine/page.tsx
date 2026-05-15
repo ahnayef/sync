@@ -20,6 +20,14 @@ const MOCK_ROUTINES: RoutineSchema[] = [
   { id: 11, course_code: "HUM-201",      course_name: "Technical Writing",               teacher_name: "Ms. Parvin",                        start_time: "09:30", end_time: "11:00", room_number: "104",   day: "Thursday",  is_lab: false, section: "B" },
 ];
 
+const navBtnCls = (disabled: boolean) =>
+  [
+    "flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[11px] border-0 transition-all duration-200",
+    disabled
+      ? "cursor-not-allowed bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)] shadow-none"
+      : "cursor-pointer bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white shadow-[0_0_16px_rgba(79,142,247,0.35)]",
+  ].join(" ");
+
 /* ─── Helpers ─── */
 function minutesOf(t: string) {
   const [h, m] = t.split(":").map(Number);
@@ -38,19 +46,14 @@ function gapLabel(endTime: string, nextStart: string): string {
 /* ─── Skeleton ─── */
 function Skeleton() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%" }}>
+    <div className="flex w-full flex-col gap-4">
       {[0, 1].map((i) => (
         <div
           key={i}
-          style={{
-            borderRadius: "18px",
-            height: "160px",
-            background:
-              "linear-gradient(90deg, var(--color-bg-elevated) 25%, var(--color-bg-subtle) 50%, var(--color-bg-elevated) 75%)",
-            backgroundSize: "200% 100%",
-            animation: "shimmer 1.4s infinite",
-            opacity: 1 - i * 0.3,
-          }}
+          className={[
+            "h-40 rounded-[18px] bg-[length:200%_100%] bg-gradient-to-r from-[var(--color-bg-elevated)] via-[var(--color-bg-subtle)] to-[var(--color-bg-elevated)] animate-[shimmer_1.4s_infinite]",
+            i === 0 ? "opacity-100" : "opacity-70",
+          ].join(" ")}
         />
       ))}
     </div>
@@ -120,34 +123,16 @@ export default function RoutinePage() {
   });
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--color-bg-base)" }}>
+    <div className="min-h-screen bg-[var(--color-bg-base)]">
       <UserNavbar />
 
       {/* Focus mode FAB */}
       <button
         id="focus-mode-toggle"
+        type="button"
         onClick={toggleFocusMode}
         title={focusMode ? "Disable Focus Mode" : "Enable Focus Mode"}
-        style={{
-          position: "fixed",
-          right: "24px",
-          bottom: "24px",
-          zIndex: 50,
-          width: "48px",
-          height: "48px",
-          borderRadius: "50%",
-          border: "none",
-          background: "linear-gradient(135deg, #4f8ef7, #6f6bf7)",
-          color: "white",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 4px 20px rgba(79,142,247,0.45)",
-          transition: "transform 0.15s",
-        }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.08)"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+        className="fixed right-6 bottom-6 z-50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-0 bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white shadow-[0_4px_20px_rgba(79,142,247,0.45)] transition-transform duration-150 hover:scale-[1.08]"
       >
         {focusMode ? (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -162,49 +147,35 @@ export default function RoutinePage() {
         )}
       </button>
 
-      <main style={{ maxWidth: "580px", margin: "0 auto", padding: "44px 20px 80px" }}>
+      <main className="mx-auto max-w-[580px] px-5 pt-11 pb-20">
         {/* Day header — hidden in focus mode */}
         {!focusMode && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", marginBottom: "36px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+          <div className="mb-9 flex flex-col items-center gap-2">
+            <div className="flex items-center gap-[18px]">
               {/* Prev */}
               <button
                 id="day-prev"
+                type="button"
                 onClick={handlePrev}
                 disabled={atStart}
-                style={{
-                  width: "42px", height: "42px", borderRadius: "11px", border: "none",
-                  background: atStart ? "var(--color-bg-elevated)" : "linear-gradient(135deg, #4f8ef7, #6f6bf7)",
-                  color: atStart ? "var(--color-text-muted)" : "white",
-                  cursor: atStart ? "not-allowed" : "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  boxShadow: atStart ? "none" : "0 0 16px rgba(79,142,247,0.35)",
-                  transition: "all 0.2s", flexShrink: 0,
-                }}
+                className={navBtnCls(atStart)}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="15 18 9 12 15 6"/>
                 </svg>
               </button>
 
-              <h1 style={{ fontSize: "36px", fontWeight: 800, color: "var(--color-text-primary)", letterSpacing: "-0.03em", margin: 0, minWidth: "190px", textAlign: "center" }}>
+              <h1 className="m-0 min-w-[190px] text-center text-4xl font-extrabold tracking-[-0.03em] text-[var(--color-text-primary)]">
                 {today}
               </h1>
 
               {/* Next */}
               <button
                 id="day-next"
+                type="button"
                 onClick={handleNext}
                 disabled={atEnd}
-                style={{
-                  width: "42px", height: "42px", borderRadius: "11px", border: "none",
-                  background: atEnd ? "var(--color-bg-elevated)" : "linear-gradient(135deg, #4f8ef7, #6f6bf7)",
-                  color: atEnd ? "var(--color-text-muted)" : "white",
-                  cursor: atEnd ? "not-allowed" : "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  boxShadow: atEnd ? "none" : "0 0 16px rgba(79,142,247,0.35)",
-                  transition: "all 0.2s", flexShrink: 0,
-                }}
+                className={navBtnCls(atEnd)}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="9 18 15 12 9 6"/>
@@ -212,7 +183,7 @@ export default function RoutinePage() {
               </button>
             </div>
 
-            <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-secondary)", margin: 0 }}>
+            <p className="m-0 text-sm font-medium text-[var(--color-text-secondary)]">
               {formattedDate}
             </p>
           </div>
@@ -221,22 +192,22 @@ export default function RoutinePage() {
         {/* Schedule content */}
         {isWeekend ? (
           !focusMode && (
-            <div style={{ marginTop: "32px", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", color: "#3fb950", fontSize: "17px", fontWeight: 600 }}>
-              No classes today <span style={{ fontSize: "28px" }}>🎉</span>
+            <div className="mt-8 flex flex-col items-center gap-2.5 text-[17px] font-semibold text-success">
+              No classes today <span className="text-[28px]">🎉</span>
             </div>
           )
         ) : changingDay ? (
           <Skeleton />
         ) : filteredRoutines.length === 0 ? (
-          <div style={{ borderRadius: "18px", border: "1px dashed var(--color-border)", background: "var(--color-bg-surface)", padding: "72px 32px", textAlign: "center" }}>
-            <div style={{ fontSize: "40px", marginBottom: "12px" }}>📭</div>
-            <h3 style={{ fontSize: "17px", fontWeight: 600, color: "var(--color-text-primary)", marginBottom: "6px" }}>
+          <div className="rounded-[18px] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] px-8 py-[72px] text-center">
+            <div className="mb-3 text-[40px]">📭</div>
+            <h3 className="mb-1.5 text-[17px] font-semibold text-[var(--color-text-primary)]">
               No classes on {today}
             </h3>
-            <p style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}>Nothing scheduled for this day.</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">Nothing scheduled for this day.</p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <div className="flex flex-col">
             {filteredRoutines.map((schedule, idx, arr) => {
               const next = arr[idx + 1];
               const gap = next ? gapLabel(schedule.end_time, next.start_time) : undefined;
