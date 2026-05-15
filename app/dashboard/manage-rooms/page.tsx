@@ -3,14 +3,14 @@
 import { useState } from "react";
 
 const INITIAL = [
-  { id: 1, number: "101", capacity: 40, type: "Classroom", floor: 1 },
-  { id: 2, number: "201", capacity: 60, type: "Classroom", floor: 2 },
-  { id: 3, number: "302", capacity: 50, type: "Classroom", floor: 3 },
-  { id: 4, number: "305", capacity: 45, type: "Classroom", floor: 3 },
-  { id: 5, number: "401", capacity: 35, type: "Classroom", floor: 4 },
-  { id: 6, number: "Lab-1", capacity: 30, type: "Lab", floor: 1 },
-  { id: 7, number: "Lab-2", capacity: 30, type: "Lab", floor: 2 },
-  { id: 8, number: "Lab-3", capacity: 28, type: "Lab", floor: 3 },
+  { id: 1, number: "101" },
+  { id: 2, number: "201" },
+  { id: 3, number: "302" },
+  { id: 4, number: "305" },
+  { id: 5, number: "401" },
+  { id: 6, number: "Lab-1" },
+  { id: 7, number: "Lab-2" },
+  { id: 8, number: "Lab-3" },
 ];
 
 export default function ManageRoomsPage() {
@@ -18,14 +18,9 @@ export default function ManageRoomsPage() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [newNumber, setNewNumber] = useState("");
-  const [newCapacity, setNewCapacity] = useState("40");
-  const [newType, setNewType] = useState("Classroom");
-  const [newFloor, setNewFloor] = useState("1");
 
   const filtered = rooms.filter(
-    (r) =>
-      r.number.toLowerCase().includes(search.toLowerCase()) ||
-      r.type.toLowerCase().includes(search.toLowerCase()),
+    (r) => r.number.toLowerCase().includes(search.toLowerCase()),
   );
 
   const addRoom = () => {
@@ -35,9 +30,6 @@ export default function ManageRoomsPage() {
       {
         id: Date.now(),
         number: newNumber,
-        capacity: parseInt(newCapacity),
-        type: newType,
-        floor: parseInt(newFloor),
       },
     ]);
     setNewNumber("");
@@ -89,60 +81,49 @@ export default function ManageRoomsPage() {
         </svg>
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-[14px]">
-        {filtered.map((room) => (
-          <div
-            key={room.id}
-            id={`room-card-${room.id}`}
-            className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5"
-          >
-            <div className="flex justify-between items-start mb-3">
-              <div
-                className={`w-11 h-11 rounded-[10px] flex items-center justify-center ${room.type === "Lab" ? "bg-[rgba(163,113,247,0.15)] border border-[rgba(163,113,247,0.3)]" : "bg-[rgba(79,142,247,0.12)] border border-[rgba(79,142,247,0.25)]"}`}
+      <div className="overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)]">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
+                Room Number
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((room, index) => (
+              <tr
+                key={room.id}
+                id={`room-row-${room.id}`}
+                className={`border-b border-[var(--color-border)] ${index % 2 === 0 ? "bg-[var(--color-bg-surface)]" : "bg-[var(--color-bg-elevated)]/40"}`}
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={room.type === "Lab" ? "#a371f7" : "#4f8ef7"}
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                  <polyline points="9 22 9 12 15 12 15 22" />
-                </svg>
-              </div>
-              <span
-                className={`text-[11px] font-bold tracking-[0.08em] px-2 py-0.5 rounded uppercase ${room.type === "Lab" ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)] border border-[rgba(163,113,247,0.3)]" : "text-[var(--color-accent)] bg-[var(--color-accent-muted)] border border-[rgba(79,142,247,0.25)]"}`}
-              >
-                {room.type}
-              </span>
-            </div>
-            <h3 className="text-[22px] font-black text-[var(--color-text-primary)] mb-1">
-              {room.number}
-            </h3>
-            <p className="text-sm text-[var(--color-text-muted)] mb-4">
-              Floor {room.floor} · Capacity: {room.capacity}
-            </p>
-            <div className="flex gap-2">
-              <button
-                id={`room-edit-${room.id}`}
-                className="flex-1 px-2 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs transition-colors hover:bg-[var(--color-bg-elevated)]"
-              >
-                Edit
-              </button>
-              <button
-                id={`room-delete-${room.id}`}
-                onClick={() => setRooms(rooms.filter((r) => r.id !== room.id))}
-                className="flex-1 px-2 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs transition-colors hover:bg-[rgba(248,81,73,0.06)]"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+                <td className="px-4 py-3 text-sm font-medium text-[var(--color-text-primary)]">
+                  {room.number}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex justify-end gap-2">
+                    <button
+                      id={`room-edit-${room.id}`}
+                      className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs transition-colors hover:bg-[var(--color-bg-elevated)]"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      id={`room-delete-${room.id}`}
+                      onClick={() => setRooms(rooms.filter((r) => r.id !== room.id))}
+                      className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs transition-colors hover:bg-[rgba(248,81,73,0.06)]"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {showModal && (
@@ -172,55 +153,6 @@ export default function ManageRoomsPage() {
                   placeholder="e.g. 404 or Lab-4"
                   className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label
-                    htmlFor="modal-room-capacity"
-                    className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2"
-                  >
-                    Capacity
-                  </label>
-                  <input
-                    id="modal-room-capacity"
-                    type="number"
-                    value={newCapacity}
-                    onChange={(e) => setNewCapacity(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="modal-room-floor"
-                    className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2"
-                  >
-                    Floor
-                  </label>
-                  <input
-                    id="modal-room-floor"
-                    type="number"
-                    value={newFloor}
-                    onChange={(e) => setNewFloor(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  htmlFor="modal-room-type"
-                  className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2"
-                >
-                  Room Type
-                </label>
-                <select
-                  id="modal-room-type"
-                  value={newType}
-                  onChange={(e) => setNewType(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none cursor-pointer"
-                >
-                  <option value="Classroom">Classroom</option>
-                  <option value="Lab">Lab</option>
-                </select>
               </div>
               <div className="flex gap-3 mt-2">
                 <button
