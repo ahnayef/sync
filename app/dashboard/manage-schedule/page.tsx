@@ -17,6 +17,9 @@ const MOCK_PREVIEW = [
     courseCode: "CSE301",
     courseTitle: "Data Structures",
     teacher: "Dr. Rahman",
+    batch: "CSE 21",
+    section: "A",
+    dept: "CSE",
     startTime: "08:00 AM",
     endTime: "09:30 AM",
     room: "401",
@@ -29,6 +32,9 @@ const MOCK_PREVIEW = [
     courseCode: "MAT201",
     courseTitle: "Discrete Mathematics",
     teacher: "Prof. Ahmed",
+    batch: "CSE 22",
+    section: "B",
+    dept: "MAT",
     startTime: "10:00 AM",
     endTime: "11:30 AM",
     room: "302",
@@ -41,6 +47,9 @@ const MOCK_PREVIEW = [
     courseCode: "CSE315L",
     courseTitle: "OS Lab",
     teacher: "",
+    batch: "CSE 20",
+    section: "A",
+    dept: "CSE",
     startTime: "01:00 PM",
     endTime: "03:30 PM",
     room: "Lab-2",
@@ -53,6 +62,9 @@ const MOCK_PREVIEW = [
     courseCode: "CSE303",
     courseTitle: "Operating Systems",
     teacher: "Dr. Karim",
+    batch: "CSE 21",
+    section: "C",
+    dept: "CSE",
     startTime: "09:00 AM",
     endTime: "10:30 AM",
     room: "305",
@@ -65,6 +77,9 @@ const MOCK_PREVIEW = [
     courseCode: "CSE405",
     courseTitle: "Software Engineering",
     teacher: "Prof. Hassan",
+    batch: "CSE 20",
+    section: "none",
+    dept: "CSE",
     startTime: "11:00 AM",
     endTime: "12:30 PM",
     room: "201",
@@ -77,6 +92,9 @@ const MOCK_PREVIEW = [
     courseCode: "CSE311L",
     courseTitle: "Networks Lab",
     teacher: "Dr. Islam",
+    batch: "CSE 21",
+    section: "A",
+    dept: "CSE",
     startTime: "10:00 AM",
     endTime: "12:30 PM",
     room: "Lab-1",
@@ -390,6 +408,9 @@ export default function ManageSchedulePage() {
                       "Course Code",
                       "Title",
                       "Teacher",
+                      "Batch",
+                      "Sec",
+                      "Dept",
                       "Start",
                       "End",
                       "Room",
@@ -459,6 +480,15 @@ export default function ManageSchedulePage() {
                               <FiAlertCircle /> Missing
                             </span>
                           )}
+                        </td>
+                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-primary)]">
+                          {row.batch}
+                        </td>
+                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">
+                          {row.section === "none" ? "—" : row.section}
+                        </td>
+                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">
+                          {row.dept}
                         </td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">
                           {row.startTime}

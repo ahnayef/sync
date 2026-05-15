@@ -6,65 +6,57 @@ const INITIAL = [
   {
     id: 1,
     code: "CSE301",
-    title: "Data Structures",
+    name: "Data Structures",
     isLab: false,
-    credits: 3,
     dept: "CSE",
   },
   {
     id: 2,
     code: "CSE301L",
-    title: "Data Structures Lab",
+    name: "Data Structures Lab",
     isLab: true,
-    credits: 1,
     dept: "CSE",
   },
   {
     id: 3,
     code: "CSE303",
-    title: "Operating Systems",
+    name: "Operating Systems",
     isLab: false,
-    credits: 3,
     dept: "CSE",
   },
   {
     id: 4,
     code: "CSE315L",
-    title: "OS Lab",
+    name: "OS Lab",
     isLab: true,
-    credits: 1,
     dept: "CSE",
   },
   {
     id: 5,
     code: "CSE405",
-    title: "Software Engineering",
+    name: "Software Engineering",
     isLab: false,
-    credits: 3,
     dept: "CSE",
   },
   {
     id: 6,
     code: "MAT201",
-    title: "Discrete Mathematics",
+    name: "Discrete Mathematics",
     isLab: false,
-    credits: 3,
     dept: "Math",
   },
   {
     id: 7,
     code: "HUM201",
-    title: "Technical Writing",
+    name: "Technical Writing",
     isLab: false,
-    credits: 2,
     dept: "HUM",
   },
   {
     id: 8,
     code: "CSE311L",
-    title: "Networks Lab",
+    name: "Networks Lab",
     isLab: true,
-    credits: 1,
     dept: "CSE",
   },
 ];
@@ -74,34 +66,33 @@ export default function ManageCoursesPage() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [newCode, setNewCode] = useState("");
-  const [newTitle, setNewTitle] = useState("");
+  const [newName, setNewName] = useState("");
   const [newIsLab, setNewIsLab] = useState(false);
   const [filterLab, setFilterLab] = useState<"all" | "lab" | "theory">("all");
 
   const filtered = courses.filter((c) => {
     const matchSearch =
       c.code.toLowerCase().includes(search.toLowerCase()) ||
-      c.title.toLowerCase().includes(search.toLowerCase());
+      c.name.toLowerCase().includes(search.toLowerCase());
     const matchFilter =
       filterLab === "all" ? true : filterLab === "lab" ? c.isLab : !c.isLab;
     return matchSearch && matchFilter;
   });
 
   const addCourse = () => {
-    if (!newCode || !newTitle) return;
+    if (!newCode || !newName) return;
     setCourses([
       ...courses,
       {
         id: Date.now(),
         code: newCode.toUpperCase(),
-        title: newTitle,
+        name: newName,
         isLab: newIsLab,
-        credits: newIsLab ? 1 : 3,
         dept: "CSE",
       },
     ]);
     setNewCode("");
-    setNewTitle("");
+    setNewName("");
     setNewIsLab(false);
     setShowModal(false);
   };
@@ -169,7 +160,7 @@ export default function ManageCoursesPage() {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-[var(--color-bg-elevated)] border-b border-[var(--color-border)]">
-              {["Code", "Title", "Type", "Credits", "Actions"].map((h) => (
+              {["Code", "Name", "Type", "Actions"].map((h) => (
                 <th
                   key={h}
                   className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider"
@@ -195,7 +186,7 @@ export default function ManageCoursesPage() {
                 </td>
                 <td className="px-4 py-3">
                   <span className="text-sm text-[var(--color-text-primary)]">
-                    {c.title}
+                    {c.name}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -203,11 +194,6 @@ export default function ManageCoursesPage() {
                     className={`text-[11px] font-bold tracking-wider px-2 py-0.5 rounded uppercase ${c.isLab ? "text-[var(--color-lab)] bg-[rgba(163,113,247,0.1)] border-[rgba(163,113,247,0.3)]" : "text-[var(--color-text-secondary)] bg-[var(--color-bg-elevated)] border border-[var(--color-border)]"}`}
                   >
                     {c.isLab ? "Lab" : "Theory"}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm text-[var(--color-text-secondary)]">
-                    {c.credits} cr
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -265,16 +251,16 @@ export default function ManageCoursesPage() {
               </div>
               <div>
                 <label
-                  htmlFor="modal-course-title"
+                  htmlFor="modal-course-name"
                   className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2"
                 >
-                  Course Title
+                  Course Name
                 </label>
                 <input
-                  id="modal-course-title"
+                  id="modal-course-name"
                   type="text"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
                   placeholder="e.g. Compiler Design"
                   className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
                 />
