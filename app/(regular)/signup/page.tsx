@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { FcGoogle } from "react-icons/fc";
+import AuthButtons from "@/components/AuthButtons";
 
 export const metadata: Metadata = {
   title: "Sign up",
@@ -47,14 +47,7 @@ export default function SignupPage() {
           </p>
 
           <div className="flex flex-col gap-4">
-            <button
-              id="signup-google"
-              type="button"
-              className="inline-flex items-center justify-center gap-3 rounded-[9px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-[13px] text-[15px] font-semibold text-[var(--color-text-primary)] shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition-all duration-200 hover:border-[var(--color-accent)] hover:bg-[rgba(79,142,247,0.06)] hover:shadow-[0_14px_34px_rgba(0,0,0,0.22)] active:scale-[0.99]"
-            >
-              <FcGoogle className="text-2xl" />
-              Continue with Google
-            </button>
+            <AuthButtons isSignup />
 
             <div className="rounded-[14px] border border-[var(--color-border)] bg-[rgba(79,142,247,0.05)] px-4 py-3 text-sm text-[var(--color-text-secondary)]">
               Students sign up with Google only. If you are an admin, use the
