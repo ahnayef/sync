@@ -3,12 +3,12 @@
 import { useState } from "react";
 
 const INITIAL = [
-  { id: 1, name: "Dr. Aminur Rahman", email: "aminur@loop.edu", dept: "CSE", designation: "Professor" },
-  { id: 2, name: "Prof. Shahidul Ahmed", email: "shahidul@loop.edu", dept: "MAT", designation: "Professor" },
-  { id: 3, name: "Dr. Karim Hossain", email: "karim@loop.edu", dept: "CSE", designation: "Associate Professor" },
-  { id: 4, name: "Ms. Fatima Begum", email: "fatima@loop.edu", dept: "ENG", designation: "Lecturer" },
-  { id: 5, name: "Prof. Hassan Ali", email: "hassan@loop.edu", dept: "EEE", designation: "Professor" },
-  { id: 6, name: "Ms. Parvin Akter", email: "parvin@loop.edu", dept: "BBA", designation: "Lecturer" },
+  { id: 1, name: "Dr. Aminur Rahman", short: "DR. RAHMAN", dept: "CSE" },
+  { id: 2, name: "Prof. Shahidul Ahmed", short: "PROF. AHMED", dept: "MAT" },
+  { id: 3, name: "Dr. Karim Hossain", short: "DR. KARIM", dept: "CSE" },
+  { id: 4, name: "Ms. Fatima Begum", short: "MS. FATIMA", dept: "ENG" },
+  { id: 5, name: "Prof. Hassan Ali", short: "PROF. HASSAN", dept: "EEE" },
+  { id: 6, name: "Ms. Parvin Akter", short: "MS. PARVIN", dept: "BBA" },
 ];
 
 export default function ManageTeachersPage() {
@@ -17,34 +17,30 @@ export default function ManageTeachersPage() {
   const [showModal, setShowModal] = useState(false);
   
   const [newName, setNewName] = useState("");
-  const [newEmail, setNewEmail] = useState("");
+  const [newShort, setNewShort] = useState("");
   const [newDept, setNewDept] = useState("");
-  const [newDesignation, setNewDesignation] = useState("");
 
   const filtered = teachers.filter(
     (t) =>
       t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.email.toLowerCase().includes(search.toLowerCase()) ||
-      t.dept.toLowerCase().includes(search.toLowerCase()) ||
-      t.designation.toLowerCase().includes(search.toLowerCase())
+      t.short.toLowerCase().includes(search.toLowerCase()) ||
+      t.dept.toLowerCase().includes(search.toLowerCase())
   );
 
   const addTeacher = () => {
-    if (!newName || !newEmail || !newDept) return;
+    if (!newName || !newShort) return;
     setTeachers([
       ...teachers, 
       { 
         id: Date.now(), 
         name: newName, 
-        email: newEmail, 
+        short: newShort.toUpperCase(), 
         dept: newDept.toUpperCase(), 
-        designation: newDesignation 
       }
     ]);
     setNewName(""); 
-    setNewEmail(""); 
+    setNewShort(""); 
     setNewDept(""); 
-    setNewDesignation(""); 
     setShowModal(false);
   };
   
@@ -79,7 +75,7 @@ export default function ManageTeachersPage() {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-[var(--color-bg-elevated)] border-b border-[var(--color-border)]">
-              {["Name", "Designation", "Department", "Email", "Actions"].map((h) => (
+              {["Name", "Short Form", "Department", "Actions"].map((h) => (
                 <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">{h}</th>
               ))}
             </tr>
@@ -94,13 +90,10 @@ export default function ManageTeachersPage() {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="text-sm text-[var(--color-text-secondary)]">{t.designation || "—"}</span>
+                  <code className="text-xs font-semibold text-[var(--color-accent)] bg-[var(--color-accent-muted)] px-2 py-0.5 rounded">{t.short}</code>
                 </td>
                 <td className="px-4 py-3">
-                  <code className="text-xs font-semibold text-[#a371f7] bg-[rgba(163,113,247,0.1)] px-2 py-0.5 rounded">{t.dept}</code>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm text-[var(--color-text-secondary)]">{t.email}</span>
+                  <code className="text-xs font-semibold text-[#a371f7] bg-[rgba(163,113,247,0.1)] px-2 py-0.5 rounded">{t.dept || "—"}</code>
                 </td>
                 <td className="px-4 py-3 w-[160px]">
                   <div className="flex gap-2">
@@ -112,7 +105,7 @@ export default function ManageTeachersPage() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
+                <td colSpan={4} className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
                   No teachers found.
                 </td>
               </tr>
@@ -130,18 +123,14 @@ export default function ManageTeachersPage() {
                 <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Full Name</label>
                 <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Dr. Jane Smith" className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Email Address</label>
-                <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="e.g. jane.smith@loop.edu" className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" />
-              </div>
               <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Short Form (Unique)</label>
+                  <input type="text" value={newShort} onChange={(e) => setNewShort(e.target.value)} placeholder="e.g. DR. SMITH" className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Department</label>
                   <input type="text" value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="e.g. CSE" className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Designation</label>
-                  <input type="text" value={newDesignation} onChange={(e) => setNewDesignation(e.target.value)} placeholder="e.g. Professor" className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" />
                 </div>
               </div>
               <div className="flex gap-3 mt-4">

@@ -31,9 +31,8 @@ CREATE TABLE `departments` (
 CREATE TABLE `teachers` (
   `id`            int          PRIMARY KEY AUTO_INCREMENT,
   `name`          varchar(255) NOT NULL,
-  `email`         varchar(255) UNIQUE,
+  `short`         varchar(50)  UNIQUE NOT NULL,
   `department_id` int,
-  `designation`   varchar(255),
   `created_at`    timestamp    DEFAULT CURRENT_TIMESTAMP,
   `updated_at`    timestamp    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`) ON DELETE SET NULL
