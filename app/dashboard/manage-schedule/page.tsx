@@ -23,6 +23,8 @@ export default function ManageSchedulePage() {
   const [step, setStep] = useState<ImportStep>("upload");
   const [dragging, setDragging] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [googleUrl, setGoogleUrl] = useState("");
+  const [loadingSheet, setLoadingSheet] = useState(false);
   const [rows, setRows] = useState(MOCK_PREVIEW);
   const [fixingId, setFixingId] = useState<number | null>(null);
 
@@ -39,6 +41,25 @@ export default function ManageSchedulePage() {
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) { setFileName(file.name); setTimeout(() => setStep("preview"), 800); }
+  };
+
+  const handleLoadGoogleSheet = () => {
+    if (!googleUrl.trim()) return alert("Enter a Google Sheet link or ID");
+    // Try to extract a sheet ID from the provided URL (or accept raw ID)
+    const idMatch = googleUrl.match(/[A-Za-z0-9-_]{44,}/) || googleUrl.match(/[A-Za-z0-9-_]{20,}/);
+    const sheetId = idMatch ? idMatch[0] : null;
+    if (!sheetId) return alert("Couldn't find a valid Google Sheet ID in that input.");
+
+    setLoadingSheet(true);
+    setFileName(`Google Sheet • ${sheetId}`);
+
+    // Simulate network fetch and parsing delay, then show preview
+    setTimeout(() => {
+      // For now reuse MOCK_PREVIEW; in real use we'd fetch via server proxy
+      setRows(MOCK_PREVIEW);
+      setLoadingSheet(false);
+      setStep("preview");
+    }, 900);
   };
 
   return (
@@ -115,6 +136,25 @@ export default function ManageSchedulePage() {
             Need a template?{" "}
             <a href="#" style={{ color: "var(--color-accent)", textDecoration: "none" }}>Download sample file</a>
           </p>
+
+          {/* Google Sheet loader */}
+          <div style={{ marginTop: "18px", display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+            <input
+              aria-label="Google Sheet URL"
+              placeholder="Paste Google Sheet link or ID"
+              value={googleUrl}
+              onChange={(e) => setGoogleUrl(e.target.value)}
+              style={{ minWidth: "260px", flex: "1", padding: "9px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-bg-elevated)", color: "var(--color-text-primary)" }}
+            />
+            <button
+              id="load-google-sheet"
+              onClick={handleLoadGoogleSheet}
+              disabled={loadingSheet}
+              style={{ padding: "9px 14px", borderRadius: "8px", border: "none", background: loadingSheet ? "rgba(79,142,247,0.16)" : "linear-gradient(135deg, #4f8ef7, #6f6bf7)", color: "white", fontWeight: 600, cursor: loadingSheet ? "wait" : "pointer" }}
+            >
+              {loadingSheet ? "Loading…" : "Load from Google Sheet"}
+            </button>
+          </div>
         </div>
       )}
 
