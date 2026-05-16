@@ -77,23 +77,46 @@ export const authOptions: AuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         // If they just logged in, 'user' is present.
         token.id = user.id;
       }
-      if (token.email) {
+      
+      // When update() is called from the client
+      if (trigger === "update" && session) {
+        if (session.name) token.name = session.name;
+        if (session.email) token.email = session.email;
+      }
+
+      if (token.id) {
         try {
           const [rows] = await db.execute<RowDataPacket[]>(
-            "SELECT id, role FROM users WHERE email = ?",
-            [token.email]
+            "SELECT id, role, name, email FROM users WHERE id = ?",
+            [String(token.id)]
+          );
+          if (rows.length > 0) {
+            token.role = rows[0].role;
+            token.name = rows[0].name;
+            token.email = rows[0].email;
+          }
+        } catch (error) {
+          console.error("Error fetching user for jwt by id:", error);
+        }
+      } else if (token.email) {
+        try {
+          const [rows] = await db.execute<RowDataPacket[]>(
+            "SELECT id, role, name, email FROM users WHERE email = ?",
+            [String(token.email)]
           );
           if (rows.length > 0) {
             token.role = rows[0].role;
             token.id = rows[0].id;
+            token.name = rows[0].name;
+            token.email = rows[0].email;
           }
         } catch (error) {
-          console.error("Error fetching user for jwt:", error);
+          console.error("Error fetching user for jwt by email:", error);
         }
       }
       return token;
@@ -102,6 +125,8 @@ export const authOptions: AuthOptions = {
       if (session.user) {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
+        session.user.name = token.name;
+        session.user.email = token.email;
       }
       return session;
     },

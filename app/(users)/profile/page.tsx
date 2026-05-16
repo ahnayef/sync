@@ -12,6 +12,10 @@ export default function ProfilePage() {
   const [role, setRole] = useState("student");
   const [studentId, setStudentId] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  
+  const [updateError, setUpdateError] = useState("");
+  const [updateSuccess, setUpdateSuccess] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -30,9 +34,45 @@ export default function ProfilePage() {
     }
   }, [session]);
 
-  const handleSave = () => {
-    // In a real app, this would make an API call
-    setEditing(false);
+  const handleSave = async () => {
+    setUpdateError("");
+    setUpdateSuccess("");
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, studentId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update profile");
+      
+      setUpdateSuccess("Profile updated successfully!");
+      setEditing(false);
+      // We also update the NextAuth session so the UI catches the new name/email
+      update({ name, email });
+    } catch (err: any) {
+      setUpdateError(err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you absolutely sure? This action cannot be undone and will permanently delete your account.")) return;
+    
+    try {
+      const res = await fetch("/api/profile", { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to delete account");
+      }
+      
+      // Logout and redirect to home
+      window.location.href = "/api/auth/signout?callbackUrl=/";
+    } catch (err: any) {
+      alert(err.message);
+    }
   };
 
   const handlePasswordChange = async () => {
@@ -141,6 +181,9 @@ export default function ProfilePage() {
           <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-6">
             Personal Information
           </h3>
+          {updateError && <div className="mb-4 text-sm text-[var(--color-danger)] bg-[rgba(248,81,73,0.1)] p-3 rounded-md border border-[rgba(248,81,73,0.2)]">{updateError}</div>}
+          {updateSuccess && <div className="mb-4 text-sm text-[#3fb950] bg-[rgba(63,185,80,0.1)] p-3 rounded-md border border-[rgba(63,185,80,0.2)]">{updateSuccess}</div>}
+          
           <div className="flex flex-col gap-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
@@ -198,9 +241,10 @@ export default function ProfilePage() {
               <button
                 id="profile-save"
                 onClick={handleSave}
-                className="mt-2 w-max px-5 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
+                disabled={isSaving}
+                className="mt-2 w-max px-5 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Save changes
+                {isSaving ? "Saving..." : "Save changes"}
               </button>
             )}
           </div>
@@ -283,6 +327,7 @@ export default function ProfilePage() {
           </div>
           <button
             id="profile-delete-account"
+            onClick={handleDelete}
             className="shrink-0 px-4 py-2.5 rounded-lg border border-[rgba(248,81,73,0.4)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-sm font-semibold cursor-pointer transition-all hover:bg-[rgba(248,81,73,0.15)] active:scale-95"
           >
             Delete account
