@@ -227,6 +227,9 @@ export default function ProfilePage() {
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
               />
+              <p className="mt-1.5 text-[11px] text-[var(--color-text-muted)]">
+                Leave blank if you registered with Google and haven't set a password yet.
+              </p>
             </div>
 
             <div>
