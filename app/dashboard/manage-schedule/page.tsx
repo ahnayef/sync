@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import {
   FiBarChart2,
   FiArrowLeft,
   FiArrowRight,
   FiAlertCircle,
   FiEdit2,
-  FiTrash2,
   FiPlus,
   FiDownloadCloud,
   FiSearch,
@@ -30,6 +29,56 @@ export type ScheduleRow = {
   room: string;
   isLab?: boolean;
   status: "ok" | "warning" | "error";
+};
+
+type DepartmentOption = {
+  id: number;
+  name: string;
+  fullName?: string;
+};
+
+type ImportScheduleRow = {
+  clientId: string;
+  sourceRow: number;
+  sourceColumn: number;
+  start_time: string;
+  end_time: string;
+  day: "sunday" | "monday" | "tuesday" | "wednesday" | "thursday";
+  section: string;
+  course_code: string;
+  teacher_short_name: string;
+  batch: string;
+  room_number: number | null;
+  status: "ok" | "warning" | "error";
+  errors: string[];
+  warnings: string[];
+  department_id: number | null;
+  course_id: number | null;
+  teacher_id: number | null;
+  batch_id: number | null;
+  room_id: number | null;
+  course_name: string | null;
+  teacher_name: string | null;
+  room_label: string | null;
+  is_lab: boolean;
+};
+
+type ScheduleApiRow = {
+  id: number;
+  day: string;
+  section: string;
+  start_time: string;
+  end_time: string;
+  course_code: string | null;
+  course_name: string | null;
+  is_lab: number | boolean | null;
+  teacher_short: string | null;
+  teacher_name: string | null;
+  batch_name: string | null;
+  batch_session: string | null;
+  department_name: string | null;
+  room_number: number | null;
+  room_title: string | null;
 };
 
 const MOCK_DATA: ScheduleRow[] = [
@@ -80,25 +129,6 @@ const MOCK_DATA: ScheduleRow[] = [
   },
 ];
 
-const MOCK_IMPORT: ScheduleRow[] = [
-  ...MOCK_DATA,
-  {
-    id: 4,
-    day: "Monday",
-    courseCode: "CSE303",
-    courseTitle: "Operating Systems",
-    teacher: "",
-    batch: "CSE 21",
-    section: "C",
-    dept: "CSE",
-    startTime: "09:00 AM",
-    endTime: "10:30 AM",
-    room: "305",
-    isLab: false,
-    status: "error",
-  },
-];
-
 const STATUS_CONFIG = {
   ok: {
     color: "var(--color-success)",
@@ -141,21 +171,41 @@ const BATCHES = [
   { name: "EEE 09", dept: "EEE" },
 ];
 const ROOMS = ["401", "402", "305", "Lab-1", "Lab-2", "Seminar Hall"];
-const TIMES = [
-  "08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
-  "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM"
-];
 
-function SearchableSelect({
+type CourseOption = (typeof COURSES)[number];
+type TeacherOption = (typeof TEACHERS)[number];
+type BatchOption = (typeof BATCHES)[number];
+
+type SearchableSelectProps<T> = {
+  label: string;
+  options: T[];
+  value: T | null | undefined | "";
+  onChange: (value: T) => void;
+  placeholder: string;
+  displayValue?: (value: T) => ReactNode;
+  searchKey?: (value: T) => string;
+  renderOption?: (value: T) => ReactNode;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getComparableKey(value: unknown) {
+  if (!isRecord(value)) return null;
+  return value.id || value.code || value.short || value.name || null;
+}
+
+function SearchableSelect<T>({
   label,
   options,
   value,
   onChange,
   placeholder,
-  displayValue = (val: any) => val,
-  searchKey = (val: any) => val,
-  renderOption = (val: any) => val
-}: any) {
+  displayValue = (val) => String(val),
+  searchKey = (val) => String(val),
+  renderOption = (val) => String(val)
+}: SearchableSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -170,9 +220,12 @@ function SearchableSelect({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredOptions = options.filter((opt: any) =>
+  const filteredOptions = options.filter((opt) =>
     searchKey(opt).toLowerCase().includes(search.toLowerCase())
   );
+
+  const hasValue = value !== null && value !== undefined && value !== "";
+  const selectedDisplay = hasValue ? displayValue(value as T) : placeholder;
 
   return (
     <div className="relative" ref={containerRef}>
@@ -181,8 +234,8 @@ function SearchableSelect({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] cursor-pointer transition-all ${isOpen ? "ring-2 ring-[var(--color-accent)] border-[var(--color-accent)]" : "hover:border-[var(--color-text-muted)]"}`}
       >
-        <span className={`text-sm ${value !== null && value !== undefined && value !== "" ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"}`}>
-          {(value !== null && value !== undefined && value !== "") ? displayValue(value) : placeholder}
+        <span className={`text-sm ${hasValue ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"}`}>
+          {selectedDisplay}
         </span>
         <FiChevronDown className={`text-[var(--color-text-muted)] transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </div>
@@ -204,7 +257,7 @@ function SearchableSelect({
           </div>
           <div className="max-h-[200px] overflow-y-auto p-1 custom-scrollbar">
             {filteredOptions.length > 0 ? (
-              filteredOptions.map((opt: any, idx: number) => (
+              filteredOptions.map((opt, idx) => (
                 <div
                   key={idx}
                   onClick={() => {
@@ -214,13 +267,9 @@ function SearchableSelect({
                   }}
                   className={`px-3 py-2 rounded-md text-sm cursor-pointer transition-colors ${(() => {
                     if (value === null || value === undefined) return false;
-                    if (typeof value === 'object' && typeof opt === 'object') {
-                      // Compare by id, code, or short name for robust object matching
-                      return (value.id && value.id === opt.id) ||
-                        (value.code && value.code === opt.code) ||
-                        (value.short && value.short === opt.short) ||
-                        (JSON.stringify(value) === JSON.stringify(opt));
-                    }
+                    const valueKey = getComparableKey(value);
+                    const optionKey = getComparableKey(opt);
+                    if (valueKey !== null && optionKey !== null) return valueKey === optionKey;
                     return value === opt;
                   })()
                     ? "bg-[var(--color-accent-muted)] text-[var(--color-accent)] font-medium"
@@ -240,11 +289,45 @@ function SearchableSelect({
   );
 }
 
+function displayDay(day: string) {
+  return day.charAt(0).toUpperCase() + day.slice(1);
+}
+
+function displayTime(time: string) {
+  const [hourText, minuteText] = time.slice(0, 5).split(":");
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  if (Number.isNaN(hour) || Number.isNaN(minute)) return time;
+  const period = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+  return `${hour12.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")} ${period}`;
+}
+
+function mapScheduleApiRow(row: ScheduleApiRow): ScheduleRow {
+  return {
+    id: row.id,
+    day: displayDay(row.day || ""),
+    courseCode: row.course_code || "Unknown",
+    courseTitle: row.course_name || "Untitled course",
+    teacher: row.teacher_short || row.teacher_name || "",
+    batch: row.batch_name || row.batch_session || "",
+    section: row.section || "none",
+    dept: row.department_name || "",
+    startTime: displayTime(row.start_time || "00:00"),
+    endTime: displayTime(row.end_time || "00:00"),
+    room: row.room_number ? String(row.room_number) : row.room_title || "",
+    isLab: Boolean(row.is_lab),
+    status: "ok",
+  };
+}
+
 export default function ManageSchedulePage() {
   const [step, setStep] = useState<ViewMode>("list");
 
   // List View State
   const [schedules, setSchedules] = useState(MOCK_DATA);
+  const [departments, setDepartments] = useState<DepartmentOption[]>([]);
+  const [listLoading, setListLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
   const [showEditModal, setShowEditModal] = useState(false);
@@ -254,17 +337,17 @@ export default function ManageSchedulePage() {
   const [editData, setEditData] = useState({
     day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: "", startTime: "08:00 AM", endTime: "09:30 AM", room: ""
   });
-  const [formError, setFormError] = useState("");
-  const [formWarning, setFormWarning] = useState("");
 
   // Import Wizard State
   const [dragging, setDragging] = useState(false);
   const [fileName, setFileName] = useState("");
   const [googleUrl, setGoogleUrl] = useState("");
   const [loadingSheet, setLoadingSheet] = useState(false);
-  const [importRows, setImportRows] = useState<ScheduleRow[]>(MOCK_IMPORT);
+  const [importRows, setImportRows] = useState<ImportScheduleRow[]>([]);
   const [selectedImportDept, setSelectedImportDept] = useState("CSE");
   const [fixingId, setFixingId] = useState<number | null>(null);
+  const [importError, setImportError] = useState("");
+  const [appliedCount, setAppliedCount] = useState(0);
 
   const timeToMinutes = (timeStr: string) => {
     if (!timeStr) return 0;
@@ -276,7 +359,7 @@ export default function ManageSchedulePage() {
     // Handle AM/PM format (08:00 AM)
     const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
     if (!match) return 0;
-    let [_, hours, minutes, period] = match;
+    const [, hours, minutes, period] = match;
     let h = parseInt(hours);
     const m = parseInt(minutes);
     if (period.toUpperCase() === "PM" && h !== 12) h += 12;
@@ -296,37 +379,96 @@ export default function ManageSchedulePage() {
     if (!time12) return "08:00";
     const match = time12.match(/(\d+):(\d+)\s*(AM|PM)/i);
     if (!match) return "08:00";
-    let [_, h, m, period] = match;
+    const [, h, m, period] = match;
     let hours = parseInt(h);
     if (period.toUpperCase() === "PM" && hours !== 12) hours += 12;
     if (period.toUpperCase() === "AM" && hours === 12) hours = 0;
     return `${hours.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
   };
 
-  const validateTimes = (start: string, end: string) => {
-    setFormError("");
-    setFormWarning("");
+  const departmentNames = departments.length > 0 ? departments.map((dept) => dept.name) : DEPARTMENTS;
+  const selectedImportDepartment = departments.find((dept) => dept.name === selectedImportDept);
+
+  const loadSchedules = async () => {
+    setListLoading(true);
+    try {
+      const res = await fetch("/api/schedules", { cache: "no-store" });
+      if (!res.ok) throw new Error("Could not load schedules");
+      const rows = await res.json();
+      setSchedules((rows as ScheduleApiRow[]).map(mapScheduleApiRow));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setListLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const [departmentRes, scheduleRes] = await Promise.all([
+          fetch("/api/departments", { cache: "no-store" }),
+          fetch("/api/schedules", { cache: "no-store" }),
+        ]);
+        if (departmentRes.ok) {
+          const rows = (await departmentRes.json()) as DepartmentOption[];
+          setDepartments(rows);
+          if (rows.length > 0) {
+            setSelectedImportDept((current) =>
+              rows.some((dept) => dept.name === current) ? current : rows[0].name
+            );
+          }
+        }
+        if (scheduleRes.ok) {
+          const rows = (await scheduleRes.json()) as ScheduleApiRow[];
+          setSchedules(rows.map(mapScheduleApiRow));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadInitialData();
+  }, []);
+
+  const getTimeValidation = (start: string, end: string) => {
     const startMin = timeToMinutes(start);
     const endMin = timeToMinutes(end);
 
     if (endMin <= startMin) {
-      setFormError("End time must be after start time");
-      return false;
+      return { error: "End time must be after start time", warning: "" };
     }
 
     if (endMin - startMin > 180) {
-      setFormWarning("Class duration exceeds 3 hours. Please verify.");
+      return { error: "", warning: "Class duration exceeds 3 hours. Please verify." };
     }
-    return true;
+    return { error: "", warning: "" };
   };
 
-  useEffect(() => {
-    validateTimes(editData.startTime, editData.endTime);
-  }, [editData.startTime, editData.endTime]);
+  const { error: formError, warning: formWarning } = getTimeValidation(editData.startTime, editData.endTime);
 
   const errorCount = importRows.filter((r) => r.status === "error").length;
   const warnCount = importRows.filter((r) => r.status === "warning").length;
   const okCount = importRows.filter((r) => r.status === "ok").length;
+
+  const previewImport = async ({ file, googleSheet }: { file?: File; googleSheet?: string }) => {
+    setImportError("");
+    const formData = new FormData();
+    formData.append("action", "preview");
+    formData.append("departmentName", selectedImportDept);
+    if (selectedImportDepartment) formData.append("departmentId", String(selectedImportDepartment.id));
+    if (file) formData.append("file", file);
+    if (googleSheet) formData.append("googleSheet", googleSheet);
+
+    const res = await fetch("/api/schedules/import", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Could not parse schedule");
+    setImportRows(data.rows || []);
+    setStep("preview");
+  };
 
   // --- List View Methods ---
   const filteredSchedules = schedules.filter(s => {
@@ -337,7 +479,7 @@ export default function ManageSchedulePage() {
     return matchesSearch && matchesDept;
   });
 
-  const openEditModal = (schedule: any) => {
+  const openEditModal = (schedule: ScheduleRow) => {
     setEditingId(schedule.id);
     setEditData({ ...schedule });
     setShowEditModal(true);
@@ -361,25 +503,39 @@ export default function ManageSchedulePage() {
   };
 
   // --- Import Wizard Methods ---
-  const handleFileDrop = (e: React.DragEvent) => {
+  const handleFileDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
     const file = e.dataTransfer.files[0];
     if (file) {
       setFileName(file.name);
-      setTimeout(() => setStep("preview"), 800);
+      setLoadingSheet(true);
+      try {
+        await previewImport({ file });
+      } catch (error) {
+        setImportError(error instanceof Error ? error.message : "Could not parse schedule");
+      } finally {
+        setLoadingSheet(false);
+      }
     }
   };
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFileName(file.name);
-      setTimeout(() => setStep("preview"), 800);
+      setLoadingSheet(true);
+      try {
+        await previewImport({ file });
+      } catch (error) {
+        setImportError(error instanceof Error ? error.message : "Could not parse schedule");
+      } finally {
+        setLoadingSheet(false);
+      }
     }
   };
 
-  const handleLoadGoogleSheet = () => {
+  const handleLoadGoogleSheet = async () => {
     if (!googleUrl.trim()) return alert("Enter a Google Sheet link or ID");
     const idMatch = googleUrl.match(/[A-Za-z0-9-_]{44,}/) || googleUrl.match(/[A-Za-z0-9-_]{20,}/);
     const sheetId = idMatch ? idMatch[0] : null;
@@ -388,19 +544,38 @@ export default function ManageSchedulePage() {
     setLoadingSheet(true);
     setFileName(`Google Sheet • ${sheetId}`);
 
-    setTimeout(() => {
-      setImportRows(MOCK_IMPORT);
+    try {
+      await previewImport({ googleSheet: googleUrl });
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : "Could not load Google Sheet");
+    } finally {
       setLoadingSheet(false);
-      setStep("preview");
-    }, 900);
+    }
   };
 
-  const finalizeImport = () => {
-    const validRows = importRows.filter(r => r.status === "ok").map(r => ({
-      ...r,
-      dept: selectedImportDept
-    }));
-    setSchedules([...schedules, ...validRows]);
+  const finalizeImport = async () => {
+    setImportError("");
+    const formData = new FormData();
+    formData.append("action", "apply");
+    formData.append("departmentName", selectedImportDept);
+    if (selectedImportDepartment) formData.append("departmentId", String(selectedImportDepartment.id));
+    formData.append("rows", JSON.stringify(importRows));
+
+    const res = await fetch("/api/schedules/import", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setImportRows(data.rows || importRows);
+      setImportError(data.error || "Could not apply schedule");
+      if (data.rows) setStep("preview");
+      return;
+    }
+
+    setAppliedCount(data.inserted || okCount);
+    await loadSchedules();
     setStep("done");
   };
 
@@ -416,7 +591,7 @@ export default function ManageSchedulePage() {
                 Schedule Management
               </h1>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                {schedules.length} classes scheduled
+                {listLoading ? "Loading schedules..." : `${schedules.length} classes scheduled`}
               </p>
             </div>
             <div className="flex gap-3">
@@ -424,8 +599,6 @@ export default function ManageSchedulePage() {
                 onClick={() => {
                   setEditingId(null);
                   setEditData({ day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: selectedDept === "All" ? "CSE" : selectedDept, startTime: "08:00", endTime: "09:30", room: "" });
-                  setFormError("");
-                  setFormWarning("");
                   setShowEditModal(true);
                 }}
                 className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)]"
@@ -455,7 +628,7 @@ export default function ManageSchedulePage() {
 
             <div className="flex gap-2">
               <span className="text-sm font-medium text-[var(--color-text-secondary)] self-center mr-1">Dept:</span>
-              {["All", ...DEPARTMENTS].map(dept => (
+              {["All", ...departmentNames].map(dept => (
                 <button
                   key={dept}
                   onClick={() => setSelectedDept(dept)}
@@ -516,7 +689,7 @@ export default function ManageSchedulePage() {
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <button onClick={() => openEditModal(row)} className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm transition-colors hover:bg-[var(--color-bg-elevated)]">Edit</button>
-                          <button onClick={() => setSchedules(schedules.filter(s => s.id !== row.id))} className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]">Delete</button>
+                          <button onClick={async () => { await fetch(`/api/schedules?id=${row.id}`, { method: "DELETE" }); setSchedules(schedules.filter(s => s.id !== row.id)); }} className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]">Delete</button>
                         </div>
                       </td>
                     </tr>
@@ -547,7 +720,7 @@ export default function ManageSchedulePage() {
                   <div className="col-span-2">
                     <SearchableSelect
                       label="Department"
-                      options={DEPARTMENTS}
+                      options={departmentNames}
                       value={editData.dept}
                       onChange={(dept: string) => setEditData({ ...editData, dept, batch: "", courseCode: "", courseTitle: "" })}
                       placeholder="Select Department"
@@ -559,11 +732,11 @@ export default function ManageSchedulePage() {
                       label="Course"
                       options={COURSES.filter(c => c.dept === editData.dept)}
                       value={editData.courseCode ? COURSES.find(c => c.code === editData.courseCode) : null}
-                      onChange={(c: any) => setEditData({ ...editData, courseCode: c.code, courseTitle: c.title })}
+                      onChange={(c: CourseOption) => setEditData({ ...editData, courseCode: c.code, courseTitle: c.title })}
                       placeholder="Select Course"
-                      displayValue={(c: any) => `${c.code} — ${c.title}`}
-                      searchKey={(c: any) => `${c.code} ${c.title}`}
-                      renderOption={(c: any) => (
+                      displayValue={(c: CourseOption) => `${c.code} — ${c.title}`}
+                      searchKey={(c: CourseOption) => `${c.code} ${c.title}`}
+                      renderOption={(c: CourseOption) => (
                         <div className="flex flex-col">
                           <span className="font-semibold text-xs">{c.code}</span>
                           <span className="text-[11px] opacity-70">{c.title}</span>
@@ -577,11 +750,11 @@ export default function ManageSchedulePage() {
                       label="Teacher"
                       options={TEACHERS}
                       value={editData.teacher ? TEACHERS.find(t => t.short === editData.teacher) : null}
-                      onChange={(t: any) => setEditData({ ...editData, teacher: t.short })}
+                      onChange={(t: TeacherOption) => setEditData({ ...editData, teacher: t.short })}
                       placeholder="Select Teacher"
-                      displayValue={(t: any) => t.short}
-                      searchKey={(t: any) => `${t.short} ${t.name}`}
-                      renderOption={(t: any) => (
+                      displayValue={(t: TeacherOption) => t.short}
+                      searchKey={(t: TeacherOption) => `${t.short} ${t.name}`}
+                      renderOption={(t: TeacherOption) => (
                         <div className="flex flex-col">
                           <span className="font-medium text-xs">{t.short}</span>
                           <span className="text-[11px] opacity-70">{t.name}</span>
@@ -595,11 +768,11 @@ export default function ManageSchedulePage() {
                       label="Batch"
                       options={BATCHES.filter(b => b.dept === editData.dept)}
                       value={editData.batch ? BATCHES.find(b => b.name === editData.batch) : null}
-                      onChange={(b: any) => setEditData({ ...editData, batch: b.name })}
+                      onChange={(b: BatchOption) => setEditData({ ...editData, batch: b.name })}
                       placeholder="Select Batch"
-                      displayValue={(b: any) => b.name}
-                      searchKey={(b: any) => b.name}
-                      renderOption={(b: any) => <span>{b.name}</span>}
+                      displayValue={(b: BatchOption) => b.name}
+                      searchKey={(b: BatchOption) => b.name}
+                      renderOption={(b: BatchOption) => <span>{b.name}</span>}
                     />
                   </div>
 
@@ -721,7 +894,7 @@ export default function ManageSchedulePage() {
         <div id="schedule-drop-zone" onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={handleFileDrop} className={`rounded-2xl border-2 border-dashed px-10 py-24 text-center transition-all duration-200 ${dragging ? "border-[#4f8ef7] bg-[rgba(79,142,247,0.08)] shadow-[inset_0_0_24px_rgba(79,142,247,0.1)]" : "border-[var(--color-border)] bg-[var(--color-bg-surface)] hover:border-[var(--color-accent)] hover:bg-[rgba(79,142,247,0.02)]"}`}>
           <div className="mb-5"><FiBarChart2 className="inline text-3xl text-[var(--color-text-muted)] mb-5" /></div>
           <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2.5">Drop your schedule file here</h2>
-          <p className="text-sm text-[var(--color-text-secondary)] mb-8">Supports .xlsx, .xls, .csv files. Max size 10MB.</p>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-8">{loadingSheet ? "Parsing schedule and checking database records..." : "Supports .xlsx, .xls, .csv files. Max size 10MB."}</p>
           <label htmlFor="schedule-file-input" className="inline-flex items-center gap-2 px-7 py-3 rounded-[10px] cursor-pointer text-base font-semibold text-white bg-[var(--color-accent)] shadow-[0_10px_24px_rgba(79,142,247,0.18)] hover:bg-[#5d95f7] hover:shadow-[0_14px_30px_rgba(79,142,247,0.22)] transition-all duration-200 active:scale-95">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg> Browse file
           </label>
@@ -732,7 +905,7 @@ export default function ManageSchedulePage() {
             <div className="w-full max-w-[400px]">
               <SearchableSelect
                 label="Import for Department"
-                options={DEPARTMENTS}
+                options={departmentNames}
                 value={selectedImportDept}
                 onChange={setSelectedImportDept}
                 placeholder="Select Department"
@@ -749,6 +922,12 @@ export default function ManageSchedulePage() {
                 )}
               </button>
             </div>
+
+            {importError && (
+              <div className="w-full max-w-[620px] p-3 rounded-lg border border-[rgba(248,81,73,0.25)] bg-[rgba(248,81,73,0.06)] text-[var(--color-danger)] text-sm font-medium">
+                {importError}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -787,33 +966,38 @@ export default function ManageSchedulePage() {
                   {importRows.map((row, i) => {
                     const sc = STATUS_CONFIG[row.status];
                     return (
-                      <tr key={row.id} className={`${i < importRows.length - 1 ? "border-b border-[var(--color-border)]" : ""} ${row.status === "error" ? "bg-[rgba(248,81,73,0.02)]" : "bg-[var(--color-bg-surface)]"}`}>
-                        <td className="px-3.5 py-3"><span style={{ color: sc.color, background: sc.bg, borderColor: sc.border }} className="text-[11px] font-semibold px-2.5 py-1 border rounded-lg inline-block">{sc.label}</span></td>
-                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.day}</td>
+                      <tr key={row.clientId} className={`${i < importRows.length - 1 ? "border-b border-[var(--color-border)]" : ""} ${row.status === "error" ? "bg-[rgba(248,81,73,0.02)]" : "bg-[var(--color-bg-surface)]"}`}>
+                        <td className="px-3.5 py-3 align-top">
+                          <span style={{ color: sc.color, background: sc.bg, borderColor: sc.border }} className="text-[11px] font-semibold px-2.5 py-1 border rounded-lg inline-block">{sc.label}</span>
+                          {(row.errors.length > 0 || row.warnings.length > 0) && (
+                            <div className="mt-2 max-w-[220px] text-[11px] leading-relaxed text-[var(--color-danger)]">
+                              {[...row.errors, ...row.warnings].join(" ")}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{displayDay(row.day)}</td>
                         <td className="px-3.5 py-3">
                           {(() => {
-                            const isLab = COURSES.find(c => c.code === row.courseCode)?.isLab || row.isLab;
                             return (
-                              <code className={`text-[11px] font-bold px-1.5 py-[2px] rounded ${isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
-                                {row.courseCode}
+                              <code className={`text-[11px] font-bold px-1.5 py-[2px] rounded ${row.is_lab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
+                                {row.course_code}
                               </code>
                             );
                           })()}
                         </td>
-                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-primary)] whitespace-nowrap">{row.courseTitle}</td>
-                        <td className={`px-3.5 py-3 text-sm ${row.teacher ? "text-[var(--color-text-secondary)]" : "text-[var(--color-danger)]"}`}>{row.teacher || <span className="inline-flex items-center gap-2 text-[var(--color-danger)]"><FiAlertCircle /> Missing</span>}</td>
+                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-primary)] whitespace-nowrap">{row.course_name || "Unresolved course"}</td>
+                        <td className={`px-3.5 py-3 text-sm ${row.teacher_id ? "text-[var(--color-text-secondary)]" : "text-[var(--color-danger)]"}`}>{row.teacher_short_name || <span className="inline-flex items-center gap-2 text-[var(--color-danger)]"><FiAlertCircle /> Missing</span>}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-primary)]">{row.batch}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.section === "none" ? "—" : row.section}</td>
                         <td className="px-3.5 py-3 text-sm font-medium text-[var(--color-accent)] bg-[var(--color-accent-muted)]/10">{selectedImportDept}</td>
-                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">{row.startTime}</td>
-                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">{row.endTime}</td>
-                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.room}</td>
+                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">{displayTime(row.start_time)}</td>
+                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">{displayTime(row.end_time)}</td>
+                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.room_number ?? "—"}</td>
                         <td className="px-3.5 py-3">
                           {(() => {
-                            const isLab = COURSES.find(c => c.code === row.courseCode)?.isLab || row.isLab;
                             return (
-                              <span className={`text-[10px] font-bold tracking-[0.06em] uppercase ${isLab ? "text-[#a371f7]" : "text-[var(--color-text-muted)]"}`}>
-                                {isLab ? "Lab" : "Theory"}
+                              <span className={`text-[10px] font-bold tracking-[0.06em] uppercase ${row.is_lab ? "text-[#a371f7]" : "text-[var(--color-text-muted)]"}`}>
+                                {row.is_lab ? "Lab" : "Theory"}
                               </span>
                             );
                           })()}
@@ -826,10 +1010,17 @@ export default function ManageSchedulePage() {
             </div>
           </div>
 
+          {importError && (
+            <div className="mb-6 p-4 rounded-xl border border-[rgba(248,81,73,0.25)] bg-[rgba(248,81,73,0.06)] text-[var(--color-danger)] text-sm font-medium flex gap-3">
+              <FiAlertCircle className="mt-0.5 shrink-0" />
+              <span>{importError}</span>
+            </div>
+          )}
+
           <div className="flex gap-3 justify-end">
             <button id="schedule-back" onClick={() => setStep("upload")} className="px-6 py-[11px] rounded-[9px] border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95"><span className="inline-flex items-center gap-2"><FiArrowLeft /> Back</span></button>
             {errorCount > 0 && <button id="schedule-fix-errors" onClick={() => setStep("fixing")} className="px-6 py-[11px] rounded-[9px] border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-sm font-semibold cursor-pointer hover:bg-[rgba(248,81,73,0.12)] transition-colors duration-200 active:scale-95">Fix {errorCount} error{errorCount > 1 ? "s" : ""}</button>}
-            <button id="schedule-import" onClick={finalizeImport} className="px-7 py-[11px] rounded-[9px] border-none bg-[var(--color-accent)] text-white text-sm font-semibold cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg transition-all duration-200 active:scale-95"><span className="inline-flex items-center gap-2">Import {okCount} valid entries <FiArrowRight /></span></button>
+            <button id="schedule-import" disabled={errorCount > 0 || okCount === 0} onClick={finalizeImport} className="px-7 py-[11px] rounded-[9px] border-none bg-[var(--color-accent)] text-white text-sm font-semibold cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"><span className="inline-flex items-center gap-2">Apply {okCount} verified entries <FiArrowRight /></span></button>
           </div>
         </div>
       )}
@@ -844,21 +1035,27 @@ export default function ManageSchedulePage() {
 
           <div className="flex flex-col gap-3 mb-6">
             {importRows.filter((r) => r.status === "error").map((row) => (
-              <div key={row.id} className="rounded-xl border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.04)] p-5 transition-all hover:shadow-md hover:border-[rgba(248,81,73,0.4)]">
+              <div key={row.clientId} className="rounded-xl border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.04)] p-5 transition-all hover:shadow-md hover:border-[rgba(248,81,73,0.4)]">
                 <div className="flex justify-between items-start mb-3.5 flex-wrap gap-2.5">
                   <div>
-                    <code className="text-xs font-bold text-[#f85149] bg-[rgba(248,81,73,0.1)] px-[7px] py-[2px] rounded inline-block mr-2">{row.courseCode}</code>
-                    <span className="text-sm font-semibold text-[var(--color-text-primary)]">{row.courseTitle}</span>
-                    <p className="text-xs text-[#f85149] mt-1 inline-flex items-center gap-2"><FiAlertCircle /> Teacher name is missing</p>
+                    <code className="text-xs font-bold text-[#f85149] bg-[rgba(248,81,73,0.1)] px-[7px] py-[2px] rounded inline-block mr-2">{row.course_code}</code>
+                    <span className="text-sm font-semibold text-[var(--color-text-primary)]">{row.course_name || "Unresolved course"}</span>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1">Sheet row {row.sourceRow}, column {row.sourceColumn}</p>
                   </div>
-                  <button id={`fix-row-${row.id}`} onClick={() => setFixingId(row.id === fixingId ? null : row.id)} className="px-4 py-[7px] rounded-lg border border-[rgba(248,81,73,0.4)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-xs font-medium cursor-pointer hover:bg-[rgba(248,81,73,0.12)] transition-colors duration-200 active:scale-95">
-                    {fixingId === row.id ? "Cancel" : <span className="inline-flex items-center gap-2">Fix <FiArrowRight /></span>}
+                  <button id={`fix-row-${row.clientId}`} onClick={() => setFixingId(fixingId === row.sourceRow ? null : row.sourceRow)} className="px-4 py-[7px] rounded-lg border border-[rgba(248,81,73,0.4)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-xs font-medium cursor-pointer hover:bg-[rgba(248,81,73,0.12)] transition-colors duration-200 active:scale-95">
+                    {fixingId === row.sourceRow ? "Hide details" : <span className="inline-flex items-center gap-2">View details <FiArrowRight /></span>}
                   </button>
                 </div>
-                {fixingId === row.id && (
-                  <div className="flex gap-2.5">
-                    <input id={`fix-teacher-${row.id}`} type="text" placeholder="Enter teacher name..." className="flex-1 px-3.5 py-2 rounded-lg border border-[rgba(248,81,73,0.4)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:ring-2 focus:ring-[#f85149] focus:ring-offset-1 transition-all placeholder-[var(--color-text-muted)]" />
-                    <button id={`fix-save-${row.id}`} onClick={() => { const inp = document.getElementById(`fix-teacher-${row.id}`) as HTMLInputElement; if (inp?.value) { setImportRows(importRows.map((r) => r.id === row.id ? { ...r, teacher: inp.value, status: "ok" } : r)); setFixingId(null); } }} className="px-4.5 py-2 rounded-lg border-none bg-[#3fb950] text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-all duration-200 active:scale-95">Apply</button>
+                {fixingId === row.sourceRow && (
+                  <div className="rounded-lg border border-[rgba(248,81,73,0.22)] bg-[var(--color-bg-surface)] p-4">
+                    <ul className="m-0 pl-4 text-sm text-[var(--color-danger)]">
+                      {row.errors.map((error) => (
+                        <li key={error}>{error}</li>
+                      ))}
+                    </ul>
+                    <p className="mt-3 text-xs text-[var(--color-text-secondary)]">
+                      Fix the referenced course, teacher, batch, room, or conflict in the database/source sheet, then parse the schedule again.
+                    </p>
                   </div>
                 )}
               </div>
@@ -879,9 +1076,9 @@ export default function ManageSchedulePage() {
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3fb950" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
           </div>
           <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2.5">Schedule imported!</h2>
-          <p className="text-base text-[var(--color-text-secondary)] mb-8">{importRows.filter((r) => r.status === "ok").length} schedule entries have been saved to the database.</p>
+          <p className="text-base text-[var(--color-text-secondary)] mb-8">{appliedCount} schedule entries have been saved to the database.</p>
           <div className="flex justify-center gap-3">
-            <button id="schedule-import-again" onClick={() => { setStep("upload"); setFileName(""); }} className="px-7 py-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] text-base font-medium cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95">Import another file</button>
+            <button id="schedule-import-again" onClick={() => { setStep("upload"); setFileName(""); setImportRows([]); setImportError(""); }} className="px-7 py-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] text-base font-medium cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95">Import another file</button>
             <button onClick={() => setStep("list")} className="px-7 py-3 rounded-[10px] bg-[var(--color-accent)] text-white text-base font-medium cursor-pointer hover:bg-[#5d95f7] transition-all duration-200 active:scale-95">View Schedule</button>
           </div>
         </div>
