@@ -1,25 +1,42 @@
 "use client";
 
-import { useState } from "react";
-
-const INITIAL = [
-  { id: 1, name: "Dr. Aminur Rahman", short: "DR. RAHMAN", dept: "CSE" },
-  { id: 2, name: "Prof. Shahidul Ahmed", short: "PROF. AHMED", dept: "MAT" },
-  { id: 3, name: "Dr. Karim Hossain", short: "DR. KARIM", dept: "CSE" },
-  { id: 4, name: "Ms. Fatima Begum", short: "MS. FATIMA", dept: "ENG" },
-  { id: 5, name: "Prof. Hassan Ali", short: "PROF. HASSAN", dept: "EEE" },
-  { id: 6, name: "Ms. Parvin Akter", short: "MS. PARVIN", dept: "BBA" },
-];
+import { useState, useEffect } from "react";
 
 export default function ManageTeachersPage() {
-  const [teachers, setTeachers] = useState(INITIAL);
+  const [teachers, setTeachers] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   
   const [newName, setNewName] = useState("");
   const [newShort, setNewShort] = useState("");
-  const [newDept, setNewDept] = useState("");
+  const [newDeptId, setNewDeptId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const [teacherRes, deptRes] = await Promise.all([
+        fetch("/api/teachers"),
+        fetch("/api/departments")
+      ]);
+      const [teacherData, deptData] = await Promise.all([
+        teacherRes.json(),
+        deptRes.json()
+      ]);
+      if (teacherRes.ok) setTeachers(teacherData);
+      if (deptRes.ok) setDepartments(deptData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const filtered = teachers.filter(
     (t) =>
@@ -32,7 +49,7 @@ export default function ManageTeachersPage() {
     setEditingId(null);
     setNewName("");
     setNewShort("");
-    setNewDept("");
+    setNewDeptId(departments[0]?.id || "");
     setShowModal(true);
   };
 
@@ -40,36 +57,53 @@ export default function ManageTeachersPage() {
     setEditingId(teacher.id);
     setNewName(teacher.name);
     setNewShort(teacher.short);
-    setNewDept(teacher.dept);
+    setNewDeptId(teacher.department_id);
     setShowModal(true);
   };
 
-  const saveTeacher = () => {
-    if (!newName || !newShort) return;
-    if (editingId) {
-      setTeachers(
-        teachers.map((t) =>
-          t.id === editingId
-            ? { ...t, name: newName, short: newShort.toUpperCase(), dept: newDept.toUpperCase() }
-            : t
-        )
-      );
-    } else {
-      setTeachers([
-        ...teachers, 
-        { 
-          id: Date.now(), 
-          name: newName, 
-          short: newShort.toUpperCase(), 
-          dept: newDept.toUpperCase(), 
-        }
-      ]);
+  const saveTeacher = async () => {
+    if (!newName || !newShort || !newDeptId) return;
+    setSaving(true);
+    try {
+      const method = editingId ? "PUT" : "POST";
+      const payload = editingId 
+        ? { id: editingId, name: newName, short: newShort, departmentId: newDeptId }
+        : { name: newName, short: newShort, departmentId: newDeptId };
+        
+      const res = await fetch("/api/teachers", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.error || "Failed to save teacher");
+      } else {
+        await fetchData();
+        setShowModal(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred");
+    } finally {
+      setSaving(false);
     }
-    setNewName(""); 
-    setNewShort(""); 
-    setNewDept(""); 
-    setEditingId(null);
-    setShowModal(false);
+  };
+
+  const deleteTeacher = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this teacher?")) return;
+    try {
+      const res = await fetch(`/api/teachers?id=${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to delete");
+      } else {
+        await fetchData();
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
   
   const AVATAR_BG = [
@@ -126,7 +160,7 @@ export default function ManageTeachersPage() {
                 <td className="px-4 py-3 w-[160px]">
                   <div className="flex gap-2">
                     <button id={`teacher-edit-${t.id}`} onClick={() => openEdit(t)} className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm transition-colors hover:bg-[var(--color-bg-elevated)]">Edit</button>
-                    <button id={`teacher-delete-${t.id}`} onClick={() => setTeachers(teachers.filter((x) => x.id !== t.id))} className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]">Delete</button>
+                    <button id={`teacher-delete-${t.id}`} onClick={() => deleteTeacher(t.id)} className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]">Delete</button>
                   </div>
                 </td>
               </tr>
@@ -158,12 +192,30 @@ export default function ManageTeachersPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Department</label>
-                  <input type="text" value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="e.g. CSE" className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" />
+                  <select
+                    value={newDeptId}
+                    onChange={(e) => setNewDeptId(e.target.value)}
+                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
+                  >
+                    <option value="" disabled>Select Department</option>
+                    {departments.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} ({d.fullName})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="flex gap-3 mt-4">
                 <button id="modal-cancel" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]">Cancel</button>
-                <button id="modal-save" onClick={saveTeacher} className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">{editingId ? "Save Changes" : "Save"}</button>
+                <button 
+                  id="modal-save" 
+                  onClick={saveTeacher} 
+                  disabled={saving || !newName || !newShort || !newDeptId}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {saving ? "Saving..." : (editingId ? "Save Changes" : "Save")}
+                </button>
               </div>
             </div>
           </div>
