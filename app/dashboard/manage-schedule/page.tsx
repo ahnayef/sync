@@ -28,7 +28,7 @@ export type ScheduleRow = {
   startTime: string;
   endTime: string;
   room: string;
-  isLab: boolean;
+  isLab?: boolean;
   status: "ok" | "warning" | "error";
 };
 
@@ -129,10 +129,10 @@ const TEACHERS = [
   { short: "MS. BEGUM", name: "Ms. Nasreen Begum" },
 ];
 const COURSES = [
-  { code: "CSE301", title: "Data Structures", dept: "CSE" },
-  { code: "CSE315L", title: "OS Lab", dept: "CSE" },
-  { code: "MAT201", title: "Discrete Mathematics", dept: "MAT" },
-  { code: "EEE101", title: "Electrical Circuits", dept: "EEE" },
+  { code: "CSE301", title: "Data Structures", dept: "CSE", isLab: false },
+  { code: "CSE315L", title: "OS Lab", dept: "CSE", isLab: true },
+  { code: "MAT201", title: "Discrete Mathematics", dept: "MAT", isLab: false },
+  { code: "EEE101", title: "Electrical Circuits", dept: "EEE", isLab: false },
 ];
 const BATCHES = [
   { name: "CSE 21", dept: "CSE" },
@@ -181,8 +181,8 @@ function SearchableSelect({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] cursor-pointer transition-all ${isOpen ? "ring-2 ring-[var(--color-accent)] border-[var(--color-accent)]" : "hover:border-[var(--color-text-muted)]"}`}
       >
-        <span className={`text-sm ${value ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"}`}>
-          {value ? displayValue(value) : placeholder}
+        <span className={`text-sm ${value !== null && value !== undefined && value !== "" ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"}`}>
+          {(value !== null && value !== undefined && value !== "") ? displayValue(value) : placeholder}
         </span>
         <FiChevronDown className={`text-[var(--color-text-muted)] transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </div>
@@ -212,7 +212,17 @@ function SearchableSelect({
                     setIsOpen(false);
                     setSearch("");
                   }}
-                  className={`px-3 py-2 rounded-md text-sm cursor-pointer transition-colors ${(typeof value === 'object' ? value?.id === opt?.id : value === opt)
+                  className={`px-3 py-2 rounded-md text-sm cursor-pointer transition-colors ${(() => {
+                    if (value === null || value === undefined) return false;
+                    if (typeof value === 'object' && typeof opt === 'object') {
+                      // Compare by id, code, or short name for robust object matching
+                      return (value.id && value.id === opt.id) ||
+                        (value.code && value.code === opt.code) ||
+                        (value.short && value.short === opt.short) ||
+                        (JSON.stringify(value) === JSON.stringify(opt));
+                    }
+                    return value === opt;
+                  })()
                     ? "bg-[var(--color-accent-muted)] text-[var(--color-accent)] font-medium"
                     : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"
                     }`}
@@ -242,7 +252,7 @@ export default function ManageSchedulePage() {
 
   // Edit Form State
   const [editData, setEditData] = useState({
-    day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: "", startTime: "08:00 AM", endTime: "09:30 AM", room: "", isLab: false
+    day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: "", startTime: "08:00 AM", endTime: "09:30 AM", room: ""
   });
   const [formError, setFormError] = useState("");
   const [formWarning, setFormWarning] = useState("");
@@ -413,7 +423,7 @@ export default function ManageSchedulePage() {
               <button
                 onClick={() => {
                   setEditingId(null);
-                  setEditData({ day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: selectedDept === "All" ? "CSE" : selectedDept, startTime: "08:00", endTime: "09:30", room: "", isLab: false });
+                  setEditData({ day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: selectedDept === "All" ? "CSE" : selectedDept, startTime: "08:00", endTime: "09:30", room: "" });
                   setFormError("");
                   setFormWarning("");
                   setShowEditModal(true);
@@ -480,9 +490,14 @@ export default function ManageSchedulePage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-0.5">
-                          <code className={`text-[11px] font-bold px-1.5 py-[2px] rounded w-fit ${row.isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
-                            {row.courseCode}
-                          </code>
+                          {(() => {
+                            const isLab = COURSES.find(c => c.code === row.courseCode)?.isLab || row.isLab;
+                            return (
+                              <code className={`text-[11px] font-bold px-1.5 py-[2px] rounded w-fit ${isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
+                                {row.courseCode}
+                              </code>
+                            );
+                          })()}
                           <span className="text-xs text-[var(--color-text-secondary)] truncate max-w-[150px]">{row.courseTitle}</span>
                         </div>
                       </td>
@@ -557,7 +572,7 @@ export default function ManageSchedulePage() {
                     />
                   </div>
 
-                  <div>
+                  <div className="col-span-2">
                     <SearchableSelect
                       label="Teacher"
                       options={TEACHERS}
@@ -602,17 +617,6 @@ export default function ManageSchedulePage() {
                   </div>
 
                   <div>
-                    <label className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-1.5">Day</label>
-                    <select
-                      value={editData.day}
-                      onChange={e => setEditData({ ...editData, day: e.target.value })}
-                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3.5 text-sm text-[var(--color-text-primary)] outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-                    >
-                      <option>Sunday</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option>
-                    </select>
-                  </div>
-
-                  <div>
                     <label className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-1.5">Start Time</label>
                     <input
                       type="time"
@@ -633,6 +637,17 @@ export default function ManageSchedulePage() {
                   </div>
 
                   <div>
+                    <label className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-1.5">Day</label>
+                    <select
+                      value={editData.day}
+                      onChange={e => setEditData({ ...editData, day: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3.5 text-sm text-[var(--color-text-primary)] outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                    >
+                      <option>Sunday</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option>
+                    </select>
+                  </div>
+
+                  <div>
                     <SearchableSelect
                       label="Room"
                       options={ROOMS}
@@ -640,16 +655,6 @@ export default function ManageSchedulePage() {
                       onChange={(room: string) => setEditData({ ...editData, room })}
                       placeholder="Select Room"
                     />
-                  </div>
-
-                  <div className="flex items-center pt-8">
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className={`w-10 h-6 rounded-full transition-colors relative ${editData.isLab ? "bg-[var(--color-accent)]" : "bg-[var(--color-border)]"}`}>
-                        <input type="checkbox" checked={editData.isLab} onChange={e => setEditData({ ...editData, isLab: e.target.checked })} className="sr-only" />
-                        <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${editData.isLab ? "translate-x-4" : ""}`} />
-                      </div>
-                      <span className="text-[13px] font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">Lab Session</span>
-                    </label>
                   </div>
                 </div>
 
@@ -725,7 +730,7 @@ export default function ManageSchedulePage() {
 
           <div className="mt-[18px] flex flex-col gap-4 items-center">
             <div className="w-full max-w-[400px]">
-              <SearchableSelect 
+              <SearchableSelect
                 label="Import for Department"
                 options={DEPARTMENTS}
                 value={selectedImportDept}
@@ -733,7 +738,7 @@ export default function ManageSchedulePage() {
                 placeholder="Select Department"
               />
             </div>
-            
+
             <div className="flex gap-2 items-center flex-wrap justify-center w-full">
               <input aria-label="Google Sheet URL" placeholder="Paste Google Sheet link or ID" value={googleUrl} onChange={(e) => setGoogleUrl(e.target.value)} className="flex-1 min-w-[260px] px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[#4f8ef7] focus:ring-offset-1 transition-all" />
               <button id="load-google-sheet" onClick={handleLoadGoogleSheet} disabled={loadingSheet} title="Load from Google Sheet" className={`p-2.5 rounded-lg border-none text-white font-semibold transition-all duration-200 flex items-center justify-center ${loadingSheet ? "bg-[rgba(79,142,247,0.16)] cursor-wait" : "bg-[var(--color-accent)] cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg active:scale-95"}`}>
@@ -785,7 +790,16 @@ export default function ManageSchedulePage() {
                       <tr key={row.id} className={`${i < importRows.length - 1 ? "border-b border-[var(--color-border)]" : ""} ${row.status === "error" ? "bg-[rgba(248,81,73,0.02)]" : "bg-[var(--color-bg-surface)]"}`}>
                         <td className="px-3.5 py-3"><span style={{ color: sc.color, background: sc.bg, borderColor: sc.border }} className="text-[11px] font-semibold px-2.5 py-1 border rounded-lg inline-block">{sc.label}</span></td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.day}</td>
-                        <td className="px-3.5 py-3"><code className={`text-[11px] font-bold px-1.5 py-[2px] rounded ${row.isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>{row.courseCode}</code></td>
+                        <td className="px-3.5 py-3">
+                          {(() => {
+                            const isLab = COURSES.find(c => c.code === row.courseCode)?.isLab || row.isLab;
+                            return (
+                              <code className={`text-[11px] font-bold px-1.5 py-[2px] rounded ${isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
+                                {row.courseCode}
+                              </code>
+                            );
+                          })()}
+                        </td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-primary)] whitespace-nowrap">{row.courseTitle}</td>
                         <td className={`px-3.5 py-3 text-sm ${row.teacher ? "text-[var(--color-text-secondary)]" : "text-[var(--color-danger)]"}`}>{row.teacher || <span className="inline-flex items-center gap-2 text-[var(--color-danger)]"><FiAlertCircle /> Missing</span>}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-primary)]">{row.batch}</td>
@@ -794,7 +808,16 @@ export default function ManageSchedulePage() {
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">{row.startTime}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">{row.endTime}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.room}</td>
-                        <td className="px-3.5 py-3"><span className={`text-[10px] font-bold tracking-[0.06em] uppercase ${row.isLab ? "text-[#a371f7]" : "text-[var(--color-text-muted)]"}`}>{row.isLab ? "Lab" : "Theory"}</span></td>
+                        <td className="px-3.5 py-3">
+                          {(() => {
+                            const isLab = COURSES.find(c => c.code === row.courseCode)?.isLab || row.isLab;
+                            return (
+                              <span className={`text-[10px] font-bold tracking-[0.06em] uppercase ${isLab ? "text-[#a371f7]" : "text-[var(--color-text-muted)]"}`}>
+                                {isLab ? "Lab" : "Theory"}
+                              </span>
+                            );
+                          })()}
+                        </td>
                       </tr>
                     );
                   })}
