@@ -4,11 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
-const baseNavItems = [
-  { href: "/routine", label: "Routine" },
-  { href: "/courses", label: "Courses" },
-  { href: "/profile", label: "Profile" },
-];
+
 
 export default function UserNavbar() {
   const pathname = usePathname();
@@ -17,7 +13,11 @@ export default function UserNavbar() {
 
   const navItems = [
     ...(role === "admin" || role === "moderator" ? [{ href: "/dashboard", label: "Dashboard" }] : []),
-    ...baseNavItems,
+    ...(role !== "admin" && role !== "moderator" ? [
+      { href: "/routine", label: "Routine" },
+      { href: "/courses", label: "Courses" },
+    ] : []),
+    { href: "/profile", label: "Profile" },
   ];
 
   return (

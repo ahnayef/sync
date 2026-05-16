@@ -40,6 +40,10 @@ export default withAuth(
       if (!isAuth) {
         return NextResponse.redirect(new URL("/login", req.url));
       }
+      // Mods and admins should not access routine or courses
+      if ((pathname.startsWith("/routine") || pathname.startsWith("/courses")) && (role === "admin" || role === "moderator")) {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
     }
   },
   {
