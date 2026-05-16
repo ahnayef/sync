@@ -10,7 +10,7 @@ CREATE TABLE `users` (
   `name`          varchar(255) NOT NULL,
   `email`         varchar(255) UNIQUE NOT NULL,
   `password_hash` varchar(255),
-  `role`          enum('student','admin') NOT NULL DEFAULT 'student',
+  `role`          enum('student','admin', 'moderator') NOT NULL DEFAULT 'student',
   `student_id`    varchar(50)  UNIQUE,           -- e.g. STU-2024-001 (NULL for non-students)
   `avatar_url`    varchar(500),
   `is_active`     boolean      NOT NULL DEFAULT true,
