@@ -167,25 +167,39 @@ export default function AdminSidebar() {
               {session?.user?.name?.[0]?.toUpperCase() || "A"}
             </div>
           )}
-          <div>
-            <p className="text-[13px] font-semibold text-[var(--color-text-primary)]">
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-semibold text-[var(--color-text-primary)] truncate">
               {session?.user?.name || "Admin"}
             </p>
-            <p className="text-[11px] text-[var(--color-text-muted)] truncate max-w-[130px]">{session?.user?.email || "admin@loop.edu"}</p>
+            <p className="text-[11px] text-[var(--color-text-muted)] truncate">{session?.user?.email || "admin@loop.edu"}</p>
           </div>
         </div>
-        <button
-          id="admin-logout"
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className="flex items-center gap-2 rounded-lg border border-[rgba(248,81,73,0.2)] bg-transparent px-3 py-2.5 text-left text-sm font-medium text-[var(--color-danger)] transition-all duration-200 hover:bg-[rgba(248,81,73,0.06)]"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-          Log out
-        </button>
+
+        <div className="flex flex-col gap-1.5 mt-1">
+          <Link
+            href="/profile"
+            id="admin-profile-link"
+            className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-2.5 text-sm font-medium text-[var(--color-text-primary)] no-underline transition-all duration-200 hover:bg-[var(--color-bg-surface)] hover:border-[rgba(79,142,247,0.3)] shadow-sm"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-accent)]">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Profile Settings
+          </Link>
+          <button
+            id="admin-logout"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="flex items-center gap-2 rounded-lg border border-[rgba(248,81,73,0.2)] bg-transparent px-3 py-2.5 text-left text-sm font-medium text-[var(--color-danger)] transition-all duration-200 hover:bg-[rgba(248,81,73,0.06)]"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Log out
+          </button>
+        </div>
       </div>
     </aside>
   );
