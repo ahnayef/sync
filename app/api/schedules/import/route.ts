@@ -371,6 +371,25 @@ function timesOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string
   return startA < endB && endA > startB;
 }
 
+function isSameRoom(
+  left: Pick<ResolvedScheduleRow, "room_id" | "room_number">,
+  right: Pick<ResolvedScheduleRow | ScheduleConflictRow, "room_id" | "room_number">
+) {
+  if (left.room_id !== null && right.room_id !== null && String(left.room_id) === String(right.room_id)) {
+    return true;
+  }
+
+  if (
+    left.room_number !== null &&
+    right.room_number !== null &&
+    String(left.room_number) === String(right.room_number)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 async function resolveRows(rawRows: RawScheduleRow[], departmentIdInput: number | null, departmentNameInput: string | null) {
   const [departmentRows] = await db.execute<DepartmentRow[]>(
     "SELECT id, name FROM departments WHERE id = ? OR UPPER(name) = ? LIMIT 1",
@@ -462,7 +481,7 @@ async function applyConflictChecks(rows: ResolvedScheduleRow[]) {
         (existing) =>
           existing.teacher_id === row.teacher_id &&
           existing.day === row.day &&
-          existing.room_id !== row.room_id &&
+          !isSameRoom(row, existing) &&
           timesOverlap(row.start_time, row.end_time, existing.start_time, existing.end_time)
       );
 
@@ -484,7 +503,7 @@ async function applyConflictChecks(rows: ResolvedScheduleRow[]) {
       const hasConflict =
         left.teacher_id === right.teacher_id &&
         left.day === right.day &&
-        left.room_id !== right.room_id &&
+        !isSameRoom(left, right) &&
         timesOverlap(left.start_time, left.end_time, right.start_time, right.end_time);
 
       if (!hasConflict) continue;
