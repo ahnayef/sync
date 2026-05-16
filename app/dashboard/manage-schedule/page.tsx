@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FiBarChart2,
   FiArrowLeft,
@@ -10,6 +10,8 @@ import {
   FiTrash2,
   FiPlus,
   FiDownloadCloud,
+  FiSearch,
+  FiChevronDown,
 } from "react-icons/fi";
 
 type ViewMode = "list" | "upload" | "preview" | "fixing" | "done";
@@ -118,19 +120,132 @@ const STATUS_CONFIG = {
   },
 };
 
+// --- Mock Data for Dropdowns ---
+const DEPARTMENTS = ["CSE", "MAT", "HUM", "EEE", "BBA"];
+const TEACHERS = [
+  { short: "DR. RAHMAN", name: "Dr. Abdur Rahman" },
+  { short: "PROF. AHMED", name: "Prof. Tanvir Ahmed" },
+  { short: "DR. KARIM", name: "Dr. Fazlul Karim" },
+  { short: "MS. BEGUM", name: "Ms. Nasreen Begum" },
+];
+const COURSES = [
+  { code: "CSE301", title: "Data Structures", dept: "CSE" },
+  { code: "CSE315L", title: "OS Lab", dept: "CSE" },
+  { code: "MAT201", title: "Discrete Mathematics", dept: "MAT" },
+  { code: "EEE101", title: "Electrical Circuits", dept: "EEE" },
+];
+const BATCHES = [
+  { name: "CSE 21", dept: "CSE" },
+  { name: "CSE 22", dept: "CSE" },
+  { name: "MAT 15", dept: "MAT" },
+  { name: "EEE 09", dept: "EEE" },
+];
+const ROOMS = ["401", "402", "305", "Lab-1", "Lab-2", "Seminar Hall"];
+const TIMES = [
+  "08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+  "12:00 PM", "12:30 PM", "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM"
+];
+
+function SearchableSelect({
+  label,
+  options,
+  value,
+  onChange,
+  placeholder,
+  displayValue = (val: any) => val,
+  searchKey = (val: any) => val,
+  renderOption = (val: any) => val
+}: any) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = options.filter((opt: any) =>
+    searchKey(opt).toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <label className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-1.5">{label}</label>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] cursor-pointer transition-all ${isOpen ? "ring-2 ring-[var(--color-accent)] border-[var(--color-accent)]" : "hover:border-[var(--color-text-muted)]"}`}
+      >
+        <span className={`text-sm ${value ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"}`}>
+          {value ? displayValue(value) : placeholder}
+        </span>
+        <FiChevronDown className={`text-[var(--color-text-muted)] transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-[calc(100%+4px)] left-0 w-full z-[100] rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="p-2 border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={14} />
+              <input
+                autoFocus
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search..."
+                className="w-full pl-9 pr-3 py-1.5 rounded-md bg-[var(--color-bg-elevated)] border border-[var(--color-border)] text-sm outline-none focus:border-[var(--color-accent)]"
+              />
+            </div>
+          </div>
+          <div className="max-h-[200px] overflow-y-auto p-1 custom-scrollbar">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt: any, idx: number) => (
+                <div
+                  key={idx}
+                  onClick={() => {
+                    onChange(opt);
+                    setIsOpen(false);
+                    setSearch("");
+                  }}
+                  className={`px-3 py-2 rounded-md text-sm cursor-pointer transition-colors ${(typeof value === 'object' ? value?.id === opt?.id : value === opt)
+                    ? "bg-[var(--color-accent-muted)] text-[var(--color-accent)] font-medium"
+                    : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"
+                    }`}
+                >
+                  {renderOption(opt)}
+                </div>
+              ))
+            ) : (
+              <div className="px-3 py-4 text-center text-xs text-[var(--color-text-muted)]">No results found</div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ManageSchedulePage() {
   const [step, setStep] = useState<ViewMode>("list");
-  
+
   // List View State
   const [schedules, setSchedules] = useState(MOCK_DATA);
   const [search, setSearch] = useState("");
+  const [selectedDept, setSelectedDept] = useState("All");
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  
+
   // Edit Form State
   const [editData, setEditData] = useState({
-    day: "", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "", dept: "", startTime: "", endTime: "", room: "", isLab: false
+    day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: "", startTime: "08:00 AM", endTime: "09:30 AM", room: "", isLab: false
   });
+  const [formError, setFormError] = useState("");
+  const [formWarning, setFormWarning] = useState("");
 
   // Import Wizard State
   const [dragging, setDragging] = useState(false);
@@ -138,18 +253,79 @@ export default function ManageSchedulePage() {
   const [googleUrl, setGoogleUrl] = useState("");
   const [loadingSheet, setLoadingSheet] = useState(false);
   const [importRows, setImportRows] = useState<ScheduleRow[]>(MOCK_IMPORT);
+  const [selectedImportDept, setSelectedImportDept] = useState("CSE");
   const [fixingId, setFixingId] = useState<number | null>(null);
+
+  const timeToMinutes = (timeStr: string) => {
+    if (!timeStr) return 0;
+    // Handle 24h format (HH:mm) from input type="time"
+    if (timeStr.match(/^\d{2}:\d{2}$/)) {
+      const [h, m] = timeStr.split(":").map(Number);
+      return h * 60 + m;
+    }
+    // Handle AM/PM format (08:00 AM)
+    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!match) return 0;
+    let [_, hours, minutes, period] = match;
+    let h = parseInt(hours);
+    const m = parseInt(minutes);
+    if (period.toUpperCase() === "PM" && h !== 12) h += 12;
+    if (period.toUpperCase() === "AM" && h === 12) h = 0;
+    return h * 60 + m;
+  };
+
+  const formatTo12h = (time24: string) => {
+    if (!time24) return "";
+    const [h, m] = time24.split(":").map(Number);
+    const period = h >= 12 ? "PM" : "AM";
+    const hours = h % 12 || 12;
+    return `${hours.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")} ${period}`;
+  };
+
+  const formatTo24h = (time12: string) => {
+    if (!time12) return "08:00";
+    const match = time12.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!match) return "08:00";
+    let [_, h, m, period] = match;
+    let hours = parseInt(h);
+    if (period.toUpperCase() === "PM" && hours !== 12) hours += 12;
+    if (period.toUpperCase() === "AM" && hours === 12) hours = 0;
+    return `${hours.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+  };
+
+  const validateTimes = (start: string, end: string) => {
+    setFormError("");
+    setFormWarning("");
+    const startMin = timeToMinutes(start);
+    const endMin = timeToMinutes(end);
+
+    if (endMin <= startMin) {
+      setFormError("End time must be after start time");
+      return false;
+    }
+
+    if (endMin - startMin > 180) {
+      setFormWarning("Class duration exceeds 3 hours. Please verify.");
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    validateTimes(editData.startTime, editData.endTime);
+  }, [editData.startTime, editData.endTime]);
 
   const errorCount = importRows.filter((r) => r.status === "error").length;
   const warnCount = importRows.filter((r) => r.status === "warning").length;
   const okCount = importRows.filter((r) => r.status === "ok").length;
 
   // --- List View Methods ---
-  const filteredSchedules = schedules.filter(s => 
-    s.courseCode.toLowerCase().includes(search.toLowerCase()) || 
-    s.courseTitle.toLowerCase().includes(search.toLowerCase()) || 
-    s.teacher.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredSchedules = schedules.filter(s => {
+    const matchesSearch = s.courseCode.toLowerCase().includes(search.toLowerCase()) ||
+      s.courseTitle.toLowerCase().includes(search.toLowerCase()) ||
+      s.teacher.toLowerCase().includes(search.toLowerCase());
+    const matchesDept = selectedDept === "All" || s.dept === selectedDept;
+    return matchesSearch && matchesDept;
+  });
 
   const openEditModal = (schedule: any) => {
     setEditingId(schedule.id);
@@ -158,10 +334,17 @@ export default function ManageSchedulePage() {
   };
 
   const saveEdit = () => {
+    const formattedData = {
+      ...editData,
+      // Convert back to AM/PM for storage to match mock data
+      startTime: editData.startTime.includes(":") && !editData.startTime.includes(" ") ? formatTo12h(editData.startTime) : editData.startTime,
+      endTime: editData.endTime.includes(":") && !editData.endTime.includes(" ") ? formatTo12h(editData.endTime) : editData.endTime,
+    };
+
     if (editingId) {
-      setSchedules(schedules.map(s => s.id === editingId ? { ...s, ...editData } : s));
+      setSchedules(schedules.map(s => s.id === editingId ? { ...s, ...formattedData } : s));
     } else {
-      setSchedules([...schedules, { id: Date.now(), ...editData, status: "ok" }]);
+      setSchedules([...schedules, { id: Date.now(), ...formattedData, status: "ok" }]);
     }
     setShowEditModal(false);
     setEditingId(null);
@@ -203,14 +386,17 @@ export default function ManageSchedulePage() {
   };
 
   const finalizeImport = () => {
-    const validRows = importRows.filter(r => r.status === "ok");
+    const validRows = importRows.filter(r => r.status === "ok").map(r => ({
+      ...r,
+      dept: selectedImportDept
+    }));
     setSchedules([...schedules, ...validRows]);
     setStep("done");
   };
 
   return (
     <div className="p-8 max-w-[1200px] mx-auto">
-      
+
       {/* ─── LIST VIEW ──────────────────────────────────────────────────────── */}
       {step === "list" && (
         <>
@@ -227,7 +413,9 @@ export default function ManageSchedulePage() {
               <button
                 onClick={() => {
                   setEditingId(null);
-                  setEditData({ day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "", dept: "", startTime: "", endTime: "", room: "", isLab: false });
+                  setEditData({ day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: selectedDept === "All" ? "CSE" : selectedDept, startTime: "08:00", endTime: "09:30", room: "", isLab: false });
+                  setFormError("");
+                  setFormWarning("");
                   setShowEditModal(true);
                 }}
                 className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)]"
@@ -243,15 +431,33 @@ export default function ManageSchedulePage() {
             </div>
           </div>
 
-          <div className="relative mb-5 max-w-[400px]">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by course, teacher..."
-              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 pr-4 pl-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]"
-            />
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+          <div className="flex gap-4 mb-6 flex-wrap">
+            <div className="relative flex-1 max-w-[400px]">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by course, teacher..."
+                className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] py-2.5 pr-4 pl-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)]"
+              />
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+            </div>
+
+            <div className="flex gap-2">
+              <span className="text-sm font-medium text-[var(--color-text-secondary)] self-center mr-1">Dept:</span>
+              {["All", ...DEPARTMENTS].map(dept => (
+                <button
+                  key={dept}
+                  onClick={() => setSelectedDept(dept)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedDept === dept
+                    ? "bg-[var(--color-accent)] text-white shadow-md"
+                    : "bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-bg-elevated)]"
+                    }`}
+                >
+                  {dept}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="rounded-[14px] border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-surface)]">
@@ -313,54 +519,156 @@ export default function ManageSchedulePage() {
           </div>
 
           {showEditModal && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}>
-              <div className="w-full max-w-[600px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8 my-8">
-                <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-6">{editingId ? "Edit Class" : "Add Single Class"}</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Course Code</label>
-                    <input type="text" value={editData.courseCode} onChange={e => setEditData({...editData, courseCode: e.target.value})} className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" placeholder="e.g. CSE301" />
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-6 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}>
+              <div className="w-full max-w-[640px] rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8 my-8 shadow-2xl">
+                <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--color-accent-muted)] text-[var(--color-accent)] flex items-center justify-center">
+                    {editingId ? <FiEdit2 size={16} /> : <FiPlus size={16} />}
                   </div>
+                  {editingId ? "Edit Class Schedule" : "Add New Class"}
+                </h2>
+
+                <div className="grid grid-cols-2 gap-5">
+                  <div className="col-span-2">
+                    <SearchableSelect
+                      label="Department"
+                      options={DEPARTMENTS}
+                      value={editData.dept}
+                      onChange={(dept: string) => setEditData({ ...editData, dept, batch: "", courseCode: "", courseTitle: "" })}
+                      placeholder="Select Department"
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <SearchableSelect
+                      label="Course"
+                      options={COURSES.filter(c => c.dept === editData.dept)}
+                      value={editData.courseCode ? COURSES.find(c => c.code === editData.courseCode) : null}
+                      onChange={(c: any) => setEditData({ ...editData, courseCode: c.code, courseTitle: c.title })}
+                      placeholder="Select Course"
+                      displayValue={(c: any) => `${c.code} — ${c.title}`}
+                      searchKey={(c: any) => `${c.code} ${c.title}`}
+                      renderOption={(c: any) => (
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-xs">{c.code}</span>
+                          <span className="text-[11px] opacity-70">{c.title}</span>
+                        </div>
+                      )}
+                    />
+                  </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Day</label>
-                    <select value={editData.day} onChange={e => setEditData({...editData, day: e.target.value})} className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none">
+                    <SearchableSelect
+                      label="Teacher"
+                      options={TEACHERS}
+                      value={editData.teacher ? TEACHERS.find(t => t.short === editData.teacher) : null}
+                      onChange={(t: any) => setEditData({ ...editData, teacher: t.short })}
+                      placeholder="Select Teacher"
+                      displayValue={(t: any) => t.short}
+                      searchKey={(t: any) => `${t.short} ${t.name}`}
+                      renderOption={(t: any) => (
+                        <div className="flex flex-col">
+                          <span className="font-medium text-xs">{t.short}</span>
+                          <span className="text-[11px] opacity-70">{t.name}</span>
+                        </div>
+                      )}
+                    />
+                  </div>
+
+                  <div>
+                    <SearchableSelect
+                      label="Batch"
+                      options={BATCHES.filter(b => b.dept === editData.dept)}
+                      value={editData.batch ? BATCHES.find(b => b.name === editData.batch) : null}
+                      onChange={(b: any) => setEditData({ ...editData, batch: b.name })}
+                      placeholder="Select Batch"
+                      displayValue={(b: any) => b.name}
+                      searchKey={(b: any) => b.name}
+                      renderOption={(b: any) => <span>{b.name}</span>}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-1.5">Section</label>
+                    <select
+                      value={editData.section}
+                      onChange={e => setEditData({ ...editData, section: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3.5 text-sm text-[var(--color-text-primary)] outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                    >
+                      <option value="none">None</option>
+                      <option value="A">Section A</option>
+                      <option value="B">Section B</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-1.5">Day</label>
+                    <select
+                      value={editData.day}
+                      onChange={e => setEditData({ ...editData, day: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3.5 text-sm text-[var(--color-text-primary)] outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                    >
                       <option>Sunday</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option>
                     </select>
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Teacher (Short Form)</label>
-                    <input type="text" value={editData.teacher} onChange={e => setEditData({...editData, teacher: e.target.value})} className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" placeholder="e.g. DR. RAHMAN" />
+                    <label className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-1.5">Start Time</label>
+                    <input
+                      type="time"
+                      value={editData.startTime.includes(" ") ? formatTo24h(editData.startTime) : editData.startTime}
+                      onChange={e => setEditData({ ...editData, startTime: e.target.value })}
+                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3.5 text-sm text-[var(--color-text-primary)] outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                    />
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Batch</label>
-                    <input type="text" value={editData.batch} onChange={e => setEditData({...editData, batch: e.target.value})} className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" placeholder="e.g. CSE 21" />
+                    <label className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-1.5">End Time</label>
+                    <input
+                      type="time"
+                      value={editData.endTime.includes(" ") ? formatTo24h(editData.endTime) : editData.endTime}
+                      onChange={e => setEditData({ ...editData, endTime: e.target.value })}
+                      className={`w-full rounded-lg border py-2.5 px-3.5 text-sm outline-none focus:ring-2 transition-all ${formError ? "border-[var(--color-danger)] bg-[rgba(248,81,73,0.05)] focus:ring-[var(--color-danger)]" : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] focus:ring-[var(--color-accent)]"}`}
+                    />
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Section</label>
-                    <input type="text" value={editData.section} onChange={e => setEditData({...editData, section: e.target.value})} className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" placeholder="e.g. A" />
+                    <SearchableSelect
+                      label="Room"
+                      options={ROOMS}
+                      value={editData.room}
+                      onChange={(room: string) => setEditData({ ...editData, room })}
+                      placeholder="Select Room"
+                    />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Start Time</label>
-                    <input type="text" value={editData.startTime} onChange={e => setEditData({...editData, startTime: e.target.value})} className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" placeholder="e.g. 08:00 AM" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">End Time</label>
-                    <input type="text" value={editData.endTime} onChange={e => setEditData({...editData, endTime: e.target.value})} className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" placeholder="e.g. 09:30 AM" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">Room</label>
-                    <input type="text" value={editData.room} onChange={e => setEditData({...editData, room: e.target.value})} className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none" placeholder="e.g. 401" />
-                  </div>
+
                   <div className="flex items-center pt-8">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={editData.isLab} onChange={e => setEditData({...editData, isLab: e.target.checked})} className="rounded border-[var(--color-border)] bg-[var(--color-bg-elevated)]" />
-                      <span className="text-sm font-medium text-[var(--color-text-secondary)]">Is Lab Class</span>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-10 h-6 rounded-full transition-colors relative ${editData.isLab ? "bg-[var(--color-accent)]" : "bg-[var(--color-border)]"}`}>
+                        <input type="checkbox" checked={editData.isLab} onChange={e => setEditData({ ...editData, isLab: e.target.checked })} className="sr-only" />
+                        <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${editData.isLab ? "translate-x-4" : ""}`} />
+                      </div>
+                      <span className="text-[13px] font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">Lab Session</span>
                     </label>
                   </div>
                 </div>
+
+                {(formError || formWarning) && (
+                  <div className={`mt-6 p-4 rounded-xl border flex gap-3 ${formError ? "bg-[rgba(248,81,73,0.08)] border-[rgba(248,81,73,0.2)] text-[var(--color-danger)]" : "bg-[rgba(210,153,34,0.08)] border-[rgba(210,153,34,0.2)] text-[var(--color-warning)]"}`}>
+                    <FiAlertCircle className="mt-0.5 shrink-0" />
+                    <p className="text-xs font-medium leading-relaxed">{formError || formWarning}</p>
+                  </div>
+                )}
+
                 <div className="flex gap-3 mt-8">
-                  <button onClick={() => setShowEditModal(false)} className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]">Cancel</button>
-                  <button onClick={saveEdit} className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">{editingId ? "Save Changes" : "Save Class"}</button>
+                  <button onClick={() => setShowEditModal(false)} className="flex-1 px-4 py-3 rounded-xl border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm font-semibold transition-colors hover:bg-[var(--color-bg-elevated)]">Cancel</button>
+                  <button
+                    disabled={!!formError || !editData.courseCode || !editData.teacher || !editData.batch || !editData.room}
+                    onClick={saveEdit}
+                    className="flex-1 px-4 py-3 rounded-xl bg-[var(--color-accent)] text-white font-semibold shadow-lg shadow-[var(--color-accent)]/20 transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  >
+                    {editingId ? "Update Schedule" : "Add to Schedule"}
+                  </button>
                 </div>
               </div>
             </div>
@@ -415,15 +723,27 @@ export default function ManageSchedulePage() {
           <input id="schedule-file-input" type="file" accept=".xlsx,.xls,.csv" onChange={handleFileInput} style={{ display: "none" }} />
           <p className="mt-6 text-xs text-[var(--color-text-muted)]">Need a template? <a href="#" className="text-[var(--color-accent)] no-underline">Download sample file</a></p>
 
-          <div className="mt-[18px] flex gap-2 items-center flex-wrap justify-center">
-            <input aria-label="Google Sheet URL" placeholder="Paste Google Sheet link or ID" value={googleUrl} onChange={(e) => setGoogleUrl(e.target.value)} className="min-w-[260px] px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[#4f8ef7] focus:ring-offset-1 transition-all" />
-            <button id="load-google-sheet" onClick={handleLoadGoogleSheet} disabled={loadingSheet} title="Load from Google Sheet" className={`p-2.5 rounded-lg border-none text-white font-semibold transition-all duration-200 flex items-center justify-center ${loadingSheet ? "bg-[rgba(79,142,247,0.16)] cursor-wait" : "bg-[var(--color-accent)] cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg active:scale-95"}`}>
-              {loadingSheet ? (
-                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-              ) : (
-                <FiDownloadCloud size={20} />
-              )}
-            </button>
+          <div className="mt-[18px] flex flex-col gap-4 items-center">
+            <div className="w-full max-w-[400px]">
+              <SearchableSelect 
+                label="Import for Department"
+                options={DEPARTMENTS}
+                value={selectedImportDept}
+                onChange={setSelectedImportDept}
+                placeholder="Select Department"
+              />
+            </div>
+            
+            <div className="flex gap-2 items-center flex-wrap justify-center w-full">
+              <input aria-label="Google Sheet URL" placeholder="Paste Google Sheet link or ID" value={googleUrl} onChange={(e) => setGoogleUrl(e.target.value)} className="flex-1 min-w-[260px] px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[#4f8ef7] focus:ring-offset-1 transition-all" />
+              <button id="load-google-sheet" onClick={handleLoadGoogleSheet} disabled={loadingSheet} title="Load from Google Sheet" className={`p-2.5 rounded-lg border-none text-white font-semibold transition-all duration-200 flex items-center justify-center ${loadingSheet ? "bg-[rgba(79,142,247,0.16)] cursor-wait" : "bg-[var(--color-accent)] cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg active:scale-95"}`}>
+                {loadingSheet ? (
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                ) : (
+                  <FiDownloadCloud size={20} />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -438,7 +758,7 @@ export default function ManageSchedulePage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-[var(--color-text-primary)]">{fileName || "schedule_fall2026.xlsx"}</p>
-                <p className="text-xs text-[var(--color-text-muted)]">Parsed {importRows.length} schedule entries</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Parsed {importRows.length} entries for <span className="font-bold text-[var(--color-accent)]">{selectedImportDept}</span></p>
               </div>
             </div>
             <div className="flex gap-2.5 items-center flex-wrap">
@@ -470,7 +790,7 @@ export default function ManageSchedulePage() {
                         <td className={`px-3.5 py-3 text-sm ${row.teacher ? "text-[var(--color-text-secondary)]" : "text-[var(--color-danger)]"}`}>{row.teacher || <span className="inline-flex items-center gap-2 text-[var(--color-danger)]"><FiAlertCircle /> Missing</span>}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-primary)]">{row.batch}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.section === "none" ? "—" : row.section}</td>
-                        <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.dept}</td>
+                        <td className="px-3.5 py-3 text-sm font-medium text-[var(--color-accent)] bg-[var(--color-accent-muted)]/10">{selectedImportDept}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">{row.startTime}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">{row.endTime}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.room}</td>
@@ -501,25 +821,25 @@ export default function ManageSchedulePage() {
 
           <div className="flex flex-col gap-3 mb-6">
             {importRows.filter((r) => r.status === "error").map((row) => (
-                <div key={row.id} className="rounded-xl border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.04)] p-5 transition-all hover:shadow-md hover:border-[rgba(248,81,73,0.4)]">
-                  <div className="flex justify-between items-start mb-3.5 flex-wrap gap-2.5">
-                    <div>
-                      <code className="text-xs font-bold text-[#f85149] bg-[rgba(248,81,73,0.1)] px-[7px] py-[2px] rounded inline-block mr-2">{row.courseCode}</code>
-                      <span className="text-sm font-semibold text-[var(--color-text-primary)]">{row.courseTitle}</span>
-                      <p className="text-xs text-[#f85149] mt-1 inline-flex items-center gap-2"><FiAlertCircle /> Teacher name is missing</p>
-                    </div>
-                    <button id={`fix-row-${row.id}`} onClick={() => setFixingId(row.id === fixingId ? null : row.id)} className="px-4 py-[7px] rounded-lg border border-[rgba(248,81,73,0.4)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-xs font-medium cursor-pointer hover:bg-[rgba(248,81,73,0.12)] transition-colors duration-200 active:scale-95">
-                      {fixingId === row.id ? "Cancel" : <span className="inline-flex items-center gap-2">Fix <FiArrowRight /></span>}
-                    </button>
+              <div key={row.id} className="rounded-xl border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.04)] p-5 transition-all hover:shadow-md hover:border-[rgba(248,81,73,0.4)]">
+                <div className="flex justify-between items-start mb-3.5 flex-wrap gap-2.5">
+                  <div>
+                    <code className="text-xs font-bold text-[#f85149] bg-[rgba(248,81,73,0.1)] px-[7px] py-[2px] rounded inline-block mr-2">{row.courseCode}</code>
+                    <span className="text-sm font-semibold text-[var(--color-text-primary)]">{row.courseTitle}</span>
+                    <p className="text-xs text-[#f85149] mt-1 inline-flex items-center gap-2"><FiAlertCircle /> Teacher name is missing</p>
                   </div>
-                  {fixingId === row.id && (
-                    <div className="flex gap-2.5">
-                      <input id={`fix-teacher-${row.id}`} type="text" placeholder="Enter teacher name..." className="flex-1 px-3.5 py-2 rounded-lg border border-[rgba(248,81,73,0.4)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:ring-2 focus:ring-[#f85149] focus:ring-offset-1 transition-all placeholder-[var(--color-text-muted)]" />
-                      <button id={`fix-save-${row.id}`} onClick={() => { const inp = document.getElementById(`fix-teacher-${row.id}`) as HTMLInputElement; if (inp?.value) { setImportRows(importRows.map((r) => r.id === row.id ? { ...r, teacher: inp.value, status: "ok" } : r)); setFixingId(null); } }} className="px-4.5 py-2 rounded-lg border-none bg-[#3fb950] text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-all duration-200 active:scale-95">Apply</button>
-                    </div>
-                  )}
+                  <button id={`fix-row-${row.id}`} onClick={() => setFixingId(row.id === fixingId ? null : row.id)} className="px-4 py-[7px] rounded-lg border border-[rgba(248,81,73,0.4)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-xs font-medium cursor-pointer hover:bg-[rgba(248,81,73,0.12)] transition-colors duration-200 active:scale-95">
+                    {fixingId === row.id ? "Cancel" : <span className="inline-flex items-center gap-2">Fix <FiArrowRight /></span>}
+                  </button>
                 </div>
-              ))}
+                {fixingId === row.id && (
+                  <div className="flex gap-2.5">
+                    <input id={`fix-teacher-${row.id}`} type="text" placeholder="Enter teacher name..." className="flex-1 px-3.5 py-2 rounded-lg border border-[rgba(248,81,73,0.4)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:ring-2 focus:ring-[#f85149] focus:ring-offset-1 transition-all placeholder-[var(--color-text-muted)]" />
+                    <button id={`fix-save-${row.id}`} onClick={() => { const inp = document.getElementById(`fix-teacher-${row.id}`) as HTMLInputElement; if (inp?.value) { setImportRows(importRows.map((r) => r.id === row.id ? { ...r, teacher: inp.value, status: "ok" } : r)); setFixingId(null); } }} className="px-4.5 py-2 rounded-lg border-none bg-[#3fb950] text-white text-sm font-semibold cursor-pointer hover:shadow-lg transition-all duration-200 active:scale-95">Apply</button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
 
           <div className="flex gap-3 justify-end">
