@@ -1,21 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { FiInbox } from "react-icons/fi";
+import { useMemo, useState, useEffect } from "react";
+import { FiInbox, FiCheck, FiSave, FiSearch, FiUser } from "react-icons/fi";
 import UserNavbar from "@/components/UserNavbar";
 
-const AVAILABLE_COURSES = [
-  { code: "CSE301", title: "Data Structures", teacher: "Dr. Rahman", isLab: false, section: "A" },
-  { code: "CSE301L", title: "Data Structures Lab", teacher: "Dr. Rahman", isLab: true, section: "A" },
-  { code: "CSE303", title: "Operating Systems", teacher: "Dr. Karim", isLab: false, section: "B" },
-  { code: "CSE315L", title: "OS Lab", teacher: "Ms. Fatima", isLab: true, section: "B" },
-  { code: "CSE405", title: "Software Engineering", teacher: "Prof. Hassan", isLab: false, section: "A" },
-  { code: "CSE311L", title: "Networks Lab", teacher: "Dr. Islam", isLab: true, section: "A" },
-  { code: "MAT201", title: "Discrete Mathematics", teacher: "Prof. Ahmed", isLab: false, section: "C" },
-  { code: "HUM201", title: "Technical Writing", teacher: "Ms. Parvin", isLab: false, section: "A" },
-  { code: "CSE401", title: "Compiler Design", teacher: "Dr. Chowdhury", isLab: false, section: "B" },
-  { code: "CSE411L", title: "Compiler Lab", teacher: "Dr. Chowdhury", isLab: true, section: "B" },
-];
+interface CourseTeacher {
+  courseId: number;
+  courseCode: string;
+  courseTitle: string;
+  isLab: boolean;
+  teacherId: number;
+  teacherName: string;
+}
 
 const inputCls =
   "w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-3 pr-4 pl-11 text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 placeholder:text-[var(--color-text-muted)] focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/15";
@@ -30,33 +26,72 @@ function courseRowCls(selected: boolean) {
 }
 
 export default function CoursesPage() {
-  const [selected, setSelected] = useState<Set<string>>(
-    new Set(["CSE301", "CSE301L", "CSE303", "MAT201"]),
-  );
+  const [courses, setCourses] = useState<CourseTeacher[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/user/courses");
+        if (res.ok) {
+          const data = await res.json();
+          setCourses(data.available);
+          setSelected(new Set(data.followed));
+        }
+      } catch (err) {
+        console.error("Failed to fetch courses:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const selectedCount = selected.size;
-  const availableCount = AVAILABLE_COURSES.length;
+  const availableCount = courses.length;
 
   const filtered = useMemo(
     () =>
-      AVAILABLE_COURSES.filter(
+      courses.filter(
         (c) =>
-          c.code.toLowerCase().includes(search.toLowerCase()) ||
-          c.title.toLowerCase().includes(search.toLowerCase()) ||
-          c.teacher.toLowerCase().includes(search.toLowerCase()),
+          c.courseCode.toLowerCase().includes(search.toLowerCase()) ||
+          c.courseTitle.toLowerCase().includes(search.toLowerCase()) ||
+          c.teacherName.toLowerCase().includes(search.toLowerCase()),
       ),
-    [search],
+    [search, courses],
   );
 
-  const toggle = (code: string) => {
+  const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
     setSaved(false);
+  };
+
+  const saveSelections = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/user/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ selections: Array.from(selected) }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
+    } catch (err) {
+      console.error("Failed to save selections:", err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -79,23 +114,31 @@ export default function CoursesPage() {
           <button
             id="courses-save"
             type="button"
-            onClick={() => setSaved(true)}
+            disabled={saving}
+            onClick={saveSelections}
             className={[
-              "inline-flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors sm:w-auto",
+              "inline-flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all sm:w-auto",
               saved
-                ? "border-success/30 bg-success/15 text-success"
-                : "border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]",
+                ? "border-green-500/30 bg-green-500/15 text-green-500"
+                : "border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] active:scale-95",
+              saving ? "opacity-50 cursor-not-allowed" : ""
             ].join(" ")}
           >
-            {saved ? (
+            {saving ? (
+              <span className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Saving...
+              </span>
+            ) : saved ? (
               <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Saved
+                <FiCheck className="text-lg" />
+                Saved Changes
               </>
             ) : (
-              "Save"
+              <>
+                <FiSave className="opacity-70" />
+                Save Routine Selections
+              </>
             )}
           </button>
         </div>
@@ -125,13 +168,19 @@ export default function CoursesPage() {
           />
         </div>
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="h-[172px] animate-pulse rounded-xl bg-[var(--color-bg-elevated)]" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] px-6 py-12 text-center">
             <div className="mb-3">
               <FiInbox className="mx-auto text-3xl text-[var(--color-text-muted)]" />
             </div>
             <h3 className="mb-1 text-base font-semibold text-[var(--color-text-primary)]">
-              No courses match
+              {search ? "No courses match your search" : "No courses available in the schedule"}
             </h3>
             {search ? (
               <button
@@ -146,13 +195,14 @@ export default function CoursesPage() {
         ) : (
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             {filtered.map((course) => {
-              const isSelected = selected.has(course.code);
+              const compoundId = `${course.courseId}-${course.teacherId}`;
+              const isSelected = selected.has(compoundId);
               return (
-                <li key={course.code} className="h-full">
+                <li key={compoundId} className="h-full">
                   <button
                     type="button"
-                    id={`course-${course.code.toLowerCase()}`}
-                    onClick={() => toggle(course.code)}
+                    id={`course-${compoundId}`}
+                    onClick={() => toggle(compoundId)}
                     className={courseRowCls(isSelected)}
                     aria-pressed={isSelected}
                   >
@@ -166,16 +216,13 @@ export default function CoursesPage() {
                               : "border-blue-400/30 bg-blue-500/10 text-[#6f9ff7]",
                           ].join(" ")}
                         >
-                          {course.code}
+                          {course.courseCode}
                         </span>
                         {course.isLab ? (
                           <span className="rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-2.5 py-0.5 text-[10px] font-bold tracking-[0.08em] text-white uppercase">
                             Lab
                           </span>
                         ) : null}
-                        <span className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2 py-0.5 text-[11px] text-[var(--color-text-muted)]">
-                          Sec {course.section}
-                        </span>
                       </div>
 
                       <span
@@ -197,14 +244,11 @@ export default function CoursesPage() {
 
                     <div className="min-w-0 space-y-1.5">
                       <p className="text-[14px] font-semibold leading-5 text-[var(--color-text-primary)]">
-                        {course.title}
+                        {course.courseTitle}
                       </p>
                       <p className="flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)]">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 opacity-60">
-                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                          <circle cx="12" cy="7" r="4" />
-                        </svg>
-                        {course.teacher}
+                        <FiUser className="shrink-0 opacity-60" />
+                        {course.teacherName}
                       </p>
                     </div>
                   </button>

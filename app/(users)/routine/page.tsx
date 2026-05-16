@@ -7,19 +7,7 @@ import { RoutineBox } from "@/components/RoutineBox";
 import { RoutineSchema } from "@/app/types/routine";
 
 /* ─── Mock data ─── */
-const MOCK_ROUTINES: RoutineSchema[] = [
-  { id: 1,  course_code: "CSE-06134024", course_name: "Deep Learning Lab",               teacher_name: "MD Tahidul Islam",                  start_time: "08:30", end_time: "11:25", room_number: "301",   day: "Monday",    is_lab: true,  section: "A" },
-  { id: 2,  course_code: "CSE-06134111", course_name: "Software Testing and Management", teacher_name: "Mr. Khadem Mohammad Asif-uz-zaman", start_time: "11:30", end_time: "12:55", room_number: "117",   day: "Monday",    is_lab: false, section: "A" },
-  { id: 3,  course_code: "CSE-301",      course_name: "Data Structures",                 teacher_name: "Dr. Rahman",                        start_time: "08:00", end_time: "09:30", room_number: "401",   day: "Sunday",    is_lab: false, section: "B" },
-  { id: 4,  course_code: "MAT-201",      course_name: "Discrete Mathematics",            teacher_name: "Prof. Ahmed",                       start_time: "10:00", end_time: "11:30", room_number: "302",   day: "Sunday",    is_lab: false, section: "B" },
-  { id: 5,  course_code: "CSE-315L",     course_name: "Operating Systems Lab",           teacher_name: "Ms. Fatima",                        start_time: "13:00", end_time: "15:30", room_number: "Lab-2", day: "Sunday",    is_lab: true,  section: "B" },
-  { id: 6,  course_code: "CSE-303",      course_name: "Operating Systems",               teacher_name: "Dr. Karim",                         start_time: "09:00", end_time: "10:30", room_number: "305",   day: "Tuesday",   is_lab: false, section: "A" },
-  { id: 7,  course_code: "CSE-311L",     course_name: "Networks Lab",                    teacher_name: "Dr. Islam",                         start_time: "10:30", end_time: "13:00", room_number: "Lab-1", day: "Tuesday",   is_lab: true,  section: "A" },
-  { id: 8,  course_code: "CSE-405",      course_name: "Software Engineering",            teacher_name: "Prof. Hassan",                      start_time: "09:30", end_time: "11:00", room_number: "201",   day: "Wednesday", is_lab: false, section: "A" },
-  { id: 9,  course_code: "MAT-201",      course_name: "Discrete Mathematics",            teacher_name: "Prof. Ahmed",                       start_time: "11:30", end_time: "13:00", room_number: "302",   day: "Wednesday", is_lab: false, section: "A" },
-  { id: 10, course_code: "CSE-301L",     course_name: "Data Structures Lab",             teacher_name: "Dr. Rahman",                        start_time: "13:00", end_time: "15:30", room_number: "Lab-3", day: "Thursday",  is_lab: true,  section: "B" },
-  { id: 11, course_code: "HUM-201",      course_name: "Technical Writing",               teacher_name: "Ms. Parvin",                        start_time: "09:30", end_time: "11:00", room_number: "104",   day: "Thursday",  is_lab: false, section: "B" },
-];
+
 
 const navBtnCls = (disabled: boolean) =>
   [
@@ -63,6 +51,8 @@ function Skeleton() {
 
 /* ─── Page ─── */
 export default function RoutinePage() {
+  const [routines, setRoutines] = useState<RoutineSchema[]>([]);
+  const [loading, setLoading] = useState(true);
   const [date] = useState(() => new Date());
   const [today, setToday] = useState(
     date.toLocaleDateString("en-US", { weekday: "long" }),
@@ -82,6 +72,24 @@ export default function RoutinePage() {
       localStorage.setItem("focusMode", String(next));
       return next;
     });
+  }, []);
+
+  // Fetch routine from API
+  useEffect(() => {
+    const fetchRoutine = async () => {
+      try {
+        const res = await fetch("/api/user/routine");
+        if (res.ok) {
+          const data = await res.json();
+          setRoutines(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch routine:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRoutine();
   }, []);
 
   // Day navigation — bounded Sunday → Thursday
@@ -111,7 +119,7 @@ export default function RoutinePage() {
     return () => document.removeEventListener("keydown", handler);
   }, [handlePrev, handleNext]);
 
-  const filteredRoutines = MOCK_ROUTINES
+  const filteredRoutines = routines
     .filter((r) => r.day.toLowerCase() === today.toLowerCase())
     .sort((a, b) => a.start_time.localeCompare(b.start_time));
 
@@ -196,7 +204,7 @@ export default function RoutinePage() {
               No classes today <FiStar className="ml-2 text-2xl text-[var(--color-accent)]" />
             </div>
           )
-        ) : changingDay ? (
+        ) : (loading || changingDay) ? (
           <Skeleton />
         ) : filteredRoutines.length === 0 ? (
           <div className="rounded-[18px] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] px-8 py-[72px] text-center">
