@@ -10,24 +10,28 @@ export default withAuth(
     // Redirect from login/signup if logged in
     if (pathname.startsWith("/login") || pathname.startsWith("/signup")) {
       if (isAuth) {
-        return NextResponse.redirect(new URL(role === "admin" ? "/dashboard" : "/profile", req.url));
+        return NextResponse.redirect(new URL(role === "admin" || role === "moderator" ? "/dashboard" : "/profile", req.url));
       }
     }
 
     // Redirect from index page if logged in
     if (pathname === "/") {
       if (isAuth) {
-        return NextResponse.redirect(new URL(role === "admin" ? "/dashboard" : "/routine", req.url));
+        return NextResponse.redirect(new URL(role === "admin" || role === "moderator" ? "/dashboard" : "/routine", req.url));
       }
     }
 
-    // Protect Dashboard (Admins only)
+    // Protect Dashboard (Admins and Moderators)
     if (pathname.startsWith("/dashboard")) {
       if (!isAuth) {
         return NextResponse.redirect(new URL("/login", req.url));
       }
-      if (role !== "admin") {
+      if (role !== "admin" && role !== "moderator") {
         return NextResponse.redirect(new URL("/profile", req.url));
+      }
+      // Only admin can access manage-moderators
+      if (pathname.startsWith("/dashboard/manage-moderators") && role !== "admin") {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
       }
     }
 

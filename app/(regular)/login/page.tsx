@@ -1,14 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import AuthButtons from "@/components/AuthButtons";
+import LoginForm from "@/components/LoginForm";
 
 export const metadata: Metadata = {
   title: "Log in",
   description: "Log in to your Loop account with Google or admin email and password.",
 };
-
-const inputCls =
-  "w-full rounded-[9px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3.5 py-[11px] text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 focus:border-blue-400/50";
 
 export default function LoginPage() {
   return (
@@ -59,56 +57,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <form className="flex flex-col gap-[18px]">
-            {/* Email / Student ID */}
-            <div>
-              <label
-                htmlFor="login-email"
-                className="mb-2 block text-[13px] font-medium text-[var(--color-text-secondary)]"
-              >
-                Admin email or Student ID
-              </label>
-              <input
-                id="login-email"
-                type="text"
-                placeholder="admin@university.edu"
-                className={inputCls}
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <label
-                  htmlFor="login-password"
-                  className="text-[13px] font-medium text-[var(--color-text-secondary)]"
-                >
-                  Password
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-[var(--color-accent)] no-underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <input
-                id="login-password"
-                type="password"
-                placeholder="••••••••"
-                className={inputCls}
-              />
-            </div>
-
-            {/* Submit */}
-            <button
-              id="login-submit"
-              type="submit"
-              className="mt-2 cursor-pointer rounded-[9px] border-none bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] py-[13px] text-[15px] font-semibold text-white shadow-[0_0_24px_rgba(79,142,247,0.3)] transition-all duration-200 hover:shadow-[0_0_32px_rgba(79,142,247,0.5)]"
-            >
-              Log in
-            </button>
-          </form>
+          <LoginForm />
 
           <p className="mt-6 text-center text-[13px] text-[var(--color-text-muted)]">
             Don&apos;t have an account?{" "}

@@ -87,6 +87,15 @@ const adminNavItems = [
       </svg>
     ),
   },
+  {
+    href: "/dashboard/manage-moderators",
+    label: "Moderators",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    ),
+  },
 ];
 
 export default function AdminSidebar() {
@@ -120,6 +129,11 @@ export default function AdminSidebar() {
       </p>
       <nav className="flex flex-col gap-1">
         {adminNavItems.map((item) => {
+          // Hide moderators tab if the user is just a moderator (only admins can manage mods)
+          if (item.href === "/dashboard/manage-moderators" && (session?.user as any)?.role !== "admin") {
+            return null;
+          }
+
           const isActive =
             item.href === "/dashboard"
               ? pathname === "/dashboard"
@@ -128,7 +142,7 @@ export default function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              id={`admin-nav-${item.label.toLowerCase()}`}
+              id={`admin-nav-${item.label.toLowerCase().replace(" ", "-")}`}
               className={`flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-sm font-medium no-underline transition-all duration-200 ${
                 isActive
                   ? "border-[rgba(79,142,247,0.2)] bg-[var(--color-accent-muted)] text-[var(--color-accent)]"
