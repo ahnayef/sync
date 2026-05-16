@@ -1,21 +1,34 @@
 "use client";
 
-import { useState } from "react";
-
-const INITIAL = [
-  { id: 1, name: "CSE", fullName: "Computer Science & Engineering" },
-  { id: 2, name: "MAT", fullName: "Mathematics" },
-  { id: 3, name: "HUM", fullName: "Humanities" },
-  { id: 4, name: "EEE", fullName: "Electrical & Electronic Engineering" },
-];
+import { useState, useEffect } from "react";
 
 export default function ManageDepartmentPage() {
-  const [departments, setDepartments] = useState(INITIAL);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
   const [newFullName, setNewFullName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await fetch("/api/departments");
+      const data = await res.json();
+      if (res.ok) {
+        setDepartments(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
 
   const filtered = departments.filter((d) => {
     return (
@@ -38,30 +51,52 @@ export default function ManageDepartmentPage() {
     setShowModal(true);
   };
 
-  const saveDepartment = () => {
+  const saveDepartment = async () => {
     if (!newName || !newFullName) return;
-    if (editingId) {
-      setDepartments(
-        departments.map((d) =>
-          d.id === editingId
-            ? { ...d, name: newName.toUpperCase(), fullName: newFullName }
-            : d
-        )
-      );
-    } else {
-      setDepartments([
-        ...departments,
-        {
-          id: Date.now(),
-          name: newName.toUpperCase(),
-          fullName: newFullName,
-        },
-      ]);
+    setSaving(true);
+    try {
+      const method = editingId ? "PUT" : "POST";
+      const payload = editingId 
+        ? { id: editingId, name: newName, fullName: newFullName }
+        : { name: newName, fullName: newFullName };
+        
+      const res = await fetch("/api/departments", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.error || "Failed to save department");
+      } else {
+        await fetchDepartments();
+        setNewName("");
+        setNewFullName("");
+        setEditingId(null);
+        setShowModal(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred");
+    } finally {
+      setSaving(false);
     }
-    setNewName("");
-    setNewFullName("");
-    setEditingId(null);
-    setShowModal(false);
+  };
+
+  const deleteDepartment = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this department? This will also delete related courses and batches!")) return;
+    try {
+      const res = await fetch(`/api/departments?id=${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to delete");
+      } else {
+        await fetchDepartments();
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -153,9 +188,7 @@ export default function ManageDepartmentPage() {
                     </button>
                     <button
                       id={`dept-delete-${d.id}`}
-                      onClick={() =>
-                        setDepartments(departments.filter((x) => x.id !== d.id))
-                      }
+                      onClick={() => deleteDepartment(d.id)}
                       className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]"
                     >
                       Delete
@@ -230,9 +263,10 @@ export default function ManageDepartmentPage() {
                 <button
                   id="modal-dept-save"
                   onClick={saveDepartment}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
+                  disabled={saving || !newName || !newFullName}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {editingId ? "Save Changes" : "Save"}
+                  {saving ? "Saving..." : (editingId ? "Save Changes" : "Save")}
                 </button>
               </div>
             </div>
