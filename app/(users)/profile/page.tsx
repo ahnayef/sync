@@ -13,6 +13,13 @@ export default function ProfilePage() {
   const [studentId, setStudentId] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
 
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
   useEffect(() => {
     if (session?.user) {
       setName(session.user.name || "");
@@ -26,6 +33,41 @@ export default function ProfilePage() {
   const handleSave = () => {
     // In a real app, this would make an API call
     setEditing(false);
+  };
+
+  const handlePasswordChange = async () => {
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError("New password must be at least 6 characters");
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const res = await fetch("/api/profile/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update password");
+      }
+      setPasswordSuccess("Password updated successfully!");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      setPasswordError(err.message);
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   return (
@@ -170,28 +212,58 @@ export default function ProfilePage() {
             Change Password
           </h3>
           <div className="flex flex-col gap-4 max-w-[400px]">
-            {[
-              { id: "profile-current-password", label: "Current Password" },
-              { id: "profile-new-password", label: "New Password" },
-              { id: "profile-confirm-password", label: "Confirm New Password" },
-            ].map((field) => (
-              <div key={field.id}>
-                <label htmlFor={field.id} className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2">
-                  {field.label}
-                </label>
-                <input
-                  id={field.id}
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
-                />
-              </div>
-            ))}
+            {passwordError && <div className="text-sm text-[var(--color-danger)] bg-[rgba(248,81,73,0.1)] p-3 rounded-md border border-[rgba(248,81,73,0.2)]">{passwordError}</div>}
+            {passwordSuccess && <div className="text-sm text-[#3fb950] bg-[rgba(63,185,80,0.1)] p-3 rounded-md border border-[rgba(63,185,80,0.2)]">{passwordSuccess}</div>}
+            
+            <div>
+              <label htmlFor="profile-current-password" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2">
+                Current Password
+              </label>
+              <input
+                id="profile-current-password"
+                type="password"
+                placeholder="••••••••"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="profile-new-password" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2">
+                New Password
+              </label>
+              <input
+                id="profile-new-password"
+                type="password"
+                placeholder="••••••••"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="profile-confirm-password" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2">
+                Confirm New Password
+              </label>
+              <input
+                id="profile-confirm-password"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
+              />
+            </div>
+
             <button
               id="profile-update-password"
-              className="mt-2 w-max px-6 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_16px_rgba(79,142,247,0.25)] hover:scale-[1.02] active:scale-95 transition-all"
+              onClick={handlePasswordChange}
+              disabled={passwordLoading}
+              className="mt-2 w-max px-6 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_16px_rgba(79,142,247,0.25)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Update password
+              {passwordLoading ? "Updating..." : "Update password"}
             </button>
           </div>
         </div>
