@@ -1,22 +1,41 @@
 "use client";
 
-import { useState } from "react";
-
-const INITIAL = [
-  { id: 1, name: "CSE 21", session: "2021-2025", dept: "CSE" },
-  { id: 2, name: "CSE 22", session: "2022-2026", dept: "CSE" },
-  { id: 3, name: "BBA 20", session: "2020-2024", dept: "BBA" },
-  { id: 4, name: "ENG 23", session: "2023-2027", dept: "ENG" },
-];
+import { useState, useEffect } from "react";
 
 export default function ManageBatchPage() {
-  const [batches, setBatches] = useState(INITIAL);
+  const [batches, setBatches] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
   const [newSession, setNewSession] = useState("");
-  const [newDept, setNewDept] = useState("");
+  const [newDeptId, setNewDeptId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const [batchRes, deptRes] = await Promise.all([
+        fetch("/api/batches"),
+        fetch("/api/departments")
+      ]);
+      const [batchData, deptData] = await Promise.all([
+        batchRes.json(),
+        deptRes.json()
+      ]);
+      if (batchRes.ok) setBatches(batchData);
+      if (deptRes.ok) setDepartments(deptData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const filtered = batches.filter((b) => {
     return (
@@ -30,7 +49,7 @@ export default function ManageBatchPage() {
     setEditingId(null);
     setNewName("");
     setNewSession("");
-    setNewDept("");
+    setNewDeptId(departments[0]?.id || "");
     setShowModal(true);
   };
 
@@ -38,36 +57,53 @@ export default function ManageBatchPage() {
     setEditingId(batch.id);
     setNewName(batch.name);
     setNewSession(batch.session);
-    setNewDept(batch.dept);
+    setNewDeptId(batch.department_id);
     setShowModal(true);
   };
 
-  const saveBatch = () => {
-    if (!newName || !newSession || !newDept) return;
-    if (editingId) {
-      setBatches(
-        batches.map((b) =>
-          b.id === editingId
-            ? { ...b, name: newName, session: newSession, dept: newDept.toUpperCase() }
-            : b
-        )
-      );
-    } else {
-      setBatches([
-        ...batches,
-        {
-          id: Date.now(),
-          name: newName,
-          session: newSession,
-          dept: newDept.toUpperCase(),
-        },
-      ]);
+  const saveBatch = async () => {
+    if (!newName || !newSession || !newDeptId) return;
+    setSaving(true);
+    try {
+      const method = editingId ? "PUT" : "POST";
+      const payload = editingId 
+        ? { id: editingId, name: newName, session: newSession, departmentId: newDeptId }
+        : { name: newName, session: newSession, departmentId: newDeptId };
+        
+      const res = await fetch("/api/batches", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.error || "Failed to save batch");
+      } else {
+        await fetchData();
+        setShowModal(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred");
+    } finally {
+      setSaving(false);
     }
-    setNewName("");
-    setNewSession("");
-    setNewDept("");
-    setEditingId(null);
-    setShowModal(false);
+  };
+
+  const deleteBatch = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this batch? All schedules for this batch will be removed!")) return;
+    try {
+      const res = await fetch(`/api/batches?id=${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to delete");
+      } else {
+        await fetchData();
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -162,15 +198,13 @@ export default function ManageBatchPage() {
                     >
                       Edit
                     </button>
-                    <button
-                      id={`batch-delete-${b.id}`}
-                      onClick={() =>
-                        setBatches(batches.filter((x) => x.id !== b.id))
-                      }
-                      className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]"
-                    >
-                      Delete
-                    </button>
+                        <button
+                          id={`batch-delete-${b.id}`}
+                          onClick={() => deleteBatch(b.id)}
+                          className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]"
+                        >
+                          Delete
+                        </button>
                   </div>
                 </td>
               </tr>
@@ -237,14 +271,19 @@ export default function ManageBatchPage() {
                 >
                   Department
                 </label>
-                <input
+                <select
                   id="modal-batch-dept"
-                  type="text"
-                  value={newDept}
-                  onChange={(e) => setNewDept(e.target.value)}
-                  placeholder="e.g. CSE"
+                  value={newDeptId}
+                  onChange={(e) => setNewDeptId(e.target.value)}
                   className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
-                />
+                >
+                  <option value="" disabled>Select Department</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} ({d.fullName})
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex gap-3 mt-4">
                 <button
@@ -257,9 +296,10 @@ export default function ManageBatchPage() {
                 <button
                   id="modal-batch-save"
                   onClick={saveBatch}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
+                  disabled={saving || !newName || !newSession || !newDeptId}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {editingId ? "Save Changes" : "Save"}
+                  {saving ? "Saving..." : (editingId ? "Save Changes" : "Save")}
                 </button>
               </div>
             </div>
