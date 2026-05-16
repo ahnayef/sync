@@ -1,80 +1,49 @@
 "use client";
 
-import { useState } from "react";
-
-const INITIAL = [
-  {
-    id: 1,
-    code: "CSE301",
-    name: "Data Structures",
-    isLab: false,
-    dept: "CSE",
-  },
-  {
-    id: 2,
-    code: "CSE301L",
-    name: "Data Structures Lab",
-    isLab: true,
-    dept: "CSE",
-  },
-  {
-    id: 3,
-    code: "CSE303",
-    name: "Operating Systems",
-    isLab: false,
-    dept: "CSE",
-  },
-  {
-    id: 4,
-    code: "CSE315L",
-    name: "OS Lab",
-    isLab: true,
-    dept: "CSE",
-  },
-  {
-    id: 5,
-    code: "CSE405",
-    name: "Software Engineering",
-    isLab: false,
-    dept: "CSE",
-  },
-  {
-    id: 6,
-    code: "MAT201",
-    name: "Discrete Mathematics",
-    isLab: false,
-    dept: "Math",
-  },
-  {
-    id: 7,
-    code: "HUM201",
-    name: "Technical Writing",
-    isLab: false,
-    dept: "HUM",
-  },
-  {
-    id: 8,
-    code: "CSE311L",
-    name: "Networks Lab",
-    isLab: true,
-    dept: "CSE",
-  },
-];
+import { useState, useEffect } from "react";
 
 export default function ManageCoursesPage() {
-  const [courses, setCourses] = useState(INITIAL);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newCode, setNewCode] = useState("");
   const [newName, setNewName] = useState("");
   const [newIsLab, setNewIsLab] = useState(false);
+  const [newDeptId, setNewDeptId] = useState<string>("");
   const [filterLab, setFilterLab] = useState<"all" | "lab" | "theory">("all");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const [courseRes, deptRes] = await Promise.all([
+        fetch("/api/courses"),
+        fetch("/api/departments")
+      ]);
+      const [courseData, deptData] = await Promise.all([
+        courseRes.json(),
+        deptRes.json()
+      ]);
+      if (courseRes.ok) setCourses(courseData);
+      if (deptRes.ok) setDepartments(deptData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const filtered = courses.filter((c) => {
     const matchSearch =
       c.code.toLowerCase().includes(search.toLowerCase()) ||
-      c.name.toLowerCase().includes(search.toLowerCase());
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.dept.toLowerCase().includes(search.toLowerCase());
     const matchFilter =
       filterLab === "all" ? true : filterLab === "lab" ? c.isLab : !c.isLab;
     return matchSearch && matchFilter;
@@ -85,44 +54,62 @@ export default function ManageCoursesPage() {
     setNewCode("");
     setNewName("");
     setNewIsLab(false);
+    setNewDeptId(departments[0]?.id || "");
     setShowModal(true);
   };
 
   const openEdit = (course: any) => {
     setEditingId(course.id);
     setNewCode(course.code);
-    setNewName(course.name);
+    setNewName(course.name || "");
     setNewIsLab(course.isLab);
+    setNewDeptId(course.department_id);
     setShowModal(true);
   };
 
-  const saveCourse = () => {
-    if (!newCode || !newName) return;
-    if (editingId) {
-      setCourses(
-        courses.map((c) =>
-          c.id === editingId
-            ? { ...c, code: newCode.toUpperCase(), name: newName, isLab: newIsLab }
-            : c
-        )
-      );
-    } else {
-      setCourses([
-        ...courses,
-        {
-          id: Date.now(),
-          code: newCode.toUpperCase(),
-          name: newName,
-          isLab: newIsLab,
-          dept: "CSE",
-        },
-      ]);
+  const saveCourse = async () => {
+    if (!newCode || !newDeptId) return;
+    setSaving(true);
+    try {
+      const method = editingId ? "PUT" : "POST";
+      const payload = editingId 
+        ? { id: editingId, code: newCode, name: newName, isLab: newIsLab, departmentId: newDeptId }
+        : { code: newCode, name: newName, isLab: newIsLab, departmentId: newDeptId };
+        
+      const res = await fetch("/api/courses", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.error || "Failed to save course");
+      } else {
+        await fetchData();
+        setShowModal(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred");
+    } finally {
+      setSaving(false);
     }
-    setNewCode("");
-    setNewName("");
-    setNewIsLab(false);
-    setEditingId(null);
-    setShowModal(false);
+  };
+
+  const deleteCourse = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this course?")) return;
+    try {
+      const res = await fetch(`/api/courses?id=${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to delete");
+      } else {
+        await fetchData();
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -235,9 +222,7 @@ export default function ManageCoursesPage() {
                     </button>
                     <button
                       id={`course-delete-${c.id}`}
-                      onClick={() =>
-                        setCourses(courses.filter((x) => x.id !== c.id))
-                      }
+                      onClick={() => deleteCourse(c.id)}
                       className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]"
                     >
                       Delete
@@ -294,12 +279,34 @@ export default function ManageCoursesPage() {
                   className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
                 />
               </div>
+              <div>
+                <label
+                  htmlFor="modal-course-dept"
+                  className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2"
+                >
+                  Department
+                </label>
+                <select
+                  id="modal-course-dept"
+                  value={newDeptId}
+                  onChange={(e) => setNewDeptId(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 px-3 text-sm text-[var(--color-text-primary)] outline-none"
+                >
+                  <option value="" disabled>Select Department</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} ({d.fullName})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div
                 className={`flex items-center gap-3 p-3 rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] cursor-pointer`}
                 onClick={() => setNewIsLab(!newIsLab)}
               >
                 <div
-                  className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${newIsLab ? "bg-purple-500 border-0" : "bg-transparent border-2 border-[var(--color-border)]"}`}
+                  className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${newIsLab ? "bg-[#a371f7] border-0" : "bg-transparent border-2 border-[var(--color-border)]"}`}
                 >
                   {newIsLab && (
                     <svg
@@ -331,9 +338,10 @@ export default function ManageCoursesPage() {
                 <button
                   id="modal-course-save"
                   onClick={saveCourse}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
+                  disabled={saving || !newCode || !newDeptId}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {editingId ? "Save Changes" : "Save"}
+                  {saving ? "Saving..." : (editingId ? "Save Changes" : "Save")}
                 </button>
               </div>
             </div>
