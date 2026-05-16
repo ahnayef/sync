@@ -183,24 +183,24 @@ function detectTimeSlots(sheet: ExcelJS.Worksheet) {
 
   const timeSlots: Record<number, { start: string; end: string }> = {};
   let offsetMinutes = 0;
-  let previousStartMinutes: number | null = null;
+  let previousRawStartMinutes: number | null = null;
 
   for (const slot of bestMatches.sort((a, b) => a.colNumber - b.colNumber)) {
     const rawStartMinutes = toMinutes(slot.start);
     const rawEndMinutes = toMinutes(slot.end);
     if (rawStartMinutes === null || rawEndMinutes === null) continue;
 
-    if (previousStartMinutes !== null && rawStartMinutes < previousStartMinutes) {
+    if (previousRawStartMinutes !== null && rawStartMinutes < previousRawStartMinutes) {
       offsetMinutes += 12 * 60;
     }
 
     const startMinutes = rawStartMinutes + offsetMinutes;
-    const endMinutes = rawEndMinutes + offsetMinutes;
+    const endMinutes = rawEndMinutes + offsetMinutes + (rawEndMinutes < rawStartMinutes ? 12 * 60 : 0);
     timeSlots[slot.colNumber] = {
       start: formatMinutes(startMinutes),
       end: formatMinutes(endMinutes),
     };
-    previousStartMinutes = startMinutes;
+    previousRawStartMinutes = rawStartMinutes;
   }
 
   return timeSlots;
