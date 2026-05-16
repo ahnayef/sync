@@ -459,9 +459,16 @@ async function applyConflictChecks(rows: ResolvedScheduleRow[]) {
   const validTeacherIds = Array.from(
     new Set(rows.map((row) => row.teacher_id).filter((id): id is number => typeof id === "number"))
   );
+  const replacingDepartmentIds = Array.from(
+    new Set(rows.map((row) => row.department_id).filter((id): id is number => typeof id === "number"))
+  );
 
   if (validTeacherIds.length > 0) {
-    const placeholders = validTeacherIds.map(() => "?").join(",");
+    const teacherPlaceholders = validTeacherIds.map(() => "?").join(",");
+    const departmentFilter =
+      replacingDepartmentIds.length > 0
+        ? `AND (s.department_id IS NULL OR s.department_id NOT IN (${replacingDepartmentIds.map(() => "?").join(",")}))`
+        : "";
     const [existingRows] = await db.execute<ScheduleConflictRow[]>(
       `
         SELECT s.id, s.teacher_id, s.room_id, s.day,
@@ -470,9 +477,10 @@ async function applyConflictChecks(rows: ResolvedScheduleRow[]) {
           r.number as room_number
         FROM schedules s
         LEFT JOIN rooms r ON s.room_id = r.id
-        WHERE s.teacher_id IN (${placeholders})
+        WHERE s.teacher_id IN (${teacherPlaceholders})
+        ${departmentFilter}
       `,
-      validTeacherIds
+      [...validTeacherIds, ...replacingDepartmentIds]
     );
 
     for (const row of rows) {
@@ -519,9 +527,18 @@ async function applyRows(rows: ResolvedScheduleRow[]) {
     return { inserted: 0, errors: invalidRows.length };
   }
 
+  const departmentIds = Array.from(
+    new Set(rows.map((row) => row.department_id).filter((id): id is number => typeof id === "number"))
+  );
+  if (departmentIds.length !== 1) {
+    throw new Error("Imported schedules must resolve to exactly one department before applying.");
+  }
+
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
+    await connection.execute("DELETE FROM schedules WHERE department_id = ?", [departmentIds[0]]);
+
     for (const row of rows) {
       await connection.execute(
         `
