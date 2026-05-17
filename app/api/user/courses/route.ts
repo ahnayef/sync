@@ -22,18 +22,22 @@ export async function GET() {
     if (!userId) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     // 2. Fetch unique course-teacher combinations from schedules
-    // Joining with courses and teachers to get names and codes
+    // Joining with courses, teachers, and batches to aggregate batch names and sessions
     const [availableRows] = await db.execute<RowDataPacket[]>(`
-      SELECT DISTINCT 
+      SELECT 
         c.id as courseId, 
         c.code as courseCode, 
         c.name as courseTitle, 
         c.is_lab as isLab,
         t.id as teacherId, 
-        t.name as teacherName
+        t.name as teacherName,
+        GROUP_CONCAT(DISTINCT b.name ORDER BY b.name SEPARATOR ', ') as batchNames,
+        GROUP_CONCAT(DISTINCT b.session ORDER BY b.session SEPARATOR ', ') as batchSessions
       FROM schedules s
       JOIN courses c ON s.course_id = c.id
       JOIN teachers t ON s.teacher_id = t.id
+      LEFT JOIN batches b ON s.batch_id = b.id
+      GROUP BY c.id, c.code, c.name, c.is_lab, t.id, t.name
       ORDER BY c.code ASC, t.name ASC
     `);
 
