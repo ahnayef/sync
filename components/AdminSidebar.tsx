@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { LogoIcon } from "./Icon";
 
 const adminNavItems = [
   {
@@ -110,8 +111,8 @@ export default function AdminSidebar() {
         id="admin-sidebar-logo"
         className="mb-6 flex items-center gap-2.5 px-3 py-2 no-underline"
       >
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-[var(--color-accent-muted)] text-[16px] font-bold text-[var(--color-accent)] shadow-[0_0_18px_rgba(79,142,247,0.18)]">
-          L
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-[var(--color-accent-muted)] shadow-[0_0_18px_rgba(79,142,247,0.18)]">
+          <LogoIcon className="h-6 w-6" />
         </div>
         <div>
           <span className="block text-[17px] font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">
