@@ -119,7 +119,7 @@ export default function Home() {
               id="hero-cta-signup"
               className="rounded-[10px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-8 py-3.5 text-[15px] font-semibold text-white no-underline shadow-[0_0_30px_rgba(79,142,247,0.35),0_4px_20px_rgba(0,0,0,0.3)] transition-all duration-200 hover:shadow-[0_0_40px_rgba(79,142,247,0.5)]"
             >
-              Get started free
+              Get started
             </Link>
             <Link
               href="/about"
