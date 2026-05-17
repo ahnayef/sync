@@ -10,6 +10,7 @@ interface CourseTeacher {
   isLab: boolean;
   teacherId: number;
   teacherName: string;
+  deptName: string | null;
   batchNames: string | null;
   batchSessions: string | null;
 }
@@ -65,13 +66,12 @@ export default function CoursesPage() {
   const selectedCount = selected.size;
   const availableCount = courses.length;
 
-  // Extract unique departments from course code prefixes
+  // Extract unique departments from API deptName directly
   const departments = useMemo(() => {
     const depts = new Set<string>();
     courses.forEach((c) => {
-      const match = c.courseCode.match(/^([A-Za-z]+)/);
-      if (match) {
-        depts.add(match[1].toUpperCase());
+      if (c.deptName) {
+        depts.add(c.deptName.toUpperCase());
       }
     });
     return Array.from(depts).sort();
@@ -119,12 +119,11 @@ export default function CoursesPage() {
       result = result.filter((c) => !selected.has(`${c.courseId}-${c.teacherId}`));
     }
 
-    // 4. Department Prefix filter
+    // 4. Department filter (from database deptName)
     if (filterDept !== "all") {
-      result = result.filter((c) => {
-        const match = c.courseCode.match(/^([A-Za-z]+)/);
-        return match && match[1].toUpperCase() === filterDept;
-      });
+      result = result.filter(
+        (c) => c.deptName && c.deptName.toLowerCase() === filterDept.toLowerCase()
+      );
     }
 
     // 5. Batch Session filter
@@ -288,7 +287,7 @@ export default function CoursesPage() {
                 <option value="all">All Sessions</option>
                 {sessions.map((sess) => (
                   <option key={sess} value={sess}>
-                    {sess}
+                    Session {sess}
                   </option>
                 ))}
               </select>
@@ -339,20 +338,20 @@ export default function CoursesPage() {
                 filterType !== "all" ||
                 filterStatus !== "all" ||
                 search !== "") && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFilterDept("all");
-                      setFilterSession("all");
-                      setFilterType("all");
-                      setFilterStatus("all");
-                      setSearch("");
-                    }}
-                    className="rounded-xl border border-dashed border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 active:scale-95"
-                  >
-                    Clear Filters
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterDept("all");
+                    setFilterSession("all");
+                    setFilterType("all");
+                    setFilterStatus("all");
+                    setSearch("");
+                  }}
+                  className="rounded-xl border border-dashed border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 active:scale-95"
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -370,10 +369,10 @@ export default function CoursesPage() {
             </div>
             <h3 className="mb-1 text-base font-semibold text-[var(--color-text-primary)]">
               {(filterDept !== "all" ||
-                filterSession !== "all" ||
-                filterType !== "all" ||
-                filterStatus !== "all" ||
-                search !== "")
+              filterSession !== "all" ||
+              filterType !== "all" ||
+              filterStatus !== "all" ||
+              search !== "")
                 ? "No courses match your selected filter criteria"
                 : "No courses available in the schedule"}
             </h3>
@@ -382,20 +381,20 @@ export default function CoursesPage() {
               filterType !== "all" ||
               filterStatus !== "all" ||
               search !== "") && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFilterDept("all");
-                    setFilterSession("all");
-                    setFilterType("all");
-                    setFilterStatus("all");
-                    setSearch("");
-                  }}
-                  className="mt-4 text-sm font-medium text-[var(--color-accent)] hover:underline"
-                >
-                  Clear all filters
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterDept("all");
+                  setFilterSession("all");
+                  setFilterType("all");
+                  setFilterStatus("all");
+                  setSearch("");
+                }}
+                className="mt-4 text-sm font-medium text-[var(--color-accent)] hover:underline"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
@@ -451,7 +450,7 @@ export default function CoursesPage() {
                       <p className="text-[14px] font-semibold leading-5 text-[var(--color-text-primary)]">
                         {course.courseTitle}
                       </p>
-
+                      
                       {/* Teacher metadata */}
                       <p className="flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)]">
                         <FiUser className="shrink-0 opacity-60 text-blue-400" />
@@ -463,7 +462,7 @@ export default function CoursesPage() {
                         {course.batchSessions && (
                           <span className="flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-400/20 px-2 py-0.5 text-[10px] font-medium text-blue-300">
                             <FiCalendar size={10} className="shrink-0 text-blue-400" />
-                            {course.batchSessions}
+                            Session: {course.batchSessions}
                           </span>
                         )}
                         {course.batchNames && (
