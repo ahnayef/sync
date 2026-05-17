@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { FiInbox, FiCheck, FiSave, FiSearch, FiUser, FiCalendar } from "react-icons/fi";
+import { FiInbox, FiCheck, FiSave, FiSearch, FiUser, FiCalendar, FiSliders } from "react-icons/fi";
 
 interface CourseTeacher {
   courseId: number;
@@ -19,14 +19,14 @@ const inputCls =
   "w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-3 pr-4 pl-11 text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 placeholder:text-[var(--color-text-muted)] focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/15";
 
 const selectCls =
-  "rounded-xl border border-white/10 bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm text-[var(--color-text-secondary)] outline-none cursor-pointer transition-all hover:border-white/20 hover:text-[var(--color-text-primary)] focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30";
+  "w-full rounded-xl border border-white/10 bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm text-[var(--color-text-secondary)] outline-none cursor-pointer transition-all hover:border-white/20 hover:text-[var(--color-text-primary)] focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30";
 
 function courseRowCls(selected: boolean) {
   return [
-    "group flex h-full min-h-[176px] w-full cursor-pointer flex-col justify-between gap-3 rounded-xl border px-4 py-4 text-left transition-all duration-200",
+    "group flex h-full min-h-[132px] w-full cursor-pointer flex-col justify-between gap-2.5 rounded-xl border px-4 py-3.5 text-left transition-all duration-200",
     selected
-      ? "border-blue-400/30 bg-blue-500/[0.06]"
-      : "border-[var(--color-border)] bg-[var(--color-bg-surface)] hover:border-white/10 hover:bg-[var(--color-bg-elevated)]",
+      ? "border-blue-400/35 bg-blue-500/[0.06] shadow-[0_0_12px_rgba(59,130,246,0.03)]"
+      : "border-[var(--color-border)] bg-[var(--color-bg-surface)] hover:border-white/10 hover:bg-[var(--color-bg-elevated)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.15)]",
   ].join(" ");
 }
 
@@ -44,6 +44,7 @@ export default function CoursesPage() {
   const [filterDept, setFilterDept] = useState("all");
   const [filterSession, setFilterSession] = useState("all");
   const [sortBy, setSortBy] = useState("code-asc");
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -89,6 +90,16 @@ export default function CoursesPage() {
     });
     return Array.from(sessSet).sort((a, b) => b.localeCompare(a));
   }, [courses]);
+
+  // Count active filters (to show in a badge)
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filterDept !== "all") count++;
+    if (filterSession !== "all") count++;
+    if (filterType !== "all") count++;
+    if (filterStatus !== "all") count++;
+    return count;
+  }, [filterDept, filterSession, filterType, filterStatus]);
 
   // Dynamic filter and sort application
   const filtered = useMemo(() => {
@@ -231,135 +242,173 @@ export default function CoursesPage() {
           </button>
         </div>
 
-        {/* Filtering and Sorting Controls Container */}
-        <div className="mb-6 flex flex-col gap-4">
-          {/* Search bar */}
-          <div className="relative w-full">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[var(--color-text-muted)]"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              id="courses-search"
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search courses by code, title, or teacher..."
-              className={inputCls}
-            />
-          </div>
-
-          {/* Filtering and Sorting Selectors */}
-          <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
-            <div className="flex flex-wrap gap-2.5 col-span-2 sm:col-span-1">
-              {/* Dept select */}
-              <select
-                id="filter-dept"
-                value={filterDept}
-                onChange={(e) => setFilterDept(e.target.value)}
-                className={selectCls}
+        {/* Dynamic Filtering and Sorting Controls Container */}
+        <div className="mb-6 flex flex-col gap-3">
+          {/* Main search and Filters Toggle Row */}
+          <div className="flex gap-2.5 items-center w-full">
+            <div className="relative flex-1">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[var(--color-text-muted)]"
               >
-                <option value="all">All Departments</option>
-                {departments.map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept}
-                  </option>
-                ))}
-              </select>
-
-              {/* Batch Session Filter - Primary Focus */}
-              <select
-                id="filter-session"
-                value={filterSession}
-                onChange={(e) => setFilterSession(e.target.value)}
-                className={selectCls}
-              >
-                <option value="all">All Sessions</option>
-                {sessions.map((sess) => (
-                  <option key={sess} value={sess}>
-                    Session {sess}
-                  </option>
-                ))}
-              </select>
-
-              {/* Class Type select */}
-              <select
-                id="filter-type"
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className={selectCls}
-              >
-                <option value="all">All Class Types</option>
-                <option value="theory">Theory Classes</option>
-                <option value="lab">Lab Sessions</option>
-              </select>
-
-              {/* Status select */}
-              <select
-                id="filter-status"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className={selectCls}
-              >
-                <option value="all">All Statuses</option>
-                <option value="selected">Selected (Followed)</option>
-                <option value="unselected">Not Selected</option>
-              </select>
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                id="courses-search"
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search courses by code, title, or teacher..."
+                className={inputCls}
+              />
             </div>
 
-            <div className="flex items-center gap-2.5 col-span-2 sm:col-span-1 sm:justify-end">
-              <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)] hidden lg:inline">
-                Sort:
-              </span>
-              <select
-                id="sort-by"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className={selectCls}
-              >
-                <option value="code-asc">Code: A to Z</option>
-                <option value="code-desc">Code: Z to A</option>
-                <option value="title-asc">Title: A to Z</option>
-                <option value="teacher-asc">Teacher: A to Z</option>
-              </select>
+            {/* Premium collapsible filter toggle */}
+            <button
+              type="button"
+              onClick={() => setShowFilters(!showFilters)}
+              className={[
+                "flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-all duration-200 cursor-pointer h-[46px]",
+                showFilters || activeFilterCount > 0
+                  ? "border-blue-400/30 bg-blue-500/10 text-blue-300"
+                  : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-surface)] hover:text-white",
+              ].join(" ")}
+            >
+              <FiSliders className="shrink-0" />
+              <span className="hidden sm:inline">Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white shadow-md">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          </div>
 
+          {/* Collapsible Filters & Sorting Panel */}
+          {showFilters && (
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4.5 animate-in slide-in-from-top-3 duration-200">
+              <div className="grid grid-cols-1 gap-4.5 sm:grid-cols-2 lg:grid-cols-5 items-end">
+                {/* Dept select */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold tracking-wider text-[var(--color-text-muted)] uppercase">Department</label>
+                  <select
+                    id="filter-dept"
+                    value={filterDept}
+                    onChange={(e) => setFilterDept(e.target.value)}
+                    className={selectCls}
+                  >
+                    <option value="all">All Departments</option>
+                    {departments.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Batch Session Filter - Primary Focus */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold tracking-wider text-[var(--color-text-muted)] uppercase">Batch Session</label>
+                  <select
+                    id="filter-session"
+                    value={filterSession}
+                    onChange={(e) => setFilterSession(e.target.value)}
+                    className={selectCls}
+                  >
+                    <option value="all">All Sessions</option>
+                    {sessions.map((sess) => (
+                      <option key={sess} value={sess}>
+                        Session {sess}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Class Type select */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold tracking-wider text-[var(--color-text-muted)] uppercase">Class Type</label>
+                  <select
+                    id="filter-type"
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    className={selectCls}
+                  >
+                    <option value="all">All Class Types</option>
+                    <option value="theory">Theory Classes</option>
+                    <option value="lab">Lab Sessions</option>
+                  </select>
+                </div>
+
+                {/* Status select */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold tracking-wider text-[var(--color-text-muted)] uppercase">Selection Status</label>
+                  <select
+                    id="filter-status"
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className={selectCls}
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="selected">Selected (Followed)</option>
+                    <option value="unselected">Not Selected</option>
+                  </select>
+                </div>
+
+                {/* Sort Order dropdown */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold tracking-wider text-[var(--color-text-muted)] uppercase">Sort By</label>
+                  <select
+                    id="sort-by"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className={selectCls}
+                  >
+                    <option value="code-asc">Code: A to Z</option>
+                    <option value="code-desc">Code: Z to A</option>
+                    <option value="title-asc">Title: A to Z</option>
+                    <option value="teacher-asc">Teacher: A to Z</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Action row at bottom of expanded panel */}
               {(filterDept !== "all" ||
                 filterSession !== "all" ||
                 filterType !== "all" ||
                 filterStatus !== "all" ||
                 search !== "") && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFilterDept("all");
-                    setFilterSession("all");
-                    setFilterType("all");
-                    setFilterStatus("all");
-                    setSearch("");
-                  }}
-                  className="rounded-xl border border-dashed border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 active:scale-95"
-                >
-                  Clear Filters
-                </button>
+                <div className="mt-4 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFilterDept("all");
+                      setFilterSession("all");
+                      setFilterType("all");
+                      setFilterStatus("all");
+                      setSearch("");
+                    }}
+                    className="rounded-xl border border-dashed border-red-500/30 bg-red-500/10 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-red-400 transition-all hover:bg-red-500/20 active:scale-95 cursor-pointer"
+                  >
+                    Reset Active Filters
+                  </button>
+                </div>
               )}
             </div>
-          </div>
+          )}
         </div>
 
         {loading ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-[176px] animate-pulse rounded-xl bg-[var(--color-bg-elevated)]" />
+              <div key={i} className="h-[132px] animate-pulse rounded-xl bg-[var(--color-bg-elevated)]" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -410,11 +459,12 @@ export default function CoursesPage() {
                     className={courseRowCls(isSelected)}
                     aria-pressed={isSelected}
                   >
-                    <div className="flex items-start justify-between gap-3 w-full">
-                      <div className="flex flex-wrap items-center gap-2">
+                    {/* Top Row: Course Code & Lab Status, along with Checkbox Selector */}
+                    <div className="flex items-center justify-between gap-3 w-full">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <span
                           className={[
-                            "rounded-md border px-2 py-0.5 font-mono text-[11px] font-bold tracking-wide",
+                            "rounded-md border px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide",
                             course.isLab
                               ? "border-violet-500/30 bg-violet-500/10 text-lab"
                               : "border-blue-400/30 bg-blue-500/10 text-[#6f9ff7]",
@@ -423,7 +473,7 @@ export default function CoursesPage() {
                           {course.courseCode}
                         </span>
                         {course.isLab ? (
-                          <span className="rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-2.5 py-0.5 text-[10px] font-bold tracking-[0.08em] text-white uppercase">
+                          <span className="rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-2 py-0.5 text-[9px] font-bold tracking-[0.08em] text-white uppercase">
                             Lab
                           </span>
                         ) : null}
@@ -431,7 +481,7 @@ export default function CoursesPage() {
 
                       <span
                         className={[
-                          "flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200",
+                          "flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200",
                           isSelected
                             ? "border-[#4f8ef7] bg-[#4f8ef7]"
                             : "border-[var(--color-border)] bg-transparent group-hover:border-white/20",
@@ -439,38 +489,39 @@ export default function CoursesPage() {
                         aria-hidden
                       >
                         {isSelected ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="20 6 9 17 4 12" />
                           </svg>
                         ) : null}
                       </span>
                     </div>
 
-                    <div className="min-w-0 space-y-1.5 w-full">
-                      <p className="text-[14px] font-semibold leading-5 text-[var(--color-text-primary)]">
+                    {/* Middle Section: Course Title & Instructor */}
+                    <div className="min-w-0 space-y-1 w-full mt-1">
+                      <p className="text-[13.5px] font-semibold leading-snug text-[var(--color-text-primary)] line-clamp-2">
                         {course.courseTitle}
                       </p>
-                      
-                      {/* Teacher metadata */}
-                      <p className="flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)]">
+                      <p className="flex items-center gap-1.5 text-[11.5px] text-[var(--color-text-secondary)]">
                         <FiUser className="shrink-0 opacity-60 text-blue-400" />
                         {course.teacherName}
                       </p>
+                    </div>
 
-                      {/* Prominent Session badge and secondary Batch Name */}
-                      <div className="flex flex-wrap items-center justify-between gap-1.5 mt-2 pt-1 border-t border-white/[0.04]">
-                        {course.batchSessions && (
-                          <span className="flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-400/20 px-2 py-0.5 text-[10px] font-medium text-blue-300">
-                            <FiCalendar size={10} className="shrink-0 text-blue-400" />
-                            Session: {course.batchSessions}
-                          </span>
-                        )}
-                        {course.batchNames && (
-                          <span className="text-[10px] text-white/30 truncate max-w-[150px]">
-                            {course.batchNames}
-                          </span>
-                        )}
-                      </div>
+                    {/* Bottom Row: Dynamic Batch Session Pill & Cohort Label */}
+                    <div className="flex items-center justify-between gap-2 w-full mt-2 pt-2 border-t border-white/[0.04]">
+                      {course.batchSessions ? (
+                        <span className="flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-400/20 px-2 py-0.5 text-[9px] font-semibold text-blue-300">
+                          <FiCalendar size={9} className="shrink-0 text-blue-400" />
+                          Session: {course.batchSessions}
+                        </span>
+                      ) : (
+                        <div />
+                      )}
+                      {course.batchNames && (
+                        <span className="text-[9.5px] text-white/30 truncate max-w-[120px]" title={course.batchNames}>
+                          {course.batchNames}
+                        </span>
+                      )}
                     </div>
                   </button>
                 </li>
