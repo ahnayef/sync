@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { LogoIcon } from "./Icon";
 
 
 
@@ -25,8 +26,8 @@ export default function UserNavbar() {
       <div className="mx-auto max-w-[1200px] px-4 py-3 sm:px-6">
         <div className="flex items-center justify-between gap-3 sm:hidden">
           <Link href="/" id="user-nav-logo" className="flex shrink-0 items-center gap-2 no-underline">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#4f8ef7] to-[#a371f7] text-base font-bold text-white shadow-[0_0_20px_rgba(79,142,247,0.3)]">
-              L
+            <div className="flex h-10 w-10 items-center justify-center rounded-full text-base font-bold text-white">
+              <LogoIcon />
             </div>
             <span className="text-lg font-bold tracking-tight text-white">Loop</span>
           </Link>
@@ -69,10 +70,12 @@ export default function UserNavbar() {
         {/* 3-column grid keeps nav links perfectly centred on larger screens */}
         <div className="hidden h-16 grid-cols-[1fr_auto_1fr] items-center sm:grid">
           <Link href="/" id="user-nav-logo" className="flex shrink-0 items-center gap-2.5 no-underline">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#4f8ef7] to-[#a371f7] text-base font-bold text-white shadow-[0_0_20px_rgba(79,142,247,0.3)]">
-              L
+            <div className="flex h-8 w-8 items-center justify-center  text-base font-bold text-white">
+              <LogoIcon />
             </div>
-            <span className="text-lg font-bold tracking-tight text-white">Loop</span>
+            <span className="text-lg font-bold tracking-tight text-white">
+              Loop
+            </span>
           </Link>
 
           <div className="flex items-center gap-1">
@@ -127,6 +130,6 @@ export default function UserNavbar() {
           </div>
         </div>
       </div>
-    </nav>
+    </nav >
   );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { LogoIcon } from "./Icon";
 
 const publicLinks = [
   { href: "/", label: "Home" },
@@ -19,9 +20,9 @@ export default function Navbar() {
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-6">
 
         {/* Logo */}
-        <Link href="/" id="nav-logo" className="flex items-center gap-2.5 no-underline">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#a371f7] text-base font-bold text-white shadow-[0_0_20px_rgba(79,142,247,0.3)]">
-            L
+        <Link href="/" id="nav-logo" className="flex items-center gap-2 no-underline">
+          <div className="flex h-8 w-8 items-center justify-center  text-base font-bold text-white">
+            <LogoIcon />
           </div>
           <span className="text-lg font-bold tracking-tight text-white">
             Loop
