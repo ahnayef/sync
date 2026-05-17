@@ -89,21 +89,7 @@ export const authOptions: AuthOptions = {
         if (session.email) token.email = session.email;
       }
 
-      if (token.id) {
-        try {
-          const [rows] = await db.execute<RowDataPacket[]>(
-            "SELECT id, role, name, email FROM users WHERE id = ?",
-            [String(token.id)]
-          );
-          if (rows.length > 0) {
-            token.role = rows[0].role;
-            token.name = rows[0].name;
-            token.email = rows[0].email;
-          }
-        } catch (error) {
-          console.error("Error fetching user for jwt by id:", error);
-        }
-      } else if (token.email) {
+      if (token.email) {
         try {
           const [rows] = await db.execute<RowDataPacket[]>(
             "SELECT id, role, name, email FROM users WHERE email = ?",
@@ -117,6 +103,21 @@ export const authOptions: AuthOptions = {
           }
         } catch (error) {
           console.error("Error fetching user for jwt by email:", error);
+        }
+      } else if (token.id) {
+        try {
+          const [rows] = await db.execute<RowDataPacket[]>(
+            "SELECT id, role, name, email FROM users WHERE id = ?",
+            [String(token.id)]
+          );
+          if (rows.length > 0) {
+            token.role = rows[0].role;
+            token.id = rows[0].id;
+            token.name = rows[0].name;
+            token.email = rows[0].email;
+          }
+        } catch (error) {
+          console.error("Error fetching user for jwt by id:", error);
         }
       }
       return token;
