@@ -25,7 +25,7 @@ export default function UserNavbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[rgba(8,12,16,0.85)] backdrop-blur-xl">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
-        
+
         {/* Mobile Header Row (Visible only on mobile) */}
         <div className="flex items-center justify-between h-14 sm:hidden">
           <Link href="/" id="user-nav-logo" className="flex shrink-0 items-center gap-1.5 no-underline">
@@ -47,11 +47,11 @@ export default function UserNavbar() {
         {/* Desktop Header Row (Hidden on mobile) */}
         {/* 3-column grid keeps nav links perfectly centred on larger screens */}
         <div className="hidden h-16 grid-cols-[1fr_auto_1fr] items-center sm:grid">
-          <Link href="/" id="user-nav-logo" className="flex shrink-0 items-center gap-2.5 no-underline">
-            <div className="flex h-8 w-8 items-center justify-center text-base font-bold text-white">
+          <Link href="/" id="nav-logo" className="flex items-center gap-1.5 sm:gap-2 no-underline">
+            <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center text-base font-bold text-white">
               <LogoIcon />
             </div>
-            <span className="text-lg font-bold tracking-tight text-white">
+            <span className="text-base sm:text-lg font-bold tracking-tight text-white">
               Loop
             </span>
           </Link>
@@ -109,7 +109,7 @@ export default function UserNavbar() {
       {isOpen && (
         <div className="sm:hidden border-t border-white/10 bg-[rgba(8,12,16,0.95)] backdrop-blur-2xl animate-in slide-in-from-top duration-300 ease-out">
           <div className="flex flex-col gap-4 px-6 py-6">
-            
+
             {/* Mobile Nav Links */}
             <div className="flex flex-col gap-2">
               {navItems.map((item) => {
