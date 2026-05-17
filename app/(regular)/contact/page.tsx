@@ -1,6 +1,5 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import type { Metadata } from "next";
+import { FiArrowRight, FiClock, FiMail, FiMapPin, FiMessageSquare } from "react-icons/fi";
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -12,111 +11,120 @@ const contactItems = [
     label: "Email",
     value: "hello@loop.edu",
     color: "#4f8ef7",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-        <polyline points="22,6 12,13 2,6"/>
-      </svg>
-    ),
+    icon: FiMail,
   },
   {
     label: "Address",
     value: "123 Campus Lane, Edu City",
     color: "#a371f7",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-        <circle cx="12" cy="10" r="3"/>
-      </svg>
-    ),
+    icon: FiMapPin,
   },
   {
     label: "Support Hours",
-    value: "Mon–Fri, 9 AM – 6 PM",
+    value: "Mon-Fri, 9 AM - 6 PM",
     color: "#3fb950",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
-      </svg>
-    ),
+    icon: FiClock,
   },
 ];
 
 const nameFields = [
   { id: "contact-first-name", label: "First Name", placeholder: "Jane" },
-  { id: "contact-last-name",  label: "Last Name",  placeholder: "Doe" },
+  { id: "contact-last-name", label: "Last Name", placeholder: "Doe" },
 ];
 
-/* Shared input className */
+const quickNotes = [
+  "Typical response time: within one business day.",
+  "For schedule issues, include the day and course name.",
+  "Admins can mention the batch or department for faster routing.",
+];
+
 const inputCls =
-  "w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3.5 py-2.5 text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 focus:border-blue-400/50";
+  "w-full rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3.5 py-3 text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 placeholder:text-[var(--color-text-muted)] focus:border-blue-400/50";
 
 export default function ContactPage() {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-bg-base)]">
+      <main className="flex-1 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-[1180px]">
+          <section className="relative overflow-hidden rounded-[32px] border border-[var(--color-border)] bg-[linear-gradient(135deg,rgba(17,23,32,0.95),rgba(21,28,37,0.92))] px-6 py-10 shadow-[0_30px_100px_rgba(0,0,0,0.28)] sm:px-10 sm:py-12 lg:px-12 lg:py-14">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute right-[-100px] top-[-100px] h-72 w-72 rounded-full bg-[radial-gradient(circle_at_center,rgba(79,142,247,0.16),transparent_68%)] blur-3xl"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute left-[-70px] bottom-[-90px] h-64 w-64 rounded-full bg-[radial-gradient(circle_at_center,rgba(163,113,247,0.12),transparent_68%)] blur-3xl"
+            />
 
-      <main className="flex-1 px-6 py-20">
-        <div className="mx-auto max-w-[900px]">
-
-          {/* ── Header ── */}
-          <div className="mb-16">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/[0.08] px-3.5 py-1">
-              <span className="text-xs font-semibold tracking-[0.04em] text-[#4f8ef7]">
-                Get in touch
-              </span>
-            </div>
-
-            <h1 className="mb-5 text-[clamp(36px,5vw,56px)] font-extrabold leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)]">
-              We&apos;d love to{" "}
-              <span className="gradient-text">hear from you</span>
-            </h1>
-
-            <p className="max-w-[500px] text-[17px] leading-[1.7] text-[var(--color-text-secondary)]">
-              Have a question, found a bug, or just want to say hello? Drop us a message below.
-            </p>
-          </div>
-
-          {/* ── Two-column layout ── */}
-          <div className="grid items-start gap-8 [grid-template-columns:1fr_1.6fr]">
-
-            {/* Contact info cards */}
-            <div className="flex flex-col gap-4">
-              {contactItems.map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-start gap-3.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5"
-                >
-                  {/* Icon box — dynamic color kept as inline style */}
-                  <div
-                    className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[10px]"
-                    style={{
-                      background: `${item.color}18`,
-                      border: `1px solid ${item.color}30`,
-                      color: item.color,
-                    }}
-                  >
-                    {item.icon}
-                  </div>
-                  <div>
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
-                      {item.label}
-                    </p>
-                    <p className="text-sm text-[var(--color-text-secondary)]">{item.value}</p>
-                  </div>
+            <div className="relative grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-12">
+              <div>
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/25 bg-blue-500/10 px-4 py-2 text-xs font-semibold tracking-[0.18em] text-[#8ab2ff]">
+                  GET IN TOUCH
                 </div>
-              ))}
-            </div>
 
-            {/* Contact form */}
-            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-9">
-              <h2 className="mb-6 text-lg font-bold text-[var(--color-text-primary)]">
-                Send a message
-              </h2>
+                <h1 className="max-w-3xl text-[clamp(38px,6vw,64px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-[var(--color-text-primary)]">
+                  We&apos;d love to <span className="gradient-text">hear from you</span>
+                </h1>
+
+                <p className="mt-6 max-w-[560px] text-[17px] leading-8 text-[var(--color-text-secondary)]">
+                  Have a question, found a bug, or want help with a schedule issue? Send a message and we&apos;ll route it to the right place.
+                </p>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                  {quickNotes.map((note) => (
+                    <div
+                      key={note}
+                      className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.55)] px-4 py-3 text-sm leading-6 text-[var(--color-text-secondary)]"
+                    >
+                      {note}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-3 rounded-[24px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.62)] p-4 sm:grid-cols-3 lg:grid-cols-1">
+                {contactItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={item.label}
+                      className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.85)] p-4"
+                    >
+                      <div
+                        className="mb-4 flex h-11 w-11 items-center justify-center rounded-[14px]"
+                        style={{
+                          background: `${item.color}18`,
+                          border: `1px solid ${item.color}30`,
+                          color: item.color,
+                        }}
+                      >
+                        <Icon size={18} />
+                      </div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
+                        {item.label}
+                      </p>
+                      <p className="mt-2 text-sm text-[var(--color-text-secondary)]">{item.value}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6 sm:p-8">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#4f8ef718] text-[#8fb5ff]">
+                  <FiMessageSquare size={18} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[var(--color-text-primary)]">Support details</p>
+                  <p className="text-sm text-[var(--color-text-muted)]">Quick context helps us reply faster.</p>
+                </div>
+              </div>
 
               <form className="flex flex-col gap-[18px]">
-                {/* First / Last name row */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {nameFields.map((field) => (
                     <div key={field.id}>
                       <label
@@ -135,7 +143,6 @@ export default function ContactPage() {
                   ))}
                 </div>
 
-                {/* Email */}
                 <div>
                   <label
                     htmlFor="contact-email"
@@ -151,7 +158,6 @@ export default function ContactPage() {
                   />
                 </div>
 
-                {/* Subject */}
                 <div>
                   <label
                     htmlFor="contact-subject"
@@ -167,7 +173,6 @@ export default function ContactPage() {
                   />
                 </div>
 
-                {/* Message */}
                 <div>
                   <label
                     htmlFor="contact-message"
@@ -177,28 +182,57 @@ export default function ContactPage() {
                   </label>
                   <textarea
                     id="contact-message"
-                    rows={5}
+                    rows={6}
                     placeholder="Describe your question or issue in detail..."
                     className={`${inputCls} resize-y font-[inherit]`}
                   />
                 </div>
 
-                {/* Submit */}
                 <button
                   id="contact-submit"
                   type="submit"
-                  className="cursor-pointer rounded-[9px] border-none bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-6 py-3 text-[15px] font-semibold text-white shadow-[0_0_24px_rgba(79,142,247,0.3)] transition-all duration-200 hover:shadow-[0_0_32px_rgba(79,142,247,0.5)]"
+                  className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-6 py-3 text-[15px] font-semibold text-white shadow-[0_0_24px_rgba(79,142,247,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_32px_rgba(79,142,247,0.45)]"
                 >
-                  Send message →
+                  Send message
+                  <FiArrowRight />
                 </button>
               </form>
             </div>
-          </div>
 
+            <div className="rounded-[28px] border border-blue-400/15 bg-[linear-gradient(135deg,rgba(79,142,247,0.08),rgba(163,113,247,0.06))] p-6 sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9fc0ff]">What happens next</p>
+              <h2 className="mt-3 text-[clamp(22px,3vw,34px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
+                We keep the reply simple.
+              </h2>
+
+              <div className="mt-6 space-y-4">
+                {[
+                  "We read the message and identify the right team.",
+                  "We reply with the next step or the information we need.",
+                  "If it's a bug or schedule issue, we keep the update focused and actionable.",
+                ].map((step, index) => (
+                  <div
+                    key={step}
+                    className="flex gap-4 rounded-[20px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.72)] p-4"
+                  >
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#4f8ef718] text-sm font-semibold text-[#9fc0ff]">
+                      0{index + 1}
+                    </div>
+                    <p className="text-sm leading-7 text-[var(--color-text-secondary)]">{step}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 rounded-[20px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.55)] p-4">
+                <p className="text-sm font-semibold text-[var(--color-text-primary)]">Need urgent help?</p>
+                <p className="mt-1 text-sm leading-7 text-[var(--color-text-secondary)]">
+                  Include the course, day, and exact issue in the form. That gives us enough context to respond faster.
+                </p>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
