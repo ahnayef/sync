@@ -6,9 +6,6 @@ import UserNavbar from "@/components/UserNavbar";
 import { RoutineBox } from "@/components/RoutineBox";
 import { RoutineSchema } from "@/app/types/routine";
 
-/* ─── Mock data ─── */
-
-
 const navBtnCls = (disabled: boolean) =>
   [
     "flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[11px] border-0 transition-all duration-200",
@@ -51,30 +48,16 @@ function Skeleton() {
 
 /* ─── Page ─── */
 export default function RoutinePage() {
-  const [routines, setRoutines] = useState<RoutineSchema[]>([]);
-  const [loading, setLoading] = useState(true);
   const [date] = useState(() => new Date());
   const [today, setToday] = useState(
     date.toLocaleDateString("en-US", { weekday: "long" }),
   );
   const [focusMode, setFocusMode] = useState(false);
   const [changingDay, setChangingDay] = useState(false);
+  const [routines, setRoutines] = useState<RoutineSchema[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Restore focus mode from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem("focusMode");
-    if (stored !== null) setFocusMode(stored === "true");
-  }, []);
-
-  const toggleFocusMode = useCallback(() => {
-    setFocusMode((prev) => {
-      const next = !prev;
-      localStorage.setItem("focusMode", String(next));
-      return next;
-    });
-  }, []);
-
-  // Fetch routine from API
+  // Fetch routine from backend
   useEffect(() => {
     const fetchRoutine = async () => {
       try {
@@ -90,6 +73,20 @@ export default function RoutinePage() {
       }
     };
     fetchRoutine();
+  }, []);
+
+  // Restore focus mode from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("focusMode");
+    if (stored !== null) setFocusMode(stored === "true");
+  }, []);
+
+  const toggleFocusMode = useCallback(() => {
+    setFocusMode((prev) => {
+      const next = !prev;
+      localStorage.setItem("focusMode", String(next));
+      return next;
+    });
   }, []);
 
   // Day navigation — bounded Sunday → Thursday

@@ -4,12 +4,12 @@ import { SVGProps } from "react";
 
 // Logo
 
-export function LogoIcon(props: SVGProps<SVGSVGElement>) {
+export function LogoIcon({ width = "100%", height = "100%", ...props }: SVGProps<SVGSVGElement>) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            width={238}
-            height={238}
+            width={width}
+            height={height}
             viewBox="0 0 238 238"
             fill="none"
             {...props}
