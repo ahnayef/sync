@@ -23,8 +23,8 @@ export default function Navbar() {
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-6">
 
         {/* Logo */}
-        <Link href="/" id="nav-logo" className="flex items-center gap-1.5 sm:gap-2 no-underline">
-          <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center text-base font-bold text-white">
+        <Link href="/" id="nav-logo" className="flex items-center gap-1.5 no-underline">
+          <div className="flex size-6 items-center justify-center text-base font-bold text-white">
             <LogoIcon />
           </div>
           <span className="text-base sm:text-lg font-bold tracking-tight text-white">

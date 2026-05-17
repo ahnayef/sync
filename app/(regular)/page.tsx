@@ -1,8 +1,16 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { FiCalendar, FiBook, FiZap, FiUsers, FiHome, FiMoon } from "react-icons/fi";
+import {
+  FiCalendar,
+  FiBook,
+  FiZap,
+  FiUsers,
+  FiHome,
+  FiMoon,
+} from "react-icons/fi";
 import type { Metadata } from "next";
+import { LogoIcon } from "@/components/Icon";
 
 export const metadata: Metadata = {
   title: "Loop — Smart Schedule Management",
@@ -78,7 +86,10 @@ export default function Home() {
               "radial-gradient(ellipse at center, rgba(163,113,247,0.06) 0%, transparent 70%)",
           }}
         />
-
+        <div className="w-full flex flex-col items-center my-2">
+          <LogoIcon className="w-16"/>
+          <h1 className="mt-3 text-2xl font-bold">Loop</h1>
+        </div>
         <div className="relative mx-auto max-w-[760px]">
           {/* Badge */}
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/[0.08] px-3.5 py-1.5">
@@ -97,7 +108,8 @@ export default function Home() {
           {/* Subheadline */}
           <p className="mx-auto mb-12 max-w-[580px] text-lg leading-[1.7] text-[var(--color-text-secondary)]">
             Loop keeps students on top of their class routines and gives admins
-            powerful tools to manage schedules — all in one minimal, beautiful app.
+            powerful tools to manage schedules — all in one minimal, beautiful
+            app.
           </p>
 
           {/* CTA buttons */}
@@ -124,7 +136,6 @@ export default function Home() {
       <section className="relative px-6 pb-20">
         <div className="mx-auto max-w-[1000px]">
           <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-[0_40px_120px_rgba(0,0,0,0.5),0_0_0_1px_rgba(79,142,247,0.05)]">
-
             {/* Mock browser bar */}
             <div className="flex items-center gap-2 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-3">
               {["#f85149", "#d29922", "#3fb950"].map((c) => (
@@ -149,10 +160,12 @@ export default function Home() {
                     key={label}
                     className="flex items-center gap-2 rounded-[7px] px-2.5 py-2"
                     style={{
-                      background: i === 0 ? "var(--color-accent-muted)" : "transparent",
-                      border: i === 0
-                        ? "1px solid rgba(79,142,247,0.2)"
-                        : "1px solid transparent",
+                      background:
+                        i === 0 ? "var(--color-accent-muted)" : "transparent",
+                      border:
+                        i === 0
+                          ? "1px solid rgba(79,142,247,0.2)"
+                          : "1px solid transparent",
                     }}
                   >
                     <div
@@ -262,7 +275,8 @@ export default function Home() {
               Ready to get organized?
             </h2>
             <p className="relative mx-auto mb-9 max-w-[400px] text-base leading-relaxed text-[var(--color-text-secondary)]">
-              Join students and administrators already using Loop to stay on schedule.
+              Join students and administrators already using Loop to stay on
+              schedule.
             </p>
 
             <div className="relative flex flex-wrap justify-center gap-4">
