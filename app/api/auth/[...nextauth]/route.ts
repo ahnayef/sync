@@ -24,7 +24,7 @@ export const authOptions: AuthOptions = {
         
         try {
           const [rows] = await db.execute<RowDataPacket[]>(
-            "SELECT * FROM users WHERE email = ? AND role IN ('admin', 'moderator')",
+            "SELECT * FROM users WHERE email = ?",
             [credentials.email]
           );
 
