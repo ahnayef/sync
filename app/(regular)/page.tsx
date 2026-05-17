@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
   FiCalendar,
@@ -8,6 +7,10 @@ import {
   FiUsers,
   FiHome,
   FiMoon,
+  FiArrowRight,
+  FiShield,
+  FiClock,
+  FiSliders,
 } from "react-icons/fi";
 import type { Metadata } from "next";
 import { LogoIcon } from "@/components/Icon";
@@ -57,243 +60,300 @@ const features = [
   },
 ];
 
-const sidebarItems = ["Routine", "Courses", "Profile"];
-const previewCards = [
-  { color: "#4f8ef7", width: "80%" },
-  { color: "#3fb950", width: "70%" },
-  { color: "#a371f7", width: "75%" },
+const stats = [
+  { value: "24/7", label: "routine access" },
+  { value: "1", label: "dashboard for every role" },
+  { value: "Fast", label: "schedule updates" },
+];
+
+const routineItems = [
+  {
+    time: "08:30",
+    title: "Discrete Mathematics",
+    meta: "Room 402 · Prof. Karim",
+    accent: "#4f8ef7",
+  },
+  {
+    time: "10:00",
+    title: "Database Systems",
+    meta: "Lab 2 · Dr. Nahar",
+    accent: "#3fb950",
+  },
+  {
+    time: "01:15",
+    title: "Software Engineering",
+    meta: "Room 105 · Team project",
+    accent: "#a371f7",
+  },
+];
+
+const insightCards = [
+  { label: "Today", value: "5 classes", hint: "2 gaps" },
+  { label: "Imported", value: "98%", hint: "validated" },
+  { label: "Changes", value: "Live", hint: "instant sync" },
 ];
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-bg-base)]">
-      {/* ── Hero ── */}
-      <section className="relative overflow-hidden px-6 pb-[100px] pt-[120px] text-center">
-        {/* Glow blobs */}
+      <section className="relative overflow-hidden px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8 lg:px-8">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-[-120px] h-[500px] w-[800px] -translate-x-1/2"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, rgba(79,142,247,0.12) 0%, transparent 70%)",
-          }}
+          className="pointer-events-none absolute inset-x-0 top-[-180px] mx-auto h-[520px] w-[920px] max-w-full rounded-full bg-[radial-gradient(circle_at_center,rgba(79,142,247,0.18),transparent_62%)] blur-3xl"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-[20%] top-[40px] h-[400px] w-[400px]"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, rgba(163,113,247,0.06) 0%, transparent 70%)",
-          }}
+          className="pointer-events-none absolute left-[8%] top-[6rem] h-64 w-64 rounded-full bg-[radial-gradient(circle_at_center,rgba(163,113,247,0.11),transparent_68%)] blur-2xl"
         />
-        <div className="w-full flex flex-col items-center my-2">
-          <LogoIcon className="w-16"/>
-          <h1 className="mt-3 text-2xl font-bold">Loop</h1>
-        </div>
-        <div className="relative mx-auto max-w-[760px]">
-          {/* Badge */}
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/[0.08] px-3.5 py-1.5">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#4f8ef7] shadow-[0_0_8px_#4f8ef7]" />
-            <span className="text-xs font-semibold tracking-[0.04em] text-[#4f8ef7]">
-              Smart Schedule Management
-            </span>
-          </div>
 
-          {/* Headline */}
-          <h1 className="mb-6 text-[clamp(40px,6vw,72px)] font-extrabold leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)]">
-            Your schedule,{" "}
-            <span className="gradient-text">perfectly organized</span>
-          </h1>
-
-          {/* Subheadline */}
-          <p className="mx-auto mb-12 max-w-[580px] text-lg leading-[1.7] text-[var(--color-text-secondary)]">
-            Loop keeps students on top of their class routines and gives admins
-            powerful tools to manage schedules — all in one minimal, beautiful
-            app.
-          </p>
-
-          {/* CTA buttons */}
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              href="/signup"
-              id="hero-cta-signup"
-              className="rounded-[10px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-8 py-3.5 text-[15px] font-semibold text-white no-underline shadow-[0_0_30px_rgba(79,142,247,0.35),0_4px_20px_rgba(0,0,0,0.3)] transition-all duration-200 hover:shadow-[0_0_40px_rgba(79,142,247,0.5)]"
-            >
-              Get started
-            </Link>
-            <Link
-              href="/about"
-              id="hero-cta-learn"
-              className="rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-8 py-3.5 text-[15px] font-semibold text-[var(--color-text-secondary)] no-underline transition-all duration-200 hover:border-white/20 hover:text-white/80"
-            >
-              Learn more
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Mock Dashboard Preview ── */}
-      <section className="relative px-6 pb-20">
-        <div className="mx-auto max-w-[1000px]">
-          <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-[0_40px_120px_rgba(0,0,0,0.5),0_0_0_1px_rgba(79,142,247,0.05)]">
-            {/* Mock browser bar */}
-            <div className="flex items-center gap-2 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-3">
-              {["#f85149", "#d29922", "#3fb950"].map((c) => (
-                <div
-                  key={c}
-                  className="h-2.5 w-2.5 rounded-full opacity-80"
-                  style={{ background: c }}
-                />
-              ))}
-              <div className="ml-2 flex flex-1 items-center gap-2 rounded-[6px] bg-[var(--color-bg-subtle)] py-1 pl-3">
-                <div className="h-2.5 w-2.5 rounded-full bg-[var(--color-border)]" />
-                <div className="h-1.5 w-[120px] rounded-[3px] bg-[var(--color-border)]" />
+        <div className="relative mx-auto max-w-[1180px]">
+          {/* <div className="mb-10 flex items-center justify-between rounded-full border border-[var(--color-border)] bg-[rgba(13,17,23,0.72)] px-4 py-3 backdrop-blur md:px-5">
+            <div className="flex items-center gap-3">
+              <LogoIcon className="h-9 w-9" />
+              <div>
+                <p className="text-sm font-semibold text-[var(--color-text-primary)]">Loop</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Schedule management for campus teams</p>
               </div>
             </div>
+            <div className="hidden items-center gap-6 text-sm text-[var(--color-text-secondary)] md:flex">
+              <Link href="/about" className="transition-colors hover:text-[var(--color-text-primary)]">About</Link>
+              <Link href="/contact" className="transition-colors hover:text-[var(--color-text-primary)]">Contact</Link>
+              <Link href="/login" className="transition-colors hover:text-[var(--color-text-primary)]">Login</Link>
+            </div>
+          </div> */}
 
-            {/* Mock routine preview */}
-            <div className="flex h-80">
-              {/* Sidebar */}
-              <div className="flex w-[180px] shrink-0 flex-col gap-1.5 border-r border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-3">
-                {sidebarItems.map((label, i) => (
+          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
+            <div className="max-w-2xl text-center lg:text-left">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/25 bg-blue-500/10 px-4 py-2 text-xs font-semibold tracking-[0.08em] text-[#8ab2ff]">
+                <span className="glow-dot" />
+                SMART SCHEDULE MANAGEMENT
+              </div>
+
+              <h1 className="text-[clamp(42px,7vw,78px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-[var(--color-text-primary)] animate-fade-in">
+                Your routine, shaped into a cleaner workday.
+              </h1>
+
+              <p className="mt-6 max-w-[640px] text-base leading-8 text-[var(--color-text-secondary)] sm:text-lg">
+                Loop gives students a fast, readable routine view and gives admins the controls to
+                import, validate, and manage schedules without turning the dashboard into a maze.
+              </p>
+
+              <div className="mt-8 flex flex-wrap justify-center gap-4 lg:justify-start">
+                <Link
+                  href="/signup"
+                  id="hero-cta-signup"
+                  className="group inline-flex items-center gap-2 rounded-[14px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-6 py-3.5 text-sm font-semibold text-white no-underline shadow-[0_18px_45px_rgba(79,142,247,0.28)] transition-transform duration-200 hover:-translate-y-0.5"
+                >
+                  Get started
+                  <FiArrowRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                </Link>
+                <Link
+                  href="/about"
+                  id="hero-cta-learn"
+                  className="inline-flex items-center gap-2 rounded-[14px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.7)] px-6 py-3.5 text-sm font-semibold text-[var(--color-text-secondary)] no-underline transition-colors duration-200 hover:border-white/15 hover:text-[var(--color-text-primary)]"
+                >
+                  See how it works
+                </Link>
+              </div>
+
+              <div className="mt-10 grid gap-3 sm:grid-cols-3">
+                {stats.map((stat) => (
                   <div
-                    key={label}
-                    className="flex items-center gap-2 rounded-[7px] px-2.5 py-2"
-                    style={{
-                      background:
-                        i === 0 ? "var(--color-accent-muted)" : "transparent",
-                      border:
-                        i === 0
-                          ? "1px solid rgba(79,142,247,0.2)"
-                          : "1px solid transparent",
-                    }}
+                    key={stat.label}
+                    className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.66)] p-4 text-center shadow-[0_20px_45px_rgba(0,0,0,0.18)] backdrop-blur"
                   >
-                    <div
-                      className="h-3.5 w-3.5 rounded-[3px]"
-                      style={{
-                        background: i === 0 ? "#4f8ef7" : "var(--color-border)",
-                        opacity: i === 0 ? 1 : 0.5,
-                      }}
-                    />
-                    <div
-                      className="h-2 rounded"
-                      style={{
-                        width: `${60 - i * 10}px`,
-                        background: i === 0 ? "#4f8ef7" : "var(--color-border)",
-                        opacity: i === 0 ? 1 : 0.4,
-                      }}
-                    />
+                    <div className="text-2xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">{stat.value}</div>
+                    <div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--color-text-muted)]">{stat.label}</div>
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* Content area */}
-              <div className="flex-1 overflow-y-auto p-5">
-                <div className="mb-4 h-5 w-40 rounded-[6px] bg-[var(--color-bg-subtle)]" />
-                {previewCards.map((card, i) => (
-                  <div
-                    key={i}
-                    className="mb-2.5 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-3.5"
-                    style={{ borderLeft: `3px solid ${card.color}` }}
-                  >
-                    <div className="mb-2 flex gap-2">
-                      <div
-                        className="h-2 w-[50px] rounded opacity-80"
-                        style={{ background: card.color }}
-                      />
-                      <div
-                        className="h-2 rounded bg-[var(--color-border)]"
-                        style={{ width: card.width }}
-                      />
+            <div className="relative">
+              <div className="absolute inset-0 rounded-[32px] bg-[radial-gradient(circle_at_top,rgba(79,142,247,0.15),transparent_48%)] blur-2xl" />
+              <div className="relative overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[rgba(13,17,23,0.9)] shadow-[0_30px_100px_rgba(0,0,0,0.45)]">
+                <div className="flex items-center gap-2 border-b border-[var(--color-border)] bg-[rgba(21,28,37,0.85)] px-4 py-3">
+                  {["#f85149", "#d29922", "#3fb950"].map((c) => (
+                    <div key={c} className="h-2.5 w-2.5 rounded-full opacity-90" style={{ background: c }} />
+                  ))}
+                  <div className="ml-2 flex flex-1 items-center gap-3 rounded-[10px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] px-3 py-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-[#4f8ef7]" />
+                    <div className="h-2 w-32 rounded-full bg-[var(--color-border)] sm:w-40" />
+                  </div>
+                </div>
+
+                <div className="grid gap-0 lg:grid-cols-[180px_1fr]">
+                  <aside className="border-b border-[var(--color-border)] bg-[rgba(21,28,37,0.82)] p-4 lg:border-b-0 lg:border-r">
+                    <div className="mb-4 rounded-[18px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.65)] p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#4f8ef71a] text-[#8fb5ff]">
+                          <FiClock />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-[var(--color-text-primary)]">Today</p>
+                          <p className="text-xs text-[var(--color-text-muted)]">5 classes, 2 gaps</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="h-1.5 w-[60%] rounded bg-[var(--color-bg-subtle)]" />
+
+                    <div className="space-y-2">
+                        {[
+                          { icon: FiSliders, label: "Routine" },
+                          { icon: FiBook, label: "Courses" },
+                          { icon: FiUsers, label: "People" },
+                          { icon: FiShield, label: "Admin" },
+                        ].map(({ icon: Icon, label }, index) => (
+                        <div
+                          key={label}
+                          className="flex items-center gap-3 rounded-[14px] border px-3 py-2.5 text-sm"
+                          style={{
+                            background:
+                              index === 0 ? "var(--color-accent-muted)" : "rgba(11,16,21,0.4)",
+                            borderColor:
+                              index === 0 ? "rgba(79,142,247,0.22)" : "transparent",
+                          }}
+                        >
+                          <Icon
+                            className={index === 0 ? "text-[#8fb5ff]" : "text-[var(--color-text-muted)]"}
+                          />
+                          <span
+                            className={
+                              index === 0
+                                ? "font-medium text-[var(--color-text-primary)]"
+                                : "text-[var(--color-text-secondary)]"
+                            }
+                          >
+                            {label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </aside>
+
+                  <div className="grid gap-4 p-4 sm:p-5">
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {insightCards.map((card) => (
+                        <div key={card.label} className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.75)] p-4">
+                          <div className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-muted)]">{card.label}</div>
+                          <div className="mt-2 text-2xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">{card.value}</div>
+                          <div className="mt-1 text-sm text-[var(--color-text-secondary)]">{card.hint}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="rounded-[22px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-4 sm:p-5">
+                      <div className="mb-4 flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-semibold text-[var(--color-text-primary)]">Routine preview</p>
+                          <p className="text-sm text-[var(--color-text-muted)]">A clean, scannable day view</p>
+                        </div>
+                        <span className="rounded-full border border-[#3fb95033] bg-[#3fb95014] px-3 py-1 text-xs font-semibold text-[#8ae39d]">
+                          Synced
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {routineItems.map((item) => (
+                          <div
+                            key={item.title}
+                            className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] p-4 transition-transform duration-200 hover:-translate-y-0.5"
+                            style={{ boxShadow: `inset 4px 0 0 ${item.accent}` }}
+                          >
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                              <div>
+                                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+                                  {item.time}
+                                </div>
+                                <div className="mt-1 text-base font-semibold text-[var(--color-text-primary)]">{item.title}</div>
+                                <div className="mt-1 text-sm text-[var(--color-text-secondary)]">{item.meta}</div>
+                              </div>
+                              <div className="flex items-center gap-2 self-start rounded-full border border-[var(--color-border)] bg-[rgba(21,28,37,0.8)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)] sm:self-center">
+                                <span className="h-2 w-2 rounded-full" style={{ background: item.accent }} />
+                                On track
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Features ── */}
-      <section className="px-6 pb-24 pt-16">
-        <div className="mx-auto max-w-[1100px]">
-          {/* Section header */}
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-[clamp(28px,4vw,44px)] font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">
-              Everything you need
+      <section className="px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1180px]">
+          <div className="mb-10 flex flex-col gap-3 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Why it feels better</p>
+            <h2 className="text-[clamp(28px,4vw,46px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
+              Focused tools, lighter interface.
             </h2>
-            <p className="mx-auto max-w-[480px] text-base leading-relaxed text-[var(--color-text-secondary)]">
-              A complete platform for both students and administrators.
+            <p className="mx-auto max-w-[620px] text-base leading-7 text-[var(--color-text-secondary)]">
+              The experience is designed to keep the important parts obvious: today’s routine, the next action, and the admin tools that actually matter.
             </p>
           </div>
 
-          {/* Feature grid */}
-          <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {features.map((feat) => (
               <div
                 key={feat.title}
-                className="rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-white/10"
+                className="group rounded-[22px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.72)] p-6 transition-all duration-200 hover:-translate-y-1 hover:border-white/10 hover:bg-[rgba(21,28,37,0.92)]"
               >
-                {/* Icon box — dynamic color per card */}
                 <div
-                  className="mb-4 flex h-11 w-11 items-center justify-center rounded-[10px] text-[22px]"
+                  className="mb-5 flex h-12 w-12 items-center justify-center rounded-[16px] text-[22px] transition-transform duration-200 group-hover:scale-105"
                   style={{
                     background: `${feat.color}18`,
-                    border: `1px solid ${feat.color}30`,
+                    border: `1px solid ${feat.color}2f`,
+                    color: feat.color,
                   }}
                 >
                   {feat.icon}
                 </div>
-                <h3 className="mb-2 text-base font-semibold text-[var(--color-text-primary)]">
-                  {feat.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
-                  {feat.desc}
-                </p>
+                <h3 className="mb-2 text-lg font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">{feat.title}</h3>
+                <p className="text-sm leading-7 text-[var(--color-text-secondary)]">{feat.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA Banner ── */}
-      <section className="px-6 pb-24">
-        <div className="mx-auto max-w-[800px]">
-          <div className="relative overflow-hidden rounded-[20px] border border-blue-400/20 bg-gradient-to-br from-blue-500/10 to-purple-500/10 px-12 py-16 text-center">
-            {/* Inner glow */}
+      <section className="px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1180px]">
+          <div className="relative overflow-hidden rounded-[28px] border border-blue-400/20 bg-[linear-gradient(135deg,rgba(79,142,247,0.12),rgba(163,113,247,0.1))] px-6 py-10 sm:px-10 sm:py-12">
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute left-1/2 top-[-60px] h-[200px] w-[400px] -translate-x-1/2"
-              style={{
-                background:
-                  "radial-gradient(ellipse, rgba(79,142,247,0.15) 0%, transparent 70%)",
-              }}
+              className="pointer-events-none absolute right-[-80px] top-[-70px] h-56 w-56 rounded-full bg-[radial-gradient(circle_at_center,rgba(79,142,247,0.2),transparent_68%)] blur-2xl"
             />
+            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9fc0ff]">Ready to get organized?</p>
+                <h2 className="mt-3 text-[clamp(28px,4vw,42px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
+                  Make the routine look simple, even when the schedule is not.
+                </h2>
+                <p className="mt-4 max-w-xl text-base leading-7 text-[var(--color-text-secondary)]">
+                  Students get a clear view. Admins get a faster workflow. Everyone gets a calmer interface that is easier to trust.
+                </p>
+              </div>
 
-            <h2 className="relative mb-4 text-[clamp(24px,3vw,36px)] font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">
-              Ready to get organized?
-            </h2>
-            <p className="relative mx-auto mb-9 max-w-[400px] text-base leading-relaxed text-[var(--color-text-secondary)]">
-              Join students and administrators already using Loop to stay on
-              schedule.
-            </p>
-
-            <div className="relative flex flex-wrap justify-center gap-4">
-              <Link
-                href="/signup"
-                id="cta-signup"
-                className="rounded-[10px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-7 py-3 text-[15px] font-semibold text-white no-underline shadow-[0_0_30px_rgba(79,142,247,0.35)] transition-all duration-200 hover:shadow-[0_0_40px_rgba(79,142,247,0.5)]"
-              >
-                Create free account
-              </Link>
-              <Link
-                href="/login"
-                id="cta-login"
-                className="rounded-[10px] border border-[var(--color-border)] bg-[rgba(13,17,23,0.6)] px-7 py-3 text-[15px] font-semibold text-[var(--color-text-secondary)] no-underline transition-all duration-200 hover:border-white/20 hover:text-white/80"
-              >
-                Log in
-              </Link>
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  href="/signup"
+                  id="cta-signup"
+                  className="inline-flex items-center justify-center rounded-[14px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-6 py-3.5 text-sm font-semibold text-white no-underline shadow-[0_18px_45px_rgba(79,142,247,0.24)] transition-transform duration-200 hover:-translate-y-0.5"
+                >
+                  Create free account
+                </Link>
+                <Link
+                  href="/login"
+                  id="cta-login"
+                  className="inline-flex items-center justify-center rounded-[14px] border border-[var(--color-border)] bg-[rgba(13,17,23,0.7)] px-6 py-3.5 text-sm font-semibold text-[var(--color-text-secondary)] no-underline transition-colors duration-200 hover:border-white/15 hover:text-[var(--color-text-primary)]"
+                >
+                  Log in
+                </Link>
+              </div>
             </div>
           </div>
         </div>
