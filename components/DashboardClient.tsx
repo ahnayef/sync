@@ -318,38 +318,39 @@ export default function DashboardClient() {
     }).slice(0, 5); 
   }, [data?.roomAnalytics?.occupancy]);
 
-  const roomTypePieData = useMemo(() => {
+  const roomCapacityPieData = useMemo(() => {
     if (!data?.roomAnalytics?.occupancy) return [];
     
-    const groups: Record<string, number> = {};
-    data.roomAnalytics.occupancy.forEach((r: any) => {
-      let type = r.room_type || "Other";
-      const lower = type.toLowerCase();
-      if (lower === "lecture hall") {
-        type = "Classrooms";
-      } else if (lower === "lab" || lower.includes("lab")) {
-        type = "Labs";
-      } else if (lower === "auditorium") {
-        type = "Auditoriums";
-      } else {
-        type = "Other";
-      }
-      
-      groups[type] = (groups[type] || 0) + 1;
-    });
-
-    const colorsMap: Record<string, string> = {
-      "Classrooms": "#6f93da",
-      "Labs": "#9a7bd9",
-      "Auditoriums": "#c59d4a",
-      "Other": "#d96b64",
+    const groups = {
+      "Small Classrooms": 0,    // <= 30 seats
+      "Medium Classrooms": 0,   // 31 - 50 seats
+      "Large Classrooms": 0     // > 50 seats
     };
 
-    return Object.entries(groups).map(([name, value]) => ({
-      name,
-      value,
-      color: colorsMap[name] || "#00d2ff"
-    }));
+    data.roomAnalytics.occupancy.forEach((r: any) => {
+      const cap = r.capacity || 0;
+      if (cap <= 30) {
+        groups["Small Classrooms"] += 1;
+      } else if (cap <= 50) {
+        groups["Medium Classrooms"] += 1;
+      } else {
+        groups["Large Classrooms"] += 1;
+      }
+    });
+
+    const colorsMap = {
+      "Small Classrooms": "#6f93da",
+      "Medium Classrooms": "#9a7bd9",
+      "Large Classrooms": "#c59d4a"
+    };
+
+    return Object.entries(groups)
+      .filter(([_, val]) => val > 0)
+      .map(([name, value]) => ({
+        name,
+        value,
+        color: colorsMap[name as keyof typeof colorsMap] || "#6f93da"
+      }));
   }, [data?.roomAnalytics?.occupancy]);
 
   const teacherWorkloadBarData = useMemo(() => {
@@ -610,14 +611,14 @@ export default function DashboardClient() {
               </div>
             </section>
 
-            {/* Right 1/3 Column: Room Type Shares (Doughnut Chart) */}
+            {/* Right 1/3 Column: Infrastructure Capacity (Doughnut Chart) */}
             <section className="glass rounded-xl border border-[var(--color-border)] p-4 shadow-sm flex flex-col justify-between">
               <div className="border-b border-[var(--color-border)]/40 pb-3 mb-4">
                 <h2 className="text-xs font-extrabold uppercase tracking-wider text-[var(--color-text-primary)]">
-                  Room Type shares
+                  Infrastructure capacity
                 </h2>
                 <p className="text-[10px] text-[var(--color-text-muted)]">
-                  Total classroom vs. lab distribution counts.
+                  Active rooms grouped by student seating capacity.
                 </p>
               </div>
 
@@ -627,7 +628,7 @@ export default function DashboardClient() {
                     <PieChart>
                       <Tooltip content={<CustomRechartsTooltip />} />
                       <Pie
-                        data={roomTypePieData}
+                        data={roomCapacityPieData}
                         cx="50%"
                         cy="50%"
                         innerRadius={45}
@@ -635,7 +636,7 @@ export default function DashboardClient() {
                         paddingAngle={3}
                         dataKey="value"
                       >
-                        {roomTypePieData.map((entry: any, index: number) => (
+                        {roomCapacityPieData.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -655,7 +656,7 @@ export default function DashboardClient() {
 
               {/* Legends list */}
               <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pt-3 border-t border-[var(--color-border)]/40 text-[9px] font-bold text-[var(--color-text-secondary)]">
-                {roomTypePieData.map((item: any, idx: number) => (
+                {roomCapacityPieData.map((item: any, idx: number) => (
                   <div key={idx} className="flex items-center gap-1.5 text-center">
                     <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: item.color }} />
                     <span className="text-[var(--color-text-muted)] font-semibold">{item.name}:</span>
