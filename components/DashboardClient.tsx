@@ -1252,7 +1252,11 @@ export default function DashboardClient() {
                   <p className="text-[9px] text-[var(--color-text-muted)] mt-0.5">Toggle Demo Mode in header to load mock active routines.</p>
                 </div>
               ) : (
-                <div className="space-y-2.5">
+                <div className={`space-y-2.5 transition-all duration-300 ${
+                  showAllClasses 
+                    ? "max-h-[620px] overflow-y-auto pr-1" 
+                    : ""
+                }`}>
                   {displayedClasses.map((s: any) => {
                     const isOngoing = s.status === "ongoing";
                     const isUpcoming = s.status === "upcoming";
