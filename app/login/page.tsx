@@ -6,93 +6,54 @@ export const metadata: Metadata = {
   description: "Log in to your Loop account.",
 };
 
+const inputCls =
+  "w-full rounded-[9px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3.5 py-[11px] text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 focus:border-blue-400/50";
+
 export default function LoginPage() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "var(--color-bg-base)",
-        padding: "24px",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--color-bg-base)] p-6">
+
       {/* Background glow */}
       <div
         aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[400px] w-[600px] -translate-x-1/2 -translate-y-[60%]"
         style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -60%)",
-          width: "600px",
-          height: "400px",
-          background: "radial-gradient(ellipse, rgba(79,142,247,0.1) 0%, transparent 70%)",
-          pointerEvents: "none",
+          background:
+            "radial-gradient(ellipse, rgba(79,142,247,0.1) 0%, transparent 70%)",
         }}
       />
 
-      <div style={{ width: "100%", maxWidth: "420px", position: "relative" }}>
+      <div className="relative w-full max-w-[420px]">
+
         {/* Logo */}
         <Link
           href="/"
           id="login-logo"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            textDecoration: "none",
-            marginBottom: "40px",
-            justifyContent: "center",
-          }}
+          className="mb-10 flex items-center justify-center gap-2.5 no-underline"
         >
-          <div
-            style={{
-              width: "34px",
-              height: "34px",
-              borderRadius: "9px",
-              background: "linear-gradient(135deg, #4f8ef7, #a371f7)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "18px",
-              fontWeight: 700,
-              color: "white",
-              boxShadow: "0 0 24px rgba(79,142,247,0.4)",
-            }}
-          >
+          <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-gradient-to-br from-[#4f8ef7] to-[#a371f7] text-lg font-bold text-white shadow-[0_0_24px_rgba(79,142,247,0.4)]">
             L
           </div>
-          <span style={{ fontSize: "20px", fontWeight: 700, color: "var(--color-text-primary)", letterSpacing: "-0.02em" }}>
+          <span className="text-xl font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">
             Loop
           </span>
         </Link>
 
         {/* Card */}
-        <div
-          style={{
-            borderRadius: "18px",
-            border: "1px solid var(--color-border)",
-            background: "var(--color-bg-surface)",
-            padding: "40px 36px",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
-          }}
-        >
-          <h1 style={{ fontSize: "24px", fontWeight: 700, color: "var(--color-text-primary)", marginBottom: "8px", letterSpacing: "-0.02em" }}>
+        <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-9 py-10 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+          <h1 className="mb-2 text-2xl font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">
             Welcome back
           </h1>
-          <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", marginBottom: "32px" }}>
+          <p className="mb-8 text-sm text-[var(--color-text-secondary)]">
             Log in to access your schedule
           </p>
 
-          <form style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+          <form className="flex flex-col gap-[18px]">
+            {/* Email / Student ID */}
             <div>
               <label
                 htmlFor="login-email"
-                style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--color-text-secondary)", marginBottom: "8px" }}
+                className="mb-2 block text-[13px] font-medium text-[var(--color-text-secondary)]"
               >
                 Email or Student ID
               </label>
@@ -100,29 +61,23 @@ export default function LoginPage() {
                 id="login-email"
                 type="text"
                 placeholder="jane@university.edu"
-                style={{
-                  width: "100%",
-                  padding: "11px 14px",
-                  borderRadius: "9px",
-                  border: "1px solid var(--color-border)",
-                  background: "var(--color-bg-elevated)",
-                  color: "var(--color-text-primary)",
-                  fontSize: "14px",
-                  outline: "none",
-                  transition: "border-color 0.2s",
-                }}
+                className={inputCls}
               />
             </div>
 
+            {/* Password */}
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <div className="mb-2 flex items-center justify-between">
                 <label
                   htmlFor="login-password"
-                  style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-secondary)" }}
+                  className="text-[13px] font-medium text-[var(--color-text-secondary)]"
                 >
                   Password
                 </label>
-                <Link href="/forgot-password" style={{ fontSize: "12px", color: "var(--color-accent)", textDecoration: "none" }}>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-[var(--color-accent)] no-underline"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -130,60 +85,43 @@ export default function LoginPage() {
                 id="login-password"
                 type="password"
                 placeholder="••••••••"
-                style={{
-                  width: "100%",
-                  padding: "11px 14px",
-                  borderRadius: "9px",
-                  border: "1px solid var(--color-border)",
-                  background: "var(--color-bg-elevated)",
-                  color: "var(--color-text-primary)",
-                  fontSize: "14px",
-                  outline: "none",
-                }}
+                className={inputCls}
               />
             </div>
 
+            {/* Submit */}
             <button
               id="login-submit"
               type="submit"
-              style={{
-                marginTop: "8px",
-                padding: "13px",
-                borderRadius: "9px",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "15px",
-                fontWeight: 600,
-                color: "white",
-                background: "linear-gradient(135deg, #4f8ef7, #6f6bf7)",
-                boxShadow: "0 0 24px rgba(79,142,247,0.3)",
-              }}
+              className="mt-2 cursor-pointer rounded-[9px] border-none bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] py-[13px] text-[15px] font-semibold text-white shadow-[0_0_24px_rgba(79,142,247,0.3)] transition-all duration-200 hover:shadow-[0_0_32px_rgba(79,142,247,0.5)]"
             >
               Log in
             </button>
           </form>
 
-          <p
-            style={{
-              marginTop: "24px",
-              textAlign: "center",
-              fontSize: "13px",
-              color: "var(--color-text-muted)",
-            }}
-          >
+          <p className="mt-6 text-center text-[13px] text-[var(--color-text-muted)]">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" style={{ color: "var(--color-accent)", textDecoration: "none", fontWeight: 500 }}>
+            <Link
+              href="/signup"
+              className="font-medium text-[var(--color-accent)] no-underline"
+            >
               Sign up
             </Link>
           </p>
         </div>
 
-        <p style={{ textAlign: "center", fontSize: "12px", color: "var(--color-text-muted)", marginTop: "24px" }}>
+        {/* Legal */}
+        <p className="mt-6 text-center text-xs text-[var(--color-text-muted)]">
           By logging in, you agree to our{" "}
-          <Link href="/" style={{ color: "var(--color-text-secondary)", textDecoration: "underline" }}>Terms</Link>
+          <Link href="/" className="text-[var(--color-text-secondary)] underline">
+            Terms
+          </Link>
           {" and "}
-          <Link href="/" style={{ color: "var(--color-text-secondary)", textDecoration: "underline" }}>Privacy Policy</Link>
+          <Link href="/" className="text-[var(--color-text-secondary)] underline">
+            Privacy Policy
+          </Link>
         </p>
+
       </div>
     </div>
   );
