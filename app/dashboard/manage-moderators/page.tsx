@@ -84,164 +84,194 @@ export default function ManageModeratorsPage() {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-start mb-8 flex-wrap gap-4">
-        <div>
-          <h1 className="text-[26px] font-bold text-[var(--color-text-primary)] mb-1">
-            Moderator Management
-          </h1>
-          <p className="text-sm text-[var(--color-text-secondary)]">
-            Manage admin-level delegates with restricted permissions
-          </p>
+    <div className="min-h-screen bg-[var(--color-bg-base)]">
+      <main className="mx-auto max-w-[1000px] px-5 py-8 sm:px-6 sm:py-10">
+        {/* Header */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-end gap-3 mb-2">
+              <h1 className="text-[28px] font-bold text-[var(--color-text-primary)]">
+                Moderators
+              </h1>
+              <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-500/20 text-xs font-bold text-blue-300">
+                {moderators.length}
+              </span>
+            </div>
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              Manage admin delegates with restricted permissions
+            </p>
+          </div>
+          <button
+            id="add-mod-btn"
+            onClick={openAdd}
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.25)] transition-all duration-200 hover:shadow-[0_12px_32px_rgba(79,142,247,0.35)] hover:-translate-y-0.5 active:scale-[0.98]"
+          >
+            <FiPlus size={18} /> Add Moderator
+          </button>
         </div>
-        <button
-          id="add-mod-btn"
-          onClick={openAdd}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
-        >
-          <FiPlus /> Add Moderator
-        </button>
-      </div>
 
-      <div className="flex gap-3 mb-5 flex-wrap">
-        <div className="relative flex-1 min-w-[240px] max-w-[400px]">
-          <input
-            id="mod-search"
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by email..."
-            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 pr-4 pl-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] transition-colors"
-          />
-          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+        {/* Search */}
+        <div className="mb-6 flex gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[240px] sm:max-w-[320px]">
+            <input
+              id="mod-search"
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search email or name..."
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 pr-10 pl-3.5 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/25 transition-all"
+            />
+            <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none" size={16} />
+          </div>
         </div>
-      </div>
 
-      <div className="rounded-lg border border-[var(--color-border)] overflow-hidden">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-[var(--color-bg-elevated)] border-b border-[var(--color-border)]">
-              {["User", "Role", "Added On", "Actions"].map((h) => (
-                <th
-                  key={h}
-                  className="px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
-                  Loading moderators...
-                </td>
+        {/* Table */}
+        <div className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-surface)]">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[var(--color-border)]">
+                {["User", "Role", "Added On", "Actions"].map((h) => (
+                  <th
+                    key={h}
+                    className="px-5 py-4 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
-                  No moderators found.
-                </td>
-              </tr>
-            ) : (
-              filtered.map((m, i) => (
-                <tr
-                  key={m.id}
-                  className={`border-b ${i < filtered.length - 1 ? "border-[var(--color-border)]" : ""} bg-[var(--color-bg-surface)]`}
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#a371f7] text-xs font-bold text-white">
-                        {m.name?.[0]?.toUpperCase() || m.email[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-[var(--color-text-primary)]">{m.name || "Moderator"}</div>
-                        <div className="text-xs text-[var(--color-text-muted)]">{m.email}</div>
-                      </div>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-5 py-12">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-400/30 border-t-blue-400" />
+                      <span className="text-sm text-[var(--color-text-secondary)]">Loading moderators...</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-md text-[#a371f7] bg-[rgba(163,113,247,0.1)] border border-[rgba(163,113,247,0.3)]">
-                      <FiShield size={12} /> Moderator
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
-                    {new Date(m.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 w-[120px]">
-                    <button
-                      onClick={() => deleteModerator(m.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs font-medium transition-colors hover:bg-[rgba(248,81,73,0.06)]"
-                    >
-                      <FiTrash2 size={13} /> Remove
-                    </button>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-5 py-12">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="text-2xl opacity-40">👥</div>
+                      <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+                        {search ? "No moderators match your search" : "No moderators yet"}
+                      </span>
+                      <span className="text-xs text-[var(--color-text-muted)]">
+                        {search ? "Try a different search term" : "Add one to get started"}
+                      </span>
+                    </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                filtered.map((m) => (
+                  <tr
+                    key={m.id}
+                    className="border-b border-[var(--color-border)] hover:bg-[var(--color-bg-elevated)]/30 transition-colors"
+                  >
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#a371f7] text-sm font-bold text-white">
+                          {m.name?.[0]?.toUpperCase() || m.email[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-[var(--color-text-primary)]">{m.name || "Moderator"}</div>
+                          <div className="text-xs text-[var(--color-text-muted)]">{m.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md text-[#a371f7] bg-[rgba(163,113,247,0.1)] border border-[rgba(163,113,247,0.2)]">
+                        <FiShield size={12} /> Moderator
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-[var(--color-text-secondary)]">
+                      {new Date(m.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </td>
+                    <td className="px-5 py-4">
+                      <button
+                        onClick={() => deleteModerator(m.id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-red-400/20 bg-transparent text-red-400/80 text-xs font-medium transition-all hover:bg-red-500/10 hover:text-red-400 active:scale-95"
+                      >
+                        <FiTrash2 size={13} /> Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-      {showModal && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6"
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !submitting) setShowModal(false);
-          }}
-        >
-          <div className="w-full max-w-[440px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8">
-            <h2 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">
-              Add New Moderator
-            </h2>
-            <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-              An account will be created automatically and an email will be sent with their login credentials.
-            </p>
-            
-            {error && <div className="mb-4 text-sm text-[var(--color-danger)] bg-[rgba(248,81,73,0.1)] p-3 rounded-md border border-[rgba(248,81,73,0.2)]">{error}</div>}
-
-            <div className="flex flex-col gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
-                  <input
-                    type="email"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder="moderator@university.edu"
-                    disabled={submitting}
-                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 pr-4 pl-10 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-accent)] transition-colors disabled:opacity-50"
-                  />
+        {/* Modal */}
+        {showModal && (
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !submitting) setShowModal(false);
+            }}
+          >
+            <div className="w-full max-w-[440px] rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+              <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
+                Add New Moderator
+              </h2>
+              <p className="text-sm text-[var(--color-text-secondary)] mb-6">
+                Send an invitation to create a new moderator account with restricted admin permissions.
+              </p>
+              
+              {error && (
+                <div className="mb-4 text-sm text-red-300 bg-red-500/10 p-3 rounded-lg border border-red-400/20 flex items-center gap-2">
+                  <span>⚠️</span>
+                  {error}
                 </div>
-              </div>
-              <div className="flex gap-3 mt-4">
-                <button
-                  onClick={() => setShowModal(false)}
-                  disabled={submitting}
-                  className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={saveModerator}
-                  disabled={submitting}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {submitting ? (
-                    <div className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  ) : (
-                    "Send Invitation"
-                  )}
-                </button>
+              )}
+
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-[var(--color-text-primary)] mb-2">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                    <input
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      placeholder="moderator@university.edu"
+                      disabled={submitting}
+                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 pr-4 pl-11 text-sm text-[var(--color-text-primary)] outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3 mt-2">
+                  <button
+                    onClick={() => setShowModal(false)}
+                    disabled={submitting}
+                    className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] font-medium hover:bg-[var(--color-bg-elevated)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveModerator}
+                    disabled={submitting}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.25)] transition-all duration-200 hover:shadow-[0_12px_32px_rgba(79,142,247,0.35)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Send Invitation"
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }
