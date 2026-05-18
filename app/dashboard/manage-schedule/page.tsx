@@ -449,12 +449,17 @@ export default function ManageSchedulePage() {
         if (coursesRes && coursesRes.ok) {
           const data = await coursesRes.json();
           if (Array.isArray(data) && data.length) {
-            const normalized = data.map((c: any) => ({
-              code: c.code || c.course_code || c.code_name || c.id || String(c.id || ""),
-              title: c.title || c.course_name || c.name || c.course_title || "Untitled",
-              dept: c.dept || c.department || c.department_name || "",
-              isLab: Boolean(c.isLab || c.is_lab || c.lab)
-            }));
+            const normalized = data.map((c: any) => {
+              // Extract department name from various possible property names
+              const deptName = c.dept || c.department || c.department_name || c.dept_name || "";
+              return {
+                code: c.code || c.course_code || c.code_name || c.id || String(c.id || ""),
+                title: c.title || c.course_name || c.name || c.course_title || "Untitled",
+                dept: deptName,
+                isLab: Boolean(c.isLab || c.is_lab || c.lab),
+                department_id: c.department_id  // Include this for reference
+              };
+            });
             setCourses(normalized);
           } else {
             setCourses(COURSES);
@@ -881,8 +886,8 @@ export default function ManageSchedulePage() {
                   <div className="col-span-2">
                     <SearchableSelect
                       label="Course"
-                      options={(courses || COURSES).filter(c => c.dept === editData.dept)}
-                      value={editData.courseCode ? (courses.find(c => c.code === editData.courseCode) || COURSES.find(c => c.code === editData.courseCode)) : null}
+                      options={courses && courses.length > 0 ? courses : COURSES}
+                      value={editData.courseCode ? ((courses && courses.length > 0 ? courses : COURSES).find((c: any) => c.code === editData.courseCode)) || null : null}
                       onChange={(c: CourseOption) => setEditData({ ...editData, courseCode: c.code, courseTitle: c.title })}
                       placeholder="Select Course"
                       displayValue={(c: CourseOption) => `${c.code} — ${c.title}`}
@@ -891,6 +896,7 @@ export default function ManageSchedulePage() {
                         <div className="flex flex-col">
                           <span className="font-semibold text-xs">{c.code}</span>
                           <span className="text-[11px] opacity-70">{c.title}</span>
+                          <span className="text-[10px] text-[var(--color-text-muted)]">{(c as any).dept || (c as any).department || "no dept"}</span>
                         </div>
                       )}
                     />

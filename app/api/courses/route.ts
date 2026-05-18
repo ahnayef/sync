@@ -17,12 +17,25 @@ export async function GET() {
 
   try {
     const [rows] = await db.execute(`
-      SELECT c.id, c.name, c.code, c.is_lab as isLab, d.name as dept, c.department_id
+      SELECT 
+        c.id, 
+        c.name, 
+        c.code, 
+        c.is_lab as isLab, 
+        COALESCE(d.name, '') as dept,
+        c.department_id
       FROM courses c
       LEFT JOIN departments d ON c.department_id = d.id
-      ORDER BY c.code ASC
+      ORDER BY COALESCE(d.name, ''), c.code ASC
     `);
-    return NextResponse.json(rows);
+    
+    // Ensure dept is never null or undefined in response
+    const courses = (rows as any[]).map(row => ({
+      ...row,
+      dept: row.dept || ""  // Ensure dept is always a string
+    }));
+    
+    return NextResponse.json(courses);
   } catch (error) {
     console.error("Fetch courses err:", error);
     return NextResponse.json({ error: "Database error" }, { status: 500 });
