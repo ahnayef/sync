@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { RoutineSchema } from "@/app/types/routine";
 
@@ -15,6 +15,11 @@ function truncate(s: string, max = 28) {
   return s.length > max ? s.slice(0, max).trimEnd() + "..." : s;
 }
 
+function minutesOf(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
 export function RoutineBox({
   schedule,
   nextClassAfter,
@@ -23,94 +28,68 @@ export function RoutineBox({
   nextClassAfter?: string;
 }) {
   const [hovered, setHovered] = useState(false);
+  const [nowTick, setNowTick] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNowTick(Date.now()), 30_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const now = new Date(nowTick);
+  const currentDay = now.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const start = minutesOf(schedule.start_time);
+  const end = minutesOf(schedule.end_time);
+  const isActive =
+    schedule.day.toLowerCase() === currentDay &&
+    currentMinutes >= start &&
+    currentMinutes < end;
 
   return (
-    <div style={{ width: "100%" }}>
+    <div className="w-full">
       <div
         id={`routine-box-${schedule.id}`}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        style={{
-          borderRadius: "18px",
-          border: `1px solid ${
-            hovered ? "rgba(79,142,247,0.25)" : "rgba(255,255,255,0.08)"
-          }`,
-          background: "var(--color-bg-elevated)",
-          padding: "20px 22px",
-          transition: "border-color 0.2s, transform 0.15s",
-          transform: hovered ? "translateY(-1px)" : "none",
-          cursor: "default",
-        }}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
+        tabIndex={0}
+        role="article"
+        aria-labelledby={`routine-title-${schedule.id}`}
+        className={`group relative w-full rounded-[18px] border px-5 py-5 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/25 ${
+          hovered
+            ? "border-blue-400/30 bg-blue-500/[0.03] shadow-[0_10px_30px_rgba(79,142,247,0.06)] -translate-y-0.5"
+            : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)]"
+        }`}
       >
+        {isActive && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-[18px] border border-blue-400/70 shadow-[0_0_28px_rgba(79,142,247,0.28)] animate-pulse"
+          />
+        )}
+
         {/* Top row: course code | badges + timer */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "12px",
-            gap: "10px",
-          }}
-        >
+        <div className="mb-3 flex items-center justify-between gap-3">
           {/* Course code */}
-          <span
-            style={{
-              fontSize: "11px",
-              fontWeight: 600,
-              color: "var(--color-text-secondary)",
-              background: "var(--color-bg-subtle)",
-              border: "1px solid var(--color-border)",
-              padding: "3px 10px",
-              borderRadius: "6px",
-              letterSpacing: "0.04em",
-              fontFamily: "monospace",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <span className="whitespace-nowrap rounded-md border px-3 py-1 text-[11px] font-mono font-semibold tracking-wider text-[var(--color-text-secondary)] bg-[var(--color-bg-subtle)] border-[var(--color-border)]">
             {schedule.course_code}
           </span>
 
           {/* Right badges */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              flexShrink: 0,
-            }}
-          >
+          <div className="flex items-center gap-3 flex-shrink-0">
             {/* Section */}
             {schedule.section && schedule.section !== "none" && (
-              <span
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  color: "white",
-                  background: "#7c3aed",
-                  padding: "3px 10px",
-                  borderRadius: "100px",
-                  letterSpacing: "0.06em",
-                }}
-              >
-                Sec {schedule.section}
-              </span>
+                <span className="rounded-full bg-[#7c3aed] px-3 py-1 text-[11px] font-bold text-white">
+                  Sec {schedule.section}
+                </span>
             )}
 
             {/* Lab */}
             {schedule.is_lab && (
-              <span
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  color: "white",
-                  background: "linear-gradient(135deg, #4f8ef7, #6f6bf7)",
-                  padding: "3px 12px",
-                  borderRadius: "100px",
-                  letterSpacing: "0.07em",
-                }}
-              >
-                LAB
-              </span>
+                <span className="rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-3.5 py-1 text-[11px] font-bold text-white">
+                  LAB
+                </span>
             )}
 
             {/* Countdown / live dot */}
@@ -123,42 +102,17 @@ export function RoutineBox({
         </div>
 
         {/* Course title */}
-        <h2
-          style={{
-            fontSize: "21px",
-            fontWeight: 700,
-            color: "#6f9ff7",
-            letterSpacing: "-0.01em",
-            marginBottom: "5px",
-            lineHeight: 1.25,
-          }}
-        >
+        <h2 id={`routine-title-${schedule.id}`} className="mb-1 text-[20px] font-extrabold leading-tight tracking-tight text-[var(--color-text-primary)]">
           {truncate(schedule.course_name)}
         </h2>
 
         {/* Teacher */}
-        <p
-          style={{
-            fontSize: "14px",
-            color: "var(--color-text-secondary)",
-            marginBottom: "18px",
-          }}
-        >
-          {schedule.teacher_name}
-        </p>
+        <p className="mb-4 text-sm text-[var(--color-text-secondary)]">{schedule.teacher_name}</p>
 
         {/* Bottom: time + room */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "12px",
-          }}
-        >
+        <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Time */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="flex items-center gap-3">
             <svg
               width="17"
               height="17"
@@ -172,19 +126,13 @@ export function RoutineBox({
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
-            <span
-              style={{
-                fontSize: "15px",
-                fontWeight: 600,
-                color: "var(--color-text-primary)",
-              }}
-            >
+            <span className="text-sm font-semibold text-[var(--color-text-primary)]">
               {fmt24to12(schedule.start_time)} – {fmt24to12(schedule.end_time)}
             </span>
           </div>
 
           {/* Room */}
-          <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+          <div className="flex items-center gap-3">
             <svg
               width="15"
               height="15"
@@ -198,43 +146,15 @@ export function RoutineBox({
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
               <circle cx="12" cy="10" r="3" />
             </svg>
-            <span
-              style={{
-                fontSize: "15px",
-                fontWeight: 600,
-                color: "var(--color-text-primary)",
-              }}
-            >
-              Room {schedule.room_number}
-            </span>
+            <span className="text-sm font-semibold text-[var(--color-text-primary)]">Room {schedule.room_number}</span>
           </div>
         </div>
       </div>
 
       {/* Gap to next class */}
       {nextClassAfter && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "7px",
-            padding: "12px 0",
-            color: "var(--color-text-muted)",
-            fontSize: "13px",
-            fontWeight: 500,
-          }}
-        >
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+        <div className="mt-3 flex items-center justify-center gap-2.5 py-3 text-[13px] font-medium text-[var(--color-text-muted)]">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="2" x2="12" y2="22" />
             <polyline points="8 6 12 2 16 6" />
             <polyline points="8 18 12 22 16 18" />

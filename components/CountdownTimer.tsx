@@ -64,59 +64,16 @@ export function CountdownTimer({
 
   if (status === "live") {
     return (
-      <span
-        style={{
-          position: "relative",
-          display: "inline-flex",
-          width: "10px",
-          height: "10px",
-          flexShrink: 0,
-        }}
-      >
-        {/* Ping ring */}
-        <span
-          style={{
-            position: "absolute",
-            inset: 0,
-            borderRadius: "50%",
-            background: "#3fb950",
-            opacity: 0.75,
-            animation: "pulse-dot 2s ease-in-out infinite",
-          }}
-        />
-        {/* Solid dot */}
-        <span
-          style={{
-            position: "relative",
-            width: "10px",
-            height: "10px",
-            borderRadius: "50%",
-            background: "#3fb950",
-            boxShadow: "0 0 8px rgba(63,185,80,0.6)",
-            display: "inline-block",
-          }}
-        />
+      <span className="relative inline-flex size-2 shrink-0">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+        <span className="relative inline-flex size-2 rounded-full bg-green-500" />
       </span>
     );
   }
 
   if (status === "upcoming" && timeLeft) {
     return (
-      <span
-        style={{
-          fontSize: "12px",
-          fontWeight: 700,
-          color: "rgba(255,180,180,0.9)",
-          background: "rgba(255,80,80,0.08)",
-          border: "1px solid rgba(255,80,80,0.2)",
-          padding: "3px 9px",
-          borderRadius: "7px",
-          fontVariantNumeric: "tabular-nums",
-          fontFamily: "monospace",
-          minWidth: "52px",
-          textAlign: "center",
-        }}
-      >
+      <span className="min-w-[52px] rounded-[7px] border border-red-400/20 bg-red-500/10 px-[9px] py-[3px] text-center font-mono text-xs font-bold tabular-nums text-red-200/90">
         {timeLeft}
       </span>
     );
