@@ -1,281 +1,142 @@
 import type { Metadata } from "next";
+import db from "@/lib/db";
+import DashboardClient from "./DashboardClient";
+import { FiUsers, FiBook, FiMap, FiCalendar, FiHome } from "react-icons/fi";
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "Admin dashboard — Loop schedule management overview.",
+  description: "Dashboard",
 };
 
-const statCards = [
-  {
-    label: "Total Students",
-    value: "2,418",
-    change: "+12%",
-    colorClass: "text-[var(--color-accent)] bg-[var(--color-accent-muted)] border-[rgba(79,142,247,0.2)]",
-    icon: (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    ),
-  },
-  {
-    label: "Active Courses",
-    value: "48",
-    change: "+3",
-    colorClass: "text-[var(--color-success)] bg-[rgba(63,185,80,0.08)] border-[rgba(63,185,80,0.18)]",
-    icon: (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Teachers",
-    value: "42",
-    change: "+2",
-    colorClass: "text-[var(--color-lab)] bg-[rgba(163,113,247,0.08)] border-[rgba(163,113,247,0.18)]",
-    icon: (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-      </svg>
-    ),
-  },
-  {
-    label: "Rooms",
-    value: "28",
-    change: "0",
-    colorClass: "text-[var(--color-warning)] bg-[rgba(210,153,34,0.08)] border-[rgba(210,153,34,0.18)]",
-    icon: (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-        <polyline points="9 22 9 12 15 12 15 22" />
-      </svg>
-    ),
-  },
-];
+export default async function DashboardPage() {
+  try {
+    const [usersRows] = await db.execute(`SELECT COUNT(*) as usersCount FROM users`);
+    const users = (usersRows as any)[0]?.usersCount ?? 0;
 
-const recentActivity = [
-  {
-    action: "Schedule imported",
-    detail: "Fall 2026 — CSE Dept",
-    time: "2 min ago",
-    colorClass: "bg-[rgba(79,142,247,0.65)]",
-  },
-  {
-    action: "New teacher added",
-    detail: "Dr. Sara Ali — Mathematics",
-    time: "1 hr ago",
-    colorClass: "bg-[rgba(63,185,80,0.65)]",
-  },
-  {
-    action: "Course updated",
-    detail: "CSE405 — Software Engineering",
-    time: "3 hr ago",
-    colorClass: "bg-[rgba(163,113,247,0.65)]",
-  },
-  {
-    action: "Room 404 added",
-    detail: "Capacity: 60",
-    time: "Yesterday",
-    colorClass: "bg-[rgba(210,153,34,0.65)]",
-  },
-  {
-    action: "Schedule conflict detected",
-    detail: "CSE301 & CSE303 — Room 401",
-    time: "Yesterday",
-    colorClass: "bg-[rgba(248,81,73,0.65)]",
-  },
-];
+    const [deptRows] = await db.execute(`SELECT COUNT(*) as departmentsCount FROM departments`);
+    const departments = (deptRows as any)[0]?.departmentsCount ?? 0;
 
-export default function DashboardPage() {
-  return (
-    <div className="mx-auto max-w-[1400px] p-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-[26px] font-bold text-[var(--color-text-primary)] -tracking-[0.02em] mb-1">
-          Dashboard
-        </h1>
-        <p className="text-sm text-[var(--color-text-secondary)]">
-          Overview of Loop — schedule management system
-        </p>
-      </div>
+    const [teacherRows] = await db.execute(`SELECT COUNT(*) as teachersCount FROM teachers`);
+    const teachers = (teacherRows as any)[0]?.teachersCount ?? 0;
 
-      {/* Stat Cards */}
-      <div className="grid gap-4 mb-8 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
-        {statCards.map((card) => (
-          <div
-            key={card.label}
-            id={`stat-${card.label.toLowerCase().replace(/\s+/g, "-")}`}
-            className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <div
-                className={`${card.colorClass} w-10 h-10 rounded-md flex items-center justify-center border`}
-              >
-                {card.icon}
-              </div>
-              <span
-                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${card.change.startsWith("+") ? "text-[var(--color-success)] bg-[rgba(63,185,80,0.08)]" : card.change === "0" ? "text-[var(--color-text-muted)] bg-transparent" : "text-[var(--color-danger)] bg-[rgba(248,81,73,0.08)]"}`}
-              >
-                {card.change.startsWith("+")
-                  ? card.change
-                  : card.change === "0"
-                    ? "—"
-                    : card.change}{" "}
-                this month
-              </span>
+    const [courseRows] = await db.execute(`SELECT COUNT(*) as coursesCount FROM courses`);
+    const courses = (courseRows as any)[0]?.coursesCount ?? 0;
+
+    const [roomRows] = await db.execute(`SELECT COUNT(*) as roomsCount FROM rooms`);
+    const rooms = (roomRows as any)[0]?.roomsCount ?? 0;
+
+    const [batchRows] = await db.execute(`SELECT COUNT(*) as batchesCount FROM batches`);
+    const batches = (batchRows as any)[0]?.batchesCount ?? 0;
+
+    const [scheduleRows] = await db.execute(`SELECT COUNT(*) as schedulesCount FROM schedules`);
+    const schedules = (scheduleRows as any)[0]?.schedulesCount ?? 0;
+
+    const [recentRows] = await db.execute(`
+      SELECT s.id, s.day, TIME_FORMAT(s.start_time, '%H:%i') as start_time, TIME_FORMAT(s.end_time, '%H:%i') as end_time, c.code as course_code, t.short as teacher_short, b.name as batch_name, r.number as room_number
+      FROM schedules s
+      LEFT JOIN courses c ON s.course_id = c.id
+      LEFT JOIN teachers t ON s.teacher_id = t.id
+      LEFT JOIN batches b ON s.batch_id = b.id
+      LEFT JOIN rooms r ON s.room_id = r.id
+      ORDER BY FIELD(s.day, 'sunday','monday','tuesday','wednesday','thursday'), s.start_time ASC
+      LIMIT 6
+    `);
+
+    const stats = { users, departments, teachers, courses, rooms, batches, schedules, recent: recentRows };
+
+    // per-day counts for small client chart
+    const [perDayRows] = await db.execute(`SELECT day, COUNT(*) as cnt FROM schedules GROUP BY day`);
+    const perDayObj: Record<string, number> = {};
+    (perDayRows as any[]).forEach((r) => {
+      perDayObj[(r.day || "").toLowerCase()] = Number(r.cnt || 0);
+    });
+
+    const cards = [
+      { key: 'users', label: 'Users', icon: <FiUsers />, color: 'from-[#4f8ef7] to-[#6f6bf7]' },
+      { key: 'departments', label: 'Departments', icon: <FiMap />, color: 'from-[#6f6bf7] to-[#a371f7]' },
+      { key: 'teachers', label: 'Teachers', icon: <FiUsers />, color: 'from-[#3fb950] to-[#63d07f]' },
+      { key: 'courses', label: 'Courses', icon: <FiBook />, color: 'from-[#f7a64f] to-[#f76f6f]' },
+      { key: 'rooms', label: 'Rooms', icon: <FiHome />, color: 'from-[#8aa6ff] to-[#4f8ef7]' },
+      { key: 'schedules', label: 'Schedules', icon: <FiCalendar />, color: 'from-[#a371f7] to-[#6f6bf7]' },
+    ];
+
+    return (
+      <div className="relative p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <header className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">Admin Dashboard</h1>
+              <p className="text-sm text-[var(--color-text-secondary)]">Overview of the main entities and recent activity</p>
             </div>
-            <p className="text-2xl font-extrabold text-[var(--color-text-primary)] tracking-tight mb-1">
-              {card.value}
-            </p>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {card.label}
-            </p>
-          </div>
-        ))}
-      </div>
+          </header>
 
-      {/* Bottom Grid */}
-      <div className="grid gap-5 [grid-template-columns:1.4fr_1fr]">
-        {/* Recent Activity */}
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--color-text-primary)] mb-5">
-            Recent Activity
-          </h2>
-          <div className="flex flex-col gap-4">
-            {recentActivity.map((item, i) => (
-              <div key={i} className="flex gap-3 items-start">
-                <div
-                  className={`${item.colorClass} rounded-full w-2.5 h-2.5 mt-1 flex-shrink-0`}
-                />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-[var(--color-text-primary)] mb-0.5">
-                    {item.action}
-                  </p>
-                  <p className="text-xs text-[var(--color-text-muted)]">
-                    {item.detail}
-                  </p>
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            {cards.map((c) => (
+              <div key={c.key} className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-gradient-to-b from-[var(--color-bg-surface)] to-[var(--color-bg-elevated)] p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-4">
+                  <div className={`flex-shrink-0 rounded-full p-3 text-white shadow-md bg-gradient-to-br ${c.color}`}>
+                    <div className="w-6 h-6 flex items-center justify-center">{c.icon}</div>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">{c.label}</div>
+                    <div className="mt-1 flex items-baseline gap-3">
+                      <div className="text-2xl font-extrabold leading-tight text-[var(--color-text-primary)]">{(stats as any)[c.key]}</div>
+                      <div className="text-sm text-[var(--color-text-secondary)]">{c.key === 'users' ? 'total' : ''}</div>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-xs text-[var(--color-text-muted)]">
-                  {item.time}
-                </span>
+
+                <div className="absolute right-3 bottom-3 text-[10px] text-[var(--color-text-muted)]">View</div>
               </div>
             ))}
-          </div>
-        </div>
+          </section>
 
-        {/* Quick Actions */}
-        <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6">
-          <h2 className="text-sm font-semibold text-[var(--color-text-primary)] mb-5">
-            Quick Actions
-          </h2>
-          <div className="flex flex-col gap-2.5">
-            {[
-              {
-                label: "Import Schedule",
-                href: "/dashboard/manage-schedule",
-                colorClass: "bg-[var(--color-accent-muted)] border-[rgba(79,142,247,0.18)]",
-                desc: "Upload Excel file",
-              },
-              {
-                label: "Add Teacher",
-                href: "/dashboard/manage-teachers",
-                colorClass: "bg-[rgba(63,185,80,0.08)] border-[rgba(63,185,80,0.18)]",
-                desc: "New staff member",
-              },
-              {
-                label: "Add Course",
-                href: "/dashboard/manage-courses",
-                colorClass: "bg-[rgba(163,113,247,0.08)] border-[rgba(163,113,247,0.18)]",
-                desc: "Create course entry",
-              },
-              {
-                label: "Add Room",
-                href: "/dashboard/manage-rooms",
-                colorClass: "bg-[rgba(210,153,34,0.08)] border-[rgba(210,153,34,0.18)]",
-                desc: "Register a room",
-              },
-            ].map((action) => (
-              <a
-                key={action.label}
-                href={action.href}
-                id={`quick-action-${action.label.toLowerCase().replace(/\s+/g, "-")}`}
-                className="flex items-center gap-3 p-3.5 rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] no-underline transition-all"
-              >
-                <div
-                  className={`${action.colorClass} w-8 h-8 rounded-md border flex items-center justify-center flex-shrink-0`}
-                >
-                  <div
-                    className="w-3.5 h-3.5 rounded-sm opacity-80"
-                    style={{ background: "currentColor" }}
-                  />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-[var(--color-text-primary)] mb-0.5">
-                    {action.label}
-                  </p>
-                  <p className="text-xs text-[var(--color-text-muted)]">
-                    {action.desc}
-                  </p>
-                </div>
-                <svg
-                  className="ml-auto"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="var(--color-text-muted)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </a>
-            ))}
-          </div>
+          <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-sm">
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-3">Recent schedules</h2>
+            {(!stats.recent || (stats.recent as any[]).length === 0) ? (
+              <div className="text-sm text-[var(--color-text-secondary)]">No recent schedules</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-[var(--color-bg-elevated)] border-b border-[var(--color-border)]">
+                      {['Day','Time','Course','Teacher','Batch','Room'].map(h => (
+                        <th key={h} className="px-3 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(stats.recent as any[]).map((r: any) => (
+                      <tr key={r.id} className="border-b border-[var(--color-border)] bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-elevated)]/40">
+                        <td className="px-3 py-3 text-sm text-[var(--color-text-primary)]">{r.day}</td>
+                        <td className="px-3 py-3 text-sm text-[var(--color-text-secondary)]">{r.start_time} — {r.end_time}</td>
+                        <td className="px-3 py-3 text-sm font-semibold text-[var(--color-text-primary)]">{r.course_code}</td>
+                        <td className="px-3 py-3 text-sm text-[var(--color-text-secondary)]">{r.teacher_short || '—'}</td>
+                        <td className="px-3 py-3 text-sm text-[var(--color-text-secondary)]">{r.batch_name || '—'}</td>
+                        <td className="px-3 py-3 text-sm text-[var(--color-text-secondary)]">{r.room_number || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            </section>
+
+          <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-sm">
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-3">Live</h2>
+            <DashboardClient initialStats={stats} initialPerDay={perDayObj} />
+          </section>
         </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error('Dashboard render error:', error);
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <p className="text-sm text-[var(--color-text-secondary)]">Unable to load stats.</p>
+      </div>
+    );
+  }
 }
