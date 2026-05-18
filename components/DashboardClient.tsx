@@ -40,6 +40,9 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ScatterChart,
+  Scatter,
+  ZAxis
 } from "recharts";
 
 // Days mapping
@@ -231,6 +234,16 @@ export default function DashboardClient() {
 
     return { grid, maxDensity, days, hours };
   }, [data?.weeklySchedules]);
+
+
+
+  const formatTo12h = (hourStr: string) => {
+    const [hStr, mStr] = hourStr.split(":");
+    const h = parseInt(hStr, 10);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const displayH = h % 12 === 0 ? 12 : h % 12;
+    return `${displayH}:${mStr} ${ampm}`;
+  };
 
   const formatDuration = (min: number) => {
     const h = Math.floor(min / 60);
@@ -882,75 +895,118 @@ export default function DashboardClient() {
           </div>
 
           {/* ─── 6. HEATMAP (BOTTOM FULL-WIDTH CONSOLE) ─── */}
-          <section className="glass rounded-xl border border-[var(--color-border)] p-4 shadow-sm space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[var(--color-border)]/40 pb-2.5">
-              <div className="space-y-0.5">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--color-text-primary)]">
-                  Weekly Class Routine Schedule Density Heatmap
-                </h3>
+          <section className="glass rounded-xl border border-[var(--color-border)] p-5 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-[var(--color-border)]/40 pb-3">
+              <div className="space-y-1">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--color-text-muted)]">
+                  Routine Analysis
+                </span>
+                <div className="flex items-center gap-3">
+                  <h3 className="text-xl font-extrabold text-[var(--color-text-primary)] font-mono leading-none">
+                    {data.weeklySchedules?.length || 0} Classes
+                  </h3>
+                  <span className="text-[9px] font-extrabold text-[#67b66b] bg-[#67b66b]/10 border border-[#67b66b]/20 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                    Optimal Load
+                  </span>
+                </div>
                 <p className="text-[10px] text-[var(--color-text-muted)]">
-                  Active schedules overlay grid. Highlighted tiles represent simultaneous routine density.
+                  Weekly Class Routine Schedule Density Heatmap. Hover over a tile to view active schedules.
                 </p>
               </div>
-              
-              <div className="flex items-center gap-3 text-[9px] font-bold text-[var(--color-text-secondary)]">
-                <div className="flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded border border-[var(--color-border)] bg-[rgba(26,34,45,0.4)]" />
-                  <span>Unscheduled</span>
+
+              {/* Mockup Connected Segmented Legend Bar */}
+              <div className="flex items-center gap-1 text-[9px] font-bold text-[var(--color-text-secondary)] self-end">
+                <span className="text-[9px] text-[var(--color-text-muted)] mr-2 mb-0.5">Active Load:</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] text-[var(--color-text-muted)] mb-0.5 font-mono">0</span>
+                  <div className="h-1.5 w-8 rounded-l border border-[var(--color-border)] bg-[rgba(26,34,45,0.4)]" />
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded border border-[var(--color-border)] bg-[rgba(111,147,218,0.2)]" />
-                  <span>Moderate</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] text-[var(--color-text-muted)] mb-0.5 font-mono">1-3</span>
+                  <div className="h-1.5 w-8 border-y border-r border-[rgba(111,147,218,0.4)] bg-[rgba(111,147,218,0.22)]" />
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded border border-[rgba(111,147,218,0.4)] bg-[rgba(111,147,218,0.65)]" />
-                  <span>Peak Heavy</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] text-[var(--color-text-muted)] mb-0.5 font-mono">4-7</span>
+                  <div className="h-1.5 w-8 border-y border-r border-[rgba(111,147,218,0.85)] bg-[rgba(111,147,218,0.65)]" />
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] text-[var(--color-text-muted)] mb-0.5 font-mono">&gt;7</span>
+                  <div className="h-1.5 w-8 rounded-r border-y border-r border-[rgba(154,123,217,0.95)] bg-[rgba(154,123,217,0.85)] shadow-[0_0_8px_rgba(154,123,217,0.3)] animate-pulse" />
                 </div>
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-[var(--color-border)]/60 bg-[var(--color-bg-surface)] p-3">
-              <div className="min-w-[620px]">
-                <div className="grid grid-cols-10 border-b border-[var(--color-border)] pb-2 text-center text-xs font-bold text-[var(--color-text-secondary)]">
-                  <div className="text-left font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Day</div>
-                  {heatmapData.hours.map(hour => (
-                    <div key={hour} className="font-mono text-[10px] font-bold">
-                      {hour}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="divide-y divide-[var(--color-border)]/40">
+            <div className="overflow-x-auto rounded-lg border border-[var(--color-border)]/40 bg-[var(--color-bg-surface)]/20 p-5">
+              <div className="min-w-[620px] space-y-4">
+                {/* Heatmap rows */}
+                <div className="space-y-2">
                   {heatmapData.days.map(day => (
-                    <div key={day} className="grid grid-cols-10 py-2.5 items-center text-center">
-                      <div className="text-left font-bold capitalize text-xs text-[var(--color-text-primary)]">
-                        {day.slice(0, 3)}
+                    <div key={day} className="grid grid-cols-[75px_repeat(9,1fr)] items-center gap-2">
+                      {/* Left Row Label */}
+                      <div className="text-left font-bold capitalize text-xs text-[var(--color-text-secondary)] pr-2">
+                        {day === "wednesday" ? "Wed" : day === "thursday" ? "Thu" : day.slice(0, 3)}
                       </div>
+                      
+                      {/* Hour Cells (Solid Squares with Numbers!) */}
                       {heatmapData.hours.map(hour => {
                         const count = heatmapData.grid[day][hour] || 0;
                         const pct = heatmapData.maxDensity > 0 ? count / heatmapData.maxDensity : 0;
                         
-                        let cellBg = "rgba(26, 34, 45, 0.3)";
+                        let cellBg = "rgba(26, 34, 45, 0.35)";
                         let borderStyle = "border-[var(--color-border)]/30";
-                        let textCol = "text-[var(--color-text-muted)]";
+                        let textCol = "text-[var(--color-text-muted)]/30 font-semibold font-mono";
+                        let glowStyle = "";
 
                         if (count > 0) {
-                          cellBg = `rgba(111, 147, 218, ${0.12 + pct * 0.75})`;
-                          borderStyle = `border-[rgba(111,147,218,${0.2 + pct * 0.4})]`;
-                          textCol = "text-[var(--color-text-primary)] font-bold font-mono";
+                          if (pct <= 0.35) {
+                            // Low Density - Soft Sky Blue (Muted brand accent)
+                            cellBg = "rgba(111, 147, 218, 0.22)";
+                            borderStyle = "border-[rgba(111,147,218,0.4)]";
+                            textCol = "text-[#9fc0ff] font-extrabold font-mono";
+                          } else if (pct <= 0.75) {
+                            // Medium Density - Vibrant Brand Sky Blue (Accent)
+                            cellBg = "rgba(111, 147, 218, 0.65)";
+                            borderStyle = "border-[rgba(111,147,218,0.85)]";
+                            textCol = "text-white font-extrabold font-mono";
+                          } else {
+                            // Peak Density - Vibrant Brand Violet (Lab)
+                            cellBg = "rgba(154, 123, 217, 0.85)";
+                            borderStyle = "border-[rgba(154,123,217,0.95)]";
+                            textCol = "text-white font-extrabold font-mono";
+                            glowStyle = "shadow-[0_0_12px_rgba(154,123,217,0.45)] animate-pulse";
+                          }
                         }
 
                         return (
-                          <div 
-                            key={hour}
-                            className={`mx-auto h-8 w-11 sm:w-12 rounded-lg border ${borderStyle} flex items-center justify-center text-xs transition-all hover:scale-[1.06] ${textCol}`}
-                            style={{ backgroundColor: cellBg }}
-                            title={`${day} at ${hour}: ${count} schedule${count !== 1 ? "s" : ""}`}
-                          >
-                            {count}
+                          <div key={hour} className="relative group flex justify-center w-full">
+                            <div 
+                              className={`h-8 w-8 rounded-md border ${borderStyle} ${glowStyle} flex items-center justify-center text-[10px] transition-all duration-200 hover:scale-[1.15] hover:shadow-lg hover:shadow-indigo-500/10 cursor-pointer ${textCol}`}
+                              style={{ backgroundColor: cellBg }}
+                            >
+                              {count}
+                            </div>
+                            
+                            {/* Floating CSS Tooltip on Hover */}
+                            <div className="absolute bottom-full mb-2 hidden group-hover:block z-50 animate-fade-in pointer-events-none">
+                              <div className="glass rounded-lg border border-[var(--color-border)] p-2 shadow-xl text-[9px] font-bold text-center min-w-[100px] whitespace-nowrap">
+                                <p className="text-[var(--color-text-primary)] capitalize mb-0.5">{day} at {formatTo12h(hour)}</p>
+                                <p className="text-[var(--color-accent)] font-mono">{count} Active Classes</p>
+                              </div>
+                              <div className="w-2 h-2 bg-[var(--color-bg-surface)] border-r border-b border-[var(--color-border)] transform rotate-45 mx-auto -mt-1" />
+                            </div>
                           </div>
                         );
                       })}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Column Labels printed cleanly at the bottom */}
+                <div className="grid grid-cols-[75px_repeat(9,1fr)] gap-2 pt-2 border-t border-[var(--color-border)]/20">
+                  <div /> {/* Row Day offset placeholder */}
+                  {heatmapData.hours.map(hour => (
+                    <div key={hour} className="font-mono text-[9px] font-bold text-[var(--color-text-muted)] text-center">
+                      {formatTo12h(hour)}
                     </div>
                   ))}
                 </div>
