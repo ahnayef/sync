@@ -380,11 +380,12 @@ export default function ManageSchedulePage() {
   const [editingSyncLinks, setEditingSyncLinks] = useState<Record<number, string>>({});
   const [syncingDeptId, setSyncingDeptId] = useState<number | null>(null);
   const [savingDeptId, setSavingDeptId] = useState<number | null>(null);
+  const [justRefreshed, setJustRefreshed] = useState(false);
 
   const fetchSyncData = async () => {
     setSyncConfigLoading(true);
     try {
-      const res = await fetch("/api/schedules/sync");
+      const res = await fetch(`/api/schedules/sync?t=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to load sync configurations.");
       const data = await res.json();
       setSyncDepts(data.departments || []);
@@ -395,6 +396,10 @@ export default function ManageSchedulePage() {
         links[d.id] = d.sheet_link || "";
       });
       setEditingSyncLinks(links);
+      
+      // Flash success confirmation
+      setJustRefreshed(true);
+      setTimeout(() => setJustRefreshed(false), 1500);
     } catch (err) {
       console.error(err);
     } finally {
@@ -1281,10 +1286,22 @@ export default function ManageSchedulePage() {
 
             <button 
               onClick={fetchSyncData} 
-              disabled={syncConfigLoading}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)] disabled:opacity-50"
+              disabled={syncConfigLoading || justRefreshed}
+              className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 ${
+                justRefreshed 
+                  ? "border-[#3fb950]/40 bg-[rgba(63,185,80,0.06)] text-[#3fb950]" 
+                  : "border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
+              }`}
             >
-              <FiRefreshCw className={syncConfigLoading ? "animate-spin" : ""} /> Refresh Status
+              {justRefreshed ? (
+                <>
+                  <FiCheckCircle className="animate-bounce" /> Status Refreshed!
+                </>
+              ) : (
+                <>
+                  <FiRefreshCw className={syncConfigLoading ? "animate-spin" : ""} /> Refresh Status
+                </>
+              )}
             </button>
           </div>
 
