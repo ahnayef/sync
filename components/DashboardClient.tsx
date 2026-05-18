@@ -365,8 +365,8 @@ export default function DashboardClient() {
     return data.departmentAnalytics.labTheory.map((dept: any) => {
       return {
         name: dept.department_name,
-        "Unique Courses": Number(dept.total_courses || 0),
-        "Active Schedules": Number(dept.scheduled_classes || 0)
+        "Syllabus Subjects": Number(dept.total_courses || 0),
+        "Weekly Classes": Number(dept.scheduled_classes || 0)
       };
     });
   }, [data?.departmentAnalytics?.labTheory]);
@@ -547,10 +547,10 @@ export default function DashboardClient() {
               <div className="flex items-center justify-between border-b border-[var(--color-border)]/40 pb-3 mb-4">
                 <div className="space-y-0.5">
                   <h2 className="text-xs font-extrabold uppercase tracking-wider text-[var(--color-text-primary)]">
-                    Department Curriculum & Routine Density
+                    Syllabus Subjects vs. Weekly Classes
                   </h2>
                   <p className="text-[10px] text-[var(--color-text-muted)]">
-                    Unique course catalog offerings (purple) vs actual active scheduled routine classes (blue).
+                    Comparing registered curriculum subjects (purple) against actual classes running on the weekly timetable (blue).
                   </p>
                 </div>
                 <span className="text-[10px] font-bold text-[var(--color-text-muted)] bg-[var(--color-bg-elevated)] border border-[var(--color-border)] px-2 py-0.5 rounded">
@@ -587,8 +587,8 @@ export default function DashboardClient() {
                         iconType="circle"
                         wrapperStyle={{ fontSize: 9, fontWeight: 'bold' }} 
                       />
-                      <Bar dataKey="Unique Courses" name="Unique Course Offerings" fill="var(--color-lab)" radius={[4, 4, 0, 0]} barSize={12} />
-                      <Bar dataKey="Active Schedules" name="Scheduled Classes" fill="var(--color-accent)" radius={[4, 4, 0, 0]} barSize={12} />
+                      <Bar dataKey="Syllabus Subjects" name="Syllabus Subjects" fill="var(--color-lab)" radius={[4, 4, 0, 0]} barSize={12} />
+                      <Bar dataKey="Weekly Classes" name="Weekly Classes" fill="var(--color-accent)" radius={[4, 4, 0, 0]} barSize={12} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
