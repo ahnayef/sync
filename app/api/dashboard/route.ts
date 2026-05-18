@@ -164,14 +164,13 @@ export async function GET() {
       GROUP BY d.id
     `);
 
-    // Lab vs Theory courses per department
+    // Course Catalog vs Scheduled Routines per department
     const [deptLabTheory] = await db.execute(`
       SELECT d.id, d.name as department_name,
-             SUM(CASE WHEN c.is_lab = 1 THEN 1 ELSE 0 END) as lab_courses,
-             SUM(CASE WHEN c.is_lab = 0 THEN 1 ELSE 0 END) as theory_courses
+             (SELECT COUNT(*) FROM courses c WHERE c.department_id = d.id) as total_courses,
+             (SELECT COUNT(*) FROM schedules s WHERE s.department_id = d.id) as scheduled_classes
       FROM departments d
-      LEFT JOIN courses c ON d.id = c.department_id
-      GROUP BY d.id
+      ORDER BY scheduled_classes DESC
     `);
 
     // 7. Time Analytics (Weekly class distribution by day)
