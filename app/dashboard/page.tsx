@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import db from "@/lib/db";
-import DashboardClient from "./DashboardClient";
-import { FiUsers, FiBook, FiMap, FiCalendar, FiHome } from "react-icons/fi";
+import DashboardClient from "@/components/DashboardClient";
 
 export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Dashboard",
+  title: "Dashboard | Loop",
+  description: "Loop Schedule Management and Academic Analytics Dashboard",
 };
 
-export default async function DashboardPage() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-    </div>
-  );
+export default function DashboardPage() {
+  return <DashboardClient />;
 }
