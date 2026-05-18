@@ -65,19 +65,19 @@ export default function AboutPage() {
                   ABOUT LOOP
                 </div>
 
-                <h1 className="max-w-3xl text-[clamp(38px,6vw,64px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-[var(--color-text-primary)]">
+                <h1 className="max-w-3xl text-[clamp(26px,6vw,48px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-[var(--color-text-primary)]">
                   Built for students, <span className="gradient-text">trusted by the people who run the schedule</span>
                 </h1>
 
-                <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[var(--color-text-secondary)]">
+                <p className="mt-6 max-w-2xl text-sm md:text-[17px] leading-8 text-[var(--color-text-secondary)]">
                   Loop was created to replace cluttered, outdated class scheduling systems with something calm, fast, and genuinely useful every day.
                 </p>
               </div>
 
-              <div className="grid gap-3 rounded-[24px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.66)] p-4 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="grid gap-3 rounded-[24px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.66)] p-3 sm:grid-cols-3 lg:grid-cols-1">
                 {heroHighlights.map((highlight) => (
-                  <div key={highlight.label} className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-4">
-                    <p className="gradient-text text-[30px] font-extrabold tracking-[-0.03em]">{highlight.value}</p>
+                  <div key={highlight.label} className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-3 sm:p-4">
+                    <p className="gradient-text text-[clamp(22px,3.5vw,30px)] font-extrabold tracking-[-0.03em]">{highlight.value}</p>
                     <p className="mt-1 text-sm text-[var(--color-text-muted)]">{highlight.label}</p>
                   </div>
                 ))}
@@ -86,20 +86,20 @@ export default function AboutPage() {
           </section>
 
           <section className="mt-6 grid gap-5 lg:grid-cols-[0.95fr_1.05fr] lg:gap-6">
-            <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6 sm:p-8">
+              <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5 sm:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Our mission</p>
-              <h2 className="mt-3 text-[clamp(24px,3vw,34px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
+              <h2 className="mt-3 text-[clamp(20px,3vw,30px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
                 Make the schedule obvious.
               </h2>
-              <p className="mt-4 text-[15px] leading-8 text-[var(--color-text-secondary)]">
+              <p className="mt-4 text-sm md:text-[15px] leading-7 text-[var(--color-text-secondary)]">
                 Every student should be able to see where they need to be without digging through dense portals, confusing tables, or stale information. Loop keeps that answer clear and current.
               </p>
-              <p className="mt-4 text-[15px] leading-8 text-[var(--color-text-secondary)]">
+              <p className="mt-4 text-sm md:text-[15px] leading-7 text-[var(--color-text-secondary)]">
                 That same clarity matters for admins too. Loop keeps the import, validation, and publishing flow straightforward so schedule updates stay accurate instead of fragile.
               </p>
               <Link
                 href="/signup"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-5 py-3 text-sm font-semibold text-white no-underline shadow-[0_18px_40px_rgba(79,142,247,0.24)] transition-transform duration-200 hover:-translate-y-0.5"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-4 py-2.5 sm:px-5 sm:py-3 text-sm font-semibold text-white no-underline shadow-[0_18px_40px_rgba(79,142,247,0.24)] transition-transform duration-200 hover:-translate-y-0.5"
               >
                 Start using Loop
                 <FiArrowRight />
@@ -122,10 +122,10 @@ export default function AboutPage() {
                 return (
                   <div
                     key={val.title}
-                    className="group flex gap-4 p-5 transition-colors duration-200 hover:bg-[rgba(21,28,37,0.7)] sm:gap-5 sm:p-6"
+                    className="group flex gap-4 p-4 sm:gap-5 sm:p-6 transition-colors duration-200 hover:bg-[rgba(21,28,37,0.7)]"
                   >
                     <div
-                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] text-[22px] transition-transform duration-200 group-hover:scale-105"
+                      className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-[16px] text-[22px] transition-transform duration-200 group-hover:scale-105"
                       style={{
                         background: `${val.color}18`,
                         border: `1px solid ${val.color}2f`,
@@ -136,10 +136,10 @@ export default function AboutPage() {
                       <Icon />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-lg font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">
+                      <h3 className="text-base sm:text-lg font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">
                         {val.title}
                       </h3>
-                      <p className="mt-1 max-w-[34rem] text-sm leading-7 text-[var(--color-text-secondary)]">
+                      <p className="mt-1 max-w-[34rem] text-sm md:text-base leading-7 text-[var(--color-text-secondary)]">
                         {val.desc}
                       </p>
                     </div>
@@ -160,8 +160,8 @@ export default function AboutPage() {
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {stats.map((stat) => (
-                <div key={stat.label} className="rounded-[20px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.72)] p-5 text-center">
-                  <p className="gradient-text text-[clamp(28px,4vw,36px)] font-extrabold tracking-[-0.03em]">
+                <div key={stat.label} className="rounded-[20px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.72)] p-4 sm:p-5 text-center">
+                  <p className="gradient-text text-[clamp(20px,4vw,32px)] sm:text-[clamp(24px,4vw,36px)] font-extrabold tracking-[-0.03em]">
                     {stat.value}
                   </p>
                   <p className="mt-1 text-sm text-[var(--color-text-muted)]">{stat.label}</p>
