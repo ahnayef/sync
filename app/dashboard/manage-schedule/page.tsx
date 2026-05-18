@@ -154,22 +154,22 @@ const STATUS_CONFIG = {
 // --- Mock Data for Dropdowns ---
 const DEPARTMENTS = ["CSE", "MAT", "HUM", "EEE", "BBA"];
 const TEACHERS = [
-  { short: "DR. RAHMAN", name: "Dr. Abdur Rahman" },
-  { short: "PROF. AHMED", name: "Prof. Tanvir Ahmed" },
-  { short: "DR. KARIM", name: "Dr. Fazlul Karim" },
-  { short: "MS. BEGUM", name: "Ms. Nasreen Begum" },
+  { id: 1, short: "DR. RAHMAN", name: "Dr. Abdur Rahman" },
+  { id: 2, short: "PROF. AHMED", name: "Prof. Tanvir Ahmed" },
+  { id: 3, short: "DR. KARIM", name: "Dr. Fazlul Karim" },
+  { id: 4, short: "MS. BEGUM", name: "Ms. Nasreen Begum" },
 ];
 const COURSES = [
-  { code: "CSE301", title: "Data Structures", dept: "CSE", isLab: false },
-  { code: "CSE315L", title: "OS Lab", dept: "CSE", isLab: true },
-  { code: "MAT201", title: "Discrete Mathematics", dept: "MAT", isLab: false },
-  { code: "EEE101", title: "Electrical Circuits", dept: "EEE", isLab: false },
+  { id: 1, code: "CSE301", title: "Data Structures", dept: "CSE", isLab: false },
+  { id: 2, code: "CSE315L", title: "OS Lab", dept: "CSE", isLab: true },
+  { id: 3, code: "MAT201", title: "Discrete Mathematics", dept: "MAT", isLab: false },
+  { id: 4, code: "EEE101", title: "Electrical Circuits", dept: "EEE", isLab: false },
 ];
 const BATCHES = [
-  { name: "CSE 21", dept: "CSE" },
-  { name: "CSE 22", dept: "CSE" },
-  { name: "MAT 15", dept: "MAT" },
-  { name: "EEE 09", dept: "EEE" },
+  { id: 1, name: "CSE 21", dept: "CSE" },
+  { id: 2, name: "CSE 22", dept: "CSE" },
+  { id: 3, name: "MAT 15", dept: "MAT" },
+  { id: 4, name: "EEE 09", dept: "EEE" },
 ];
 const ROOMS = ["401", "402", "305", "Lab-1", "Lab-2", "Seminar Hall"];
 
@@ -332,6 +332,7 @@ export default function ManageSchedulePage() {
   const [teachersList, setTeachersList] = useState<TeacherOption[]>(TEACHERS);
   const [batchesList, setBatchesList] = useState<BatchOption[]>(BATCHES);
   const [roomsList, setRoomsList] = useState<string[]>(ROOMS);
+  const [roomsData, setRoomsData] = useState<any[]>([]); // Full room objects with IDs
   const [listLoading, setListLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
@@ -453,6 +454,7 @@ export default function ManageSchedulePage() {
               // Extract department name from various possible property names
               const deptName = c.dept || c.department || c.department_name || c.dept_name || "";
               return {
+                id: c.id,
                 code: c.code || c.course_code || c.code_name || c.id || String(c.id || ""),
                 title: c.title || c.course_name || c.name || c.course_title || "Untitled",
                 dept: deptName,
@@ -469,6 +471,7 @@ export default function ManageSchedulePage() {
           const data = await teachersRes.json();
           if (Array.isArray(data) && data.length) {
             const normalized = data.map((t: any) => ({
+              id: t.id,
               short: t.short || t.short_name || t.code || t.initials || (t.name ? t.name.split(" ").map((p:string)=>p[0]).join('.') : ""),
               name: t.name || t.full_name || t.teacher_name || t.display_name || ""
             }));
@@ -481,6 +484,7 @@ export default function ManageSchedulePage() {
           const data = await batchesRes.json();
           if (Array.isArray(data) && data.length) {
             const normalized = data.map((b: any) => ({
+              id: b.id,
               name: b.name || b.batch_name || b.session || (b.label || ""),
               dept: b.dept || b.department || b.department_name || b.department_code || "",
               session: b.session || b.batch_session || null
@@ -493,6 +497,9 @@ export default function ManageSchedulePage() {
         if (roomsRes && roomsRes.ok) {
           const data = await roomsRes.json();
           if (Array.isArray(data) && data.length) {
+            // Store full room objects
+            setRoomsData(data);
+            // Also normalize to strings for display
             const normalized = data.map((r: any) => {
               if (typeof r === "string") {
                 const m = String(r).match(/\d+/);
@@ -509,6 +516,7 @@ export default function ManageSchedulePage() {
             setRoomsList(normalized);
           } else {
             setRoomsList(ROOMS);
+            setRoomsData([]);
           }
         }
       } catch (error) {
@@ -602,21 +610,89 @@ export default function ManageSchedulePage() {
     setShowEditModal(true);
   };
 
-  const saveEdit = () => {
-    const formattedData = {
-      ...editData,
-      // Convert back to AM/PM for storage to match mock data
-      startTime: editData.startTime.includes(":") && !editData.startTime.includes(" ") ? formatTo12h(editData.startTime) : editData.startTime,
-      endTime: editData.endTime.includes(":") && !editData.endTime.includes(" ") ? formatTo12h(editData.endTime) : editData.endTime,
-    };
+  const saveEdit = async () => {
+    try {
+      // Convert day from "Sunday" to "sunday"
+      const dayLower = editData.day.toLowerCase();
 
-    if (editingId) {
-      setSchedules(schedules.map(s => s.id === editingId ? { ...s, ...formattedData } : s));
-    } else {
-      setSchedules([...schedules, { id: Date.now(), ...formattedData, status: "ok" }]);
+      // Find IDs from the lists
+      const course = (courses.length > 0 ? courses : COURSES).find((c: any) => c.code === editData.courseCode);
+      const teacher = (teachersList.length > 0 ? teachersList : TEACHERS).find((t: any) => t.short === editData.teacher);
+      const batch = (batchesList.length > 0 ? batchesList : BATCHES).find((b: any) => b.name === editData.batch);
+      const dept = departments.find((d) => d.name === editData.dept);
+      
+      // Find room from roomsData (full objects with ID)
+      const room = (roomsData.length > 0 ? roomsData : []).find((r: any) => {
+        const roomNumber = String(r.room_number ?? r.number ?? "");
+        return roomNumber === String(editData.room);
+      });
+
+      // Convert time from "08:00 AM" to "08:00:00" (24-hour format)
+      const convertTo24h = (time: string) => {
+        if (!time) return "00:00:00";
+        // If already in 24h format (HH:MM)
+        if (time.match(/^\d{2}:\d{2}$/) && !time.includes(" ")) {
+          return time + ":00";
+        }
+        // Parse AM/PM format
+        const match = time.match(/(\d{1,2}):(\d{2})\s(AM|PM)/i);
+        if (!match) return "00:00:00";
+        const [, hour, minute, period] = match;
+        let hours = parseInt(hour);
+        if (period.toUpperCase() === "PM" && hours !== 12) hours += 12;
+        if (period.toUpperCase() === "AM" && hours === 12) hours = 0;
+        return `${hours.toString().padStart(2, "0")}:${minute}:00`;
+      };
+
+      const payload = {
+        day: dayLower,
+        start_time: convertTo24h(editData.startTime),
+        end_time: convertTo24h(editData.endTime),
+        section: editData.section || "none",
+        course_id: course?.id,
+        teacher_id: teacher?.id || null,
+        batch_id: batch?.id || null,
+        department_id: dept?.id || null,
+        room_id: room?.id || null,
+      };
+
+      if (!payload.course_id) {
+        alert("Please select a course");
+        return;
+      }
+
+      if (editingId) {
+        // Update existing schedule
+        const res = await fetch("/api/schedules", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingId, ...payload }),
+        });
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || "Failed to update schedule");
+        }
+      } else {
+        // Create new schedule
+        const res = await fetch("/api/schedules", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || "Failed to create schedule");
+        }
+      }
+
+      // Reload schedules from database
+      await loadSchedules();
+      setShowEditModal(false);
+      setEditingId(null);
+    } catch (error) {
+      console.error("Save schedule error:", error);
+      alert(error instanceof Error ? error.message : "Failed to save schedule");
     }
-    setShowEditModal(false);
-    setEditingId(null);
   };
 
   // --- Import Wizard Methods ---

@@ -53,6 +53,78 @@ export async function GET() {
   }
 }
 
+export async function POST(req: Request) {
+  if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const {
+      day,
+      start_time,
+      end_time,
+      section,
+      course_id,
+      teacher_id,
+      batch_id,
+      department_id,
+      room_id,
+    } = await req.json();
+
+    if (!day || !start_time || !end_time || !course_id) {
+      return NextResponse.json(
+        { error: "Missing required fields: day, start_time, end_time, course_id" },
+        { status: 400 }
+      );
+    }
+
+    const [result]: any = await db.execute(
+      `INSERT INTO schedules 
+       (day, start_time, end_time, section, course_id, teacher_id, batch_id, department_id, room_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [day, start_time, end_time, section || "none", course_id, teacher_id || null, batch_id || null, department_id || null, room_id || null]
+    );
+
+    return NextResponse.json({ success: true, id: result.insertId });
+  } catch (error: any) {
+    console.error("Create schedule err:", error);
+    return NextResponse.json({ error: error.message || "Database error" }, { status: 500 });
+  }
+}
+
+export async function PUT(req: Request) {
+  if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const {
+      id,
+      day,
+      start_time,
+      end_time,
+      section,
+      course_id,
+      teacher_id,
+      batch_id,
+      department_id,
+      room_id,
+    } = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing schedule ID" }, { status: 400 });
+    }
+
+    await db.execute(
+      `UPDATE schedules 
+       SET day = ?, start_time = ?, end_time = ?, section = ?, course_id = ?, teacher_id = ?, batch_id = ?, department_id = ?, room_id = ?
+       WHERE id = ?`,
+      [day, start_time, end_time, section || "none", course_id, teacher_id || null, batch_id || null, department_id || null, room_id || null, id]
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Update schedule err:", error);
+    return NextResponse.json({ error: error.message || "Database error" }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: Request) {
   if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
