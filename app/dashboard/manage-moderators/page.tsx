@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiMail, FiShield, FiTrash2, FiPlus, FiSearch } from "react-icons/fi";
+import { FiMail, FiShield, FiTrash2, FiPlus, FiSearch, FiX } from "react-icons/fi";
 
 type Moderator = {
   id: number;
@@ -38,6 +38,8 @@ export default function ManageModeratorsPage() {
   const filtered = moderators.filter((m) =>
     m.email.toLowerCase().includes(search.toLowerCase()) || m.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const filtering = search.length > 0;
 
   const openAdd = () => {
     setNewEmail("");
@@ -87,46 +89,51 @@ export default function ManageModeratorsPage() {
     <div className="min-h-screen bg-[var(--color-bg-base)]">
       <main className="mx-auto max-w-[1000px] px-5 py-8 sm:px-6 sm:py-10">
         {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-end gap-3 mb-2">
-              <h1 className="text-[28px] font-bold text-[var(--color-text-primary)]">
-                Moderators
-              </h1>
-              <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-500/20 text-xs font-bold text-blue-300">
-                {moderators.length}
-              </span>
+        <section className="glass relative overflow-hidden rounded-3xl border border-[var(--color-border)] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.16)] sm:p-6 lg:p-7 mb-8">
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <h1 className="text-[26px] font-bold text-[var(--color-text-primary)]">Moderator Management</h1>
+                <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[var(--color-accent-muted)] text-xs font-bold text-[var(--color-accent)]">
+                  {moderators.length}
+                </span>
+              </div>
+              <p className="text-sm text-[var(--color-text-secondary)]">{loading ? "Loading moderators..." : `${filtering ? `${filtered.length} ` : ""}moderators managing restricted permissions`}</p>
             </div>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              Manage admin delegates with restricted permissions
-            </p>
+            <button
+              id="add-mod-btn"
+              onClick={openAdd}
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)]"
+            >
+              <FiPlus /> Add Moderator
+            </button>
           </div>
-          <button
-            id="add-mod-btn"
-            onClick={openAdd}
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.25)] transition-all duration-200 hover:shadow-[0_12px_32px_rgba(79,142,247,0.35)] hover:-translate-y-0.5 active:scale-[0.98]"
-          >
-            <FiPlus size={18} /> Add Moderator
-          </button>
-        </div>
+        </section>
 
         {/* Search */}
-        <div className="mb-6 flex gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[240px] sm:max-w-[320px]">
-            <input
-              id="mod-search"
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search email or name..."
-              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 pr-10 pl-3.5 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/25 transition-all"
-            />
-            <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none" size={16} />
+        <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.12)] sm:p-5 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 items-start">
+            <div className="relative flex-1 max-w-full sm:max-w-[520px]">
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+              <input
+                id="mod-search"
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search email or name..."
+                className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-3 pr-12 pl-11 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[rgba(79,142,247,0.35)]"
+              />
+              {search && (
+                <button onClick={() => setSearch("")} title="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]">
+                  <FiX size={14} />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* Table */}
-        <div className="rounded-xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-surface)]">
+        <section className="rounded-3xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-surface)] shadow-[0_18px_48px_rgba(0,0,0,0.12)]">
           <table className="w-full">
             <thead>
               <tr className="border-b border-[var(--color-border)]">
@@ -145,7 +152,7 @@ export default function ManageModeratorsPage() {
                 <tr>
                   <td colSpan={4} className="px-5 py-12">
                     <div className="flex items-center justify-center gap-2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-400/30 border-t-blue-400" />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-accent)]/30 border-t-[var(--color-accent)]" />
                       <span className="text-sm text-[var(--color-text-secondary)]">Loading moderators...</span>
                     </div>
                   </td>
@@ -202,7 +209,7 @@ export default function ManageModeratorsPage() {
               )}
             </tbody>
           </table>
-        </div>
+        </section>
 
         {/* Modal */}
         {showModal && (
