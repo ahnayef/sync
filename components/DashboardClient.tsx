@@ -98,6 +98,7 @@ export default function DashboardClient() {
   const [currentTimeStr, setCurrentTimeStr] = useState("10:30:00");
   const [showAllClasses, setShowAllClasses] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [selectedFacultyDept, setSelectedFacultyDept] = useState("All");
 
   useEffect(() => {
     setIsMounted(true);
@@ -403,16 +404,34 @@ export default function DashboardClient() {
       }));
   }, [data?.roomAnalytics?.occupancy]);
 
+  const facultyDepartments = useMemo(() => {
+    if (!data?.teacherAnalytics?.workload) return [];
+    const deptsSet = new Set<string>();
+    data.teacherAnalytics.workload.forEach((t: any) => {
+      if (t.department_name) deptsSet.add(t.department_name);
+    });
+    return Array.from(deptsSet);
+  }, [data?.teacherAnalytics?.workload]);
+
   const teacherWorkloadBarData = useMemo(() => {
     if (!data?.teacherAnalytics?.workload) return [];
-    return data.teacherAnalytics.workload.map((t: any) => {
+    
+    let list = data.teacherAnalytics.workload.map((t: any) => {
       return {
         name: t.short,
+        fullName: t.name,
+        department: t.department_name,
         Hours: Number((t.total_minutes / 60).toFixed(1)),
         Classes: t.class_count
       };
-    }).slice(0, 5); 
-  }, [data?.teacherAnalytics?.workload]);
+    });
+
+    if (selectedFacultyDept !== "All") {
+      list = list.filter((t: any) => t.department === selectedFacultyDept);
+    }
+
+    return list.slice(0, 5);
+  }, [data?.teacherAnalytics?.workload, selectedFacultyDept]);
 
   const deptClassesBarData = useMemo(() => {
     if (!data?.departmentAnalytics?.classes) return [];
@@ -913,14 +932,43 @@ export default function DashboardClient() {
             </section>
 
             {/* Faculty Workload Contributions (Vertical Bar Chart) */}
-            <section className="glass rounded-xl border border-[var(--color-border)] p-4 shadow-sm">
-              <div className="border-b border-[var(--color-border)]/40 pb-2 mb-3">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--color-text-primary)]">
-                  Top Faculty Weekly Teaching Load (Hours)
-                </h3>
-                <p className="text-[10px] text-[var(--color-text-muted)]">
-                  Accumulated lecture hours taught per teacher shortcode during the weekly cycle.
-                </p>
+            <section className="glass rounded-xl border border-[var(--color-border)] p-4 shadow-sm flex flex-col justify-between">
+              <div className="border-b border-[var(--color-border)]/40 pb-2 mb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--color-text-primary)]">
+                    Top Faculty Weekly Teaching Load (Hours)
+                  </h3>
+                  <p className="text-[10px] text-[var(--color-text-muted)]">
+                    Accumulated lecture hours taught per teacher during the weekly cycle.
+                  </p>
+                </div>
+                
+                {/* Dynamic department capsules filter */}
+                <div className="flex flex-wrap items-center gap-1 self-start sm:self-center">
+                  <button
+                    onClick={() => setSelectedFacultyDept("All")}
+                    className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all duration-200 ${
+                      selectedFacultyDept === "All"
+                        ? "bg-[var(--color-accent)] text-white shadow-sm"
+                        : "bg-[var(--color-border)]/40 text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/70 hover:text-[var(--color-text-primary)]"
+                    }`}
+                  >
+                    All
+                  </button>
+                  {facultyDepartments.map(dept => (
+                    <button
+                      key={dept}
+                      onClick={() => setSelectedFacultyDept(dept)}
+                      className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all duration-200 ${
+                        selectedFacultyDept === dept
+                          ? "bg-[var(--color-accent)] text-white shadow-sm"
+                          : "bg-[var(--color-border)]/40 text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/70 hover:text-[var(--color-text-primary)]"
+                      }`}
+                    >
+                      {dept}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="h-[210px]">
