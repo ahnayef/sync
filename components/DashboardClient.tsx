@@ -2,17 +2,18 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { 
-  FiClock, 
-  FiBookOpen, 
-  FiUsers, 
-  FiGrid, 
-  FiMapPin, 
-  FiActivity, 
-  FiPlusCircle, 
-  FiSearch, 
-  FiUser, 
-  FiHome, 
+import { signOut, useSession } from "next-auth/react";
+import {
+  FiClock,
+  FiBookOpen,
+  FiUsers,
+  FiGrid,
+  FiMapPin,
+  FiActivity,
+  FiPlusCircle,
+  FiSearch,
+  FiUser,
+  FiHome,
   FiZap,
   FiTrendingUp,
   FiSliders,
@@ -20,8 +21,7 @@ import {
   FiRefreshCw,
   FiChevronDown,
   FiChevronUp,
-  FiBell,
-  FiSettings
+  FiLogOut
 } from "react-icons/fi";
 
 import {
@@ -91,6 +91,7 @@ const CircularProgress = ({ percent, color = "var(--color-accent)" }: { percent:
 };
 
 export default function DashboardClient() {
+  const { data: session } = useSession();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -103,7 +104,7 @@ export default function DashboardClient() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-  
+
   useEffect(() => {
     const updateTime = () => {
       if (demoMode) {
@@ -113,7 +114,7 @@ export default function DashboardClient() {
         setCurrentTimeStr(now.toTimeString().split(" ")[0]);
       }
     };
-    
+
     updateTime();
     const interval = setInterval(updateTime, 5000);
     return () => clearInterval(interval);
@@ -155,15 +156,15 @@ export default function DashboardClient() {
   const todaySchedulesWithStatus = useMemo(() => {
     if (!data?.todaySchedule) return [];
     const currentMin = timeToMinutes(currentTimeStr);
-    
+
     return data.todaySchedule.map((s: any) => {
       const startMin = timeToMinutes(s.start_time);
       const endMin = timeToMinutes(s.end_time);
       const duration = endMin - startMin;
-      
+
       let status: "ongoing" | "upcoming" | "past" = "upcoming";
       let progress = 0;
-      
+
       if (currentMin >= startMin && currentMin <= endMin) {
         status = "ongoing";
         progress = Math.round(((currentMin - startMin) / duration) * 100);
@@ -171,7 +172,7 @@ export default function DashboardClient() {
         status = "past";
         progress = 100;
       }
-      
+
       return {
         ...s,
         status,
@@ -183,8 +184,8 @@ export default function DashboardClient() {
 
   // Live timeline limit (5 items by default)
   const displayedClasses = useMemo(() => {
-    return showAllClasses 
-      ? todaySchedulesWithStatus 
+    return showAllClasses
+      ? todaySchedulesWithStatus
       : todaySchedulesWithStatus.slice(0, 5);
   }, [todaySchedulesWithStatus, showAllClasses]);
 
@@ -200,7 +201,7 @@ export default function DashboardClient() {
   const heatmapData = useMemo(() => {
     const days = ["sunday", "monday", "tuesday", "wednesday", "thursday"];
     const hours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
-    
+
     const grid: Record<string, Record<string, number>> = {};
     days.forEach(d => {
       grid[d] = {};
@@ -257,14 +258,14 @@ export default function DashboardClient() {
   const getRelativeTime = (timestamp: number) => {
     const now = new Date().getTime();
     const diff = now - timestamp;
-    
+
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return "Just now";
     if (mins < 60) return `${mins}m ago`;
-    
+
     const hours = Math.floor(diff / 3600000);
     if (hours < 24) return `${hours}h ago`;
-    
+
     const days = Math.floor(diff / 86400000);
     if (days === 1) return "Yesterday";
     return `${days}d ago`;
@@ -319,7 +320,7 @@ export default function DashboardClient() {
   const peakHoursData = useMemo(() => {
     const hours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
     if (!data?.weeklySchedules) return [];
-    
+
     // Find all distinct departments
     const deptsSet = new Set<string>();
     data.weeklySchedules.forEach((s: any) => {
@@ -330,7 +331,7 @@ export default function DashboardClient() {
     return hours.map(h => {
       const slotStart = timeToMinutes(h);
       const slotEnd = slotStart + 60;
-      
+
       const result: Record<string, any> = {
         hour: formatTo12h(h),
         hourRaw: h
@@ -352,7 +353,7 @@ export default function DashboardClient() {
           }
         }
       });
-      
+
       return result;
     });
   }, [data?.weeklySchedules]);
@@ -366,12 +367,12 @@ export default function DashboardClient() {
         Occupancy: occupancyPct,
         Hours: Number((room.total_minutes / 60).toFixed(1))
       };
-    }).slice(0, 5); 
+    }).slice(0, 5);
   }, [data?.roomAnalytics?.occupancy]);
 
   const roomCapacityPieData = useMemo(() => {
     if (!data?.roomAnalytics?.occupancy) return [];
-    
+
     const groups = {
       "Small Classrooms": 0,    // <= 30 seats
       "Medium Classrooms": 0,   // 31 - 50 seats
@@ -415,7 +416,7 @@ export default function DashboardClient() {
 
   const teacherWorkloadBarData = useMemo(() => {
     if (!data?.teacherAnalytics?.workload) return [];
-    
+
     let list = data.teacherAnalytics.workload.map((t: any) => {
       return {
         name: t.short,
@@ -487,8 +488,8 @@ export default function DashboardClient() {
   const { stats } = data;
 
   // Derive top circular widget percentages
-  const classroomOccupancyPct = stats.totalRooms > 0 
-    ? Math.round(((stats.totalRooms - stats.freeRoomsRightNow) / stats.totalRooms) * 100) 
+  const classroomOccupancyPct = stats.totalRooms > 0
+    ? Math.round(((stats.totalRooms - stats.freeRoomsRightNow) / stats.totalRooms) * 100)
     : 0;
 
   const todayClassesPct = stats.totalWeeklyClasses > 0
@@ -503,15 +504,15 @@ export default function DashboardClient() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] font-sans">
-      
+
       {/* ─── MAIN SaaS 3-COLUMN LAYOUT ─── */}
       <div className="flex flex-col xl:flex-row max-w-[1600px] mx-auto min-h-screen">
-        
+
         {/* ========================================================
             LEFT COLUMN (2/3 Width): HEADER, STATS CARDS & CHARTS 
            ======================================================== */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 xl:border-r border-[var(--color-border)]/40">
-          
+
           {/* ─── 1. TOP HEADER BANNER ─── */}
           <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--color-border)]/40 pb-5">
             <div className="space-y-1">
@@ -530,14 +531,13 @@ export default function DashboardClient() {
 
             <div className="flex flex-wrap items-center gap-2.5">
               {/* Demo toggle */}
-              <button 
+              <button
                 id="dashboard-demo-toggle-btn"
-                onClick={() => setDemoMode(!demoMode)} 
-                className={`inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold border transition-all duration-150 cursor-pointer ${
-                  demoMode 
+                onClick={() => setDemoMode(!demoMode)}
+                className={`inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold border transition-all duration-150 cursor-pointer ${demoMode
                     ? "bg-[rgba(163,113,247,0.12)] border-[rgba(163,113,247,0.25)] text-[var(--color-lab)] hover:bg-[rgba(163,113,247,0.18)]"
                     : "bg-[var(--color-bg-elevated)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
-                }`}
+                  }`}
                 title="Toggles mock active hours for test coverage"
               >
                 <FiSliders className="w-3 h-3" />
@@ -545,7 +545,7 @@ export default function DashboardClient() {
               </button>
 
               {/* Refresh button */}
-              <button 
+              <button
                 id="dashboard-refresh-btn"
                 onClick={handleRefresh}
                 disabled={refreshing}
@@ -560,42 +560,42 @@ export default function DashboardClient() {
           {/* ─── 2. PREMIUM GAUGES STATS GRID ─── */}
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { 
-                label: "Classroom Occupancy", 
-                val: `${stats.totalRooms - stats.freeRoomsRightNow} / ${stats.totalRooms}`, 
-                desc: "Active classroom blocks", 
-                isGauge: true, 
-                pct: classroomOccupancyPct, 
-                color: "#6f93da" 
+              {
+                label: "Classroom Occupancy",
+                val: `${stats.totalRooms - stats.freeRoomsRightNow} / ${stats.totalRooms}`,
+                desc: "Active classroom blocks",
+                isGauge: true,
+                pct: classroomOccupancyPct,
+                color: "#6f93da"
               },
-              { 
-                label: "Today's Schedule Routine", 
-                val: `${stats.todaysClasses} classes`, 
-                desc: "Scheduled for today", 
-                isGauge: false, 
-                icon: FiClock, 
-                colorClass: "bg-rose-500/10 border-rose-500/20 text-rose-400" 
+              {
+                label: "Today's Schedule Routine",
+                val: `${stats.todaysClasses} classes`,
+                desc: "Scheduled for today",
+                isGauge: false,
+                icon: FiClock,
+                colorClass: "bg-rose-500/10 border-rose-500/20 text-rose-400"
               },
-              { 
-                label: "Faculty Workload Share", 
-                val: `${stats.totalTeachers} teachers`, 
-                desc: "Avg 3 routines / teacher", 
-                isGauge: false, 
-                icon: FiUser, 
-                colorClass: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400" 
+              {
+                label: "Faculty Workload Share",
+                val: `${stats.totalTeachers} teachers`,
+                desc: "Avg 3 routines / teacher",
+                isGauge: false,
+                icon: FiUser,
+                colorClass: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
               },
-              { 
-                label: "Routines Allocation Util", 
-                val: `${stats.totalWeeklyClasses} slots`, 
-                desc: "Weekly scheduled capacity", 
-                isGauge: false, 
-                icon: FiBookOpen, 
-                colorClass: "bg-amber-500/10 border-amber-500/20 text-amber-400" 
+              {
+                label: "Routines Allocation Util",
+                val: `${stats.totalWeeklyClasses} slots`,
+                desc: "Weekly scheduled capacity",
+                isGauge: false,
+                icon: FiBookOpen,
+                colorClass: "bg-amber-500/10 border-amber-500/20 text-amber-400"
               },
             ].map((card, idx) => {
               const Icon = card.icon as any;
               return (
-                <div 
+                <div
                   key={idx}
                   className="glass relative overflow-hidden rounded-xl border border-[var(--color-border)] p-4 flex items-center justify-between gap-4 shadow-sm group hover:border-[rgba(111,147,218,0.2)] transition-all"
                 >
@@ -624,7 +624,7 @@ export default function DashboardClient() {
 
           {/* ─── 3. PRIMARY CHARTS GRID (SECTION A) ─── */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            
+
             {/* Left 2/3 Column: Academic Load by Department (Stacked Bar Chart) */}
             <section className="lg:col-span-2 glass rounded-xl border border-[var(--color-border)] p-4 shadow-sm flex flex-col justify-between">
               <div className="flex items-center justify-between border-b border-[var(--color-border)]/40 pb-3 mb-4">
@@ -649,26 +649,26 @@ export default function DashboardClient() {
                       margin={{ top: 10, right: 10, left: -25, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} vertical={false} />
-                      <XAxis 
-                        dataKey="name" 
-                        stroke="var(--color-text-muted)" 
+                      <XAxis
+                        dataKey="name"
+                        stroke="var(--color-text-muted)"
                         fontSize={10}
                         tickLine={false}
-                        axisLine={false} 
+                        axisLine={false}
                       />
-                      <YAxis 
-                        stroke="var(--color-text-muted)" 
+                      <YAxis
+                        stroke="var(--color-text-muted)"
                         fontSize={10}
                         tickLine={false}
-                        axisLine={false} 
+                        axisLine={false}
                       />
                       <Tooltip content={<CustomRechartsTooltip />} cursor={{ fill: "var(--color-accent-muted)" }} />
-                      <Legend 
-                        verticalAlign="top" 
-                        height={32} 
+                      <Legend
+                        verticalAlign="top"
+                        height={32}
                         iconSize={8}
                         iconType="circle"
-                        wrapperStyle={{ fontSize: 9, fontWeight: 'bold' }} 
+                        wrapperStyle={{ fontSize: 9, fontWeight: 'bold' }}
                       />
                       <Bar dataKey="Syllabus Subjects" name="Syllabus Subjects" fill="var(--color-lab)" radius={[4, 4, 0, 0]} barSize={12} />
                       <Bar dataKey="Weekly Classes" name="Weekly Classes" fill="var(--color-accent)" radius={[4, 4, 0, 0]} barSize={12} />
@@ -714,7 +714,7 @@ export default function DashboardClient() {
                 ) : (
                   <div className="h-full flex items-center justify-center text-xs text-[var(--color-text-muted)]">Loading pie metrics...</div>
                 )}
-                
+
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-base font-extrabold text-[var(--color-text-primary)] font-mono">
                     {data.roomAnalytics.occupancy.length}
@@ -739,7 +739,7 @@ export default function DashboardClient() {
 
           {/* ─── 4. SECONDARY CHARTS GRID (SECTION B) ─── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            
+
             {/* Peak Hourly Densities (Smooth Area Chart) */}
             <section className="glass rounded-xl border border-[var(--color-border)] p-4 shadow-sm">
               <div className="border-b border-[var(--color-border)]/40 pb-2 mb-3">
@@ -764,25 +764,25 @@ export default function DashboardClient() {
                           const color = colors[index % colors.length];
                           return (
                             <linearGradient key={dept} id={`glow-${dept}`} x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor={color} stopOpacity={0.25}/>
-                              <stop offset="95%" stopColor={color} stopOpacity={0.0}/>
+                              <stop offset="5%" stopColor={color} stopOpacity={0.25} />
+                              <stop offset="95%" stopColor={color} stopOpacity={0.0} />
                             </linearGradient>
                           );
                         })}
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
-                      <XAxis 
-                        dataKey="hour" 
-                        stroke="var(--color-text-muted)" 
-                        fontSize={9} 
-                        tickLine={false} 
-                        axisLine={false} 
+                      <XAxis
+                        dataKey="hour"
+                        stroke="var(--color-text-muted)"
+                        fontSize={9}
+                        tickLine={false}
+                        axisLine={false}
                       />
-                      <YAxis 
-                        stroke="var(--color-text-muted)" 
-                        fontSize={9} 
-                        tickLine={false} 
-                        axisLine={false} 
+                      <YAxis
+                        stroke="var(--color-text-muted)"
+                        fontSize={9}
+                        tickLine={false}
+                        axisLine={false}
                       />
                       <Tooltip content={<CustomRechartsTooltip />} />
                       {/* Dynamic overlapping glowing areas per department */}
@@ -790,13 +790,13 @@ export default function DashboardClient() {
                         const colors = ["#6f93da", "#9a7bd9", "#67b66b", "#c59d4a", "#d96b64"];
                         const color = colors[index % colors.length];
                         return (
-                          <Area 
+                          <Area
                             key={dept}
-                            type="monotone" 
-                            dataKey={dept} 
-                            stroke={color} 
+                            type="monotone"
+                            dataKey={dept}
+                            stroke={color}
                             strokeWidth={2}
-                            fillOpacity={1} 
+                            fillOpacity={1}
                             fill={`url(#glow-${dept})`}
                             name={dept}
                           />
@@ -829,18 +829,18 @@ export default function DashboardClient() {
                       margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
-                      <XAxis 
-                        dataKey="name" 
-                        stroke="var(--color-text-muted)" 
-                        fontSize={9} 
-                        tickLine={false} 
-                        axisLine={false} 
+                      <XAxis
+                        dataKey="name"
+                        stroke="var(--color-text-muted)"
+                        fontSize={9}
+                        tickLine={false}
+                        axisLine={false}
                       />
-                      <YAxis 
-                        stroke="var(--color-text-muted)" 
-                        fontSize={9} 
-                        tickLine={false} 
-                        axisLine={false} 
+                      <YAxis
+                        stroke="var(--color-text-muted)"
+                        fontSize={9}
+                        tickLine={false}
+                        axisLine={false}
                       />
                       <Tooltip content={<CustomRechartsTooltip />} />
                       {/* Dynamic colored lines per department */}
@@ -848,11 +848,11 @@ export default function DashboardClient() {
                         const colors = ["#6f93da", "#9a7bd9", "#67b66b", "#c59d4a", "#d96b64"];
                         const color = colors[index % colors.length];
                         return (
-                          <Line 
+                          <Line
                             key={dept}
-                            type="monotone" 
-                            dataKey={dept} 
-                            stroke={color} 
+                            type="monotone"
+                            dataKey={dept}
+                            stroke={color}
                             strokeWidth={2}
                             dot={{ stroke: color, strokeWidth: 1, r: 3, fill: 'var(--color-bg-surface)' }}
                             activeDot={{ r: 4 }}
@@ -872,7 +872,7 @@ export default function DashboardClient() {
 
           {/* ─── 5. TERTIARY GRID (SECTION C) ─── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            
+
             {/* Room Utilization Rates (Horizontal Bar Chart) */}
             <section className="glass rounded-xl border border-[var(--color-border)] p-4 shadow-sm">
               <div className="border-b border-[var(--color-border)]/40 pb-2 mb-3">
@@ -893,28 +893,28 @@ export default function DashboardClient() {
                       margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} horizontal={false} />
-                      <XAxis 
-                        type="number" 
-                        domain={[0, 100]} 
-                        stroke="var(--color-text-muted)" 
+                      <XAxis
+                        type="number"
+                        domain={[0, 100]}
+                        stroke="var(--color-text-muted)"
                         fontSize={9}
                         tickLine={false}
-                        axisLine={false} 
+                        axisLine={false}
                         unit="%"
                       />
-                      <YAxis 
-                        dataKey="name" 
-                        type="category" 
-                        stroke="var(--color-text-muted)" 
+                      <YAxis
+                        dataKey="name"
+                        type="category"
+                        stroke="var(--color-text-muted)"
                         fontSize={9}
                         tickLine={false}
                         axisLine={false}
                         width={65}
                       />
                       <Tooltip content={<CustomRechartsTooltip />} cursor={{ fill: "var(--color-accent-muted)" }} />
-                      <Bar 
-                        dataKey="Occupancy" 
-                        fill="var(--color-accent)" 
+                      <Bar
+                        dataKey="Occupancy"
+                        fill="var(--color-accent)"
                         radius={[0, 4, 4, 0]}
                         barSize={12}
                       >
@@ -942,16 +942,15 @@ export default function DashboardClient() {
                     Accumulated lecture hours taught per teacher during the weekly cycle.
                   </p>
                 </div>
-                
+
                 {/* Dynamic department capsules filter */}
                 <div className="flex flex-wrap items-center gap-1 self-start sm:self-center">
                   <button
                     onClick={() => setSelectedFacultyDept("All")}
-                    className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all duration-200 ${
-                      selectedFacultyDept === "All"
+                    className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all duration-200 ${selectedFacultyDept === "All"
                         ? "bg-[var(--color-accent)] text-white shadow-sm"
                         : "bg-[var(--color-border)]/40 text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/70 hover:text-[var(--color-text-primary)]"
-                    }`}
+                      }`}
                   >
                     All
                   </button>
@@ -959,11 +958,10 @@ export default function DashboardClient() {
                     <button
                       key={dept}
                       onClick={() => setSelectedFacultyDept(dept)}
-                      className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all duration-200 ${
-                        selectedFacultyDept === dept
+                      className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all duration-200 ${selectedFacultyDept === dept
                           ? "bg-[var(--color-accent)] text-white shadow-sm"
                           : "bg-[var(--color-border)]/40 text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/70 hover:text-[var(--color-text-primary)]"
-                      }`}
+                        }`}
                     >
                       {dept}
                     </button>
@@ -979,24 +977,24 @@ export default function DashboardClient() {
                       margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} vertical={false} />
-                      <XAxis 
-                        dataKey="name" 
-                        stroke="var(--color-text-muted)" 
+                      <XAxis
+                        dataKey="name"
+                        stroke="var(--color-text-muted)"
                         fontSize={9}
                         tickLine={false}
-                        axisLine={false} 
+                        axisLine={false}
                       />
-                      <YAxis 
-                        stroke="var(--color-text-muted)" 
+                      <YAxis
+                        stroke="var(--color-text-muted)"
                         fontSize={9}
                         tickLine={false}
                         axisLine={false}
                         unit="h"
                       />
                       <Tooltip content={<CustomRechartsTooltip />} cursor={{ fill: "var(--color-accent-muted)" }} />
-                      <Bar 
-                        dataKey="Hours" 
-                        fill="url(#teacherWorkloadGradient)" 
+                      <Bar
+                        dataKey="Hours"
+                        fill="url(#teacherWorkloadGradient)"
                         radius={[4, 4, 0, 0]}
                         barSize={18}
                       >
@@ -1069,12 +1067,12 @@ export default function DashboardClient() {
                       <div className="text-left font-bold capitalize text-xs text-[var(--color-text-secondary)] pr-2">
                         {day === "wednesday" ? "Wed" : day === "thursday" ? "Thu" : day.slice(0, 3)}
                       </div>
-                      
+
                       {/* Hour Cells (Solid Squares with Numbers!) */}
                       {heatmapData.hours.map(hour => {
                         const count = heatmapData.grid[day][hour] || 0;
                         const pct = heatmapData.maxDensity > 0 ? count / heatmapData.maxDensity : 0;
-                        
+
                         let cellBg = "rgba(26, 34, 45, 0.35)";
                         let borderStyle = "border-[var(--color-border)]/30";
                         let textCol = "text-[var(--color-text-muted)]/30 font-semibold font-mono";
@@ -1102,13 +1100,13 @@ export default function DashboardClient() {
 
                         return (
                           <div key={hour} className="relative group flex justify-center w-full">
-                            <div 
+                            <div
                               className={`h-8 w-8 rounded-md border ${borderStyle} ${glowStyle} flex items-center justify-center text-[10px] transition-all duration-200 hover:scale-[1.15] hover:shadow-lg hover:shadow-indigo-500/10 cursor-pointer ${textCol}`}
                               style={{ backgroundColor: cellBg }}
                             >
                               {count}
                             </div>
-                            
+
                             {/* Floating CSS Tooltip on Hover */}
                             <div className="absolute bottom-full mb-2 hidden group-hover:block z-50 animate-fade-in pointer-events-none">
                               <div className="glass rounded-lg border border-[var(--color-border)] p-2 shadow-xl text-[9px] font-bold text-center min-w-[100px] whitespace-nowrap">
@@ -1143,26 +1141,46 @@ export default function DashboardClient() {
             RIGHT SIDEBAR (1/3 Width): OPERATIONS & TIMELINE (mockup inspired)
            ======================================================== */}
         <aside className="w-full xl:w-[360px] p-4 sm:p-6 lg:p-8 space-y-6 flex flex-col bg-[var(--color-bg-surface)]/30">
-          
+
           {/* ─── A. USER HEADER SECTION ─── */}
           <div className="flex items-center justify-between border-b border-[var(--color-border)]/40 pb-5">
             <div className="flex items-center gap-3">
               {/* Profile Avatar Initial Circle */}
-              <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[var(--color-accent)] to-[#a371f7] flex items-center justify-center font-extrabold text-white text-sm shadow-md border border-white/10">
-                A
-              </div>
+              {session?.user?.image ? (
+                <img 
+                  src={session.user.image} 
+                  alt="Avatar" 
+                  className="h-10 w-10 rounded-full object-cover shadow-md border border-white/10" 
+                />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[var(--color-accent)] to-[#a371f7] flex items-center justify-center font-extrabold text-white text-sm shadow-md border border-white/10">
+                  {session?.user?.name?.[0]?.toUpperCase() || "A"}
+                </div>
+              )}
               <div className="space-y-0.5">
-                <span className="block text-xs font-bold text-[var(--color-text-primary)]">Academic Admin</span>
-                <span className="block text-[9px] uppercase tracking-wider text-[var(--color-text-muted)] font-extrabold">Loop Registrar</span>
+                <span className="block text-xs font-bold text-[var(--color-text-primary)]">
+                  {session?.user?.name || "Academic Admin"}
+                </span>
+                <span className="block text-[9px] uppercase tracking-wider text-[var(--color-text-muted)] font-extrabold">
+                  {(session?.user as any)?.role === "admin" ? "Loop Admin" : "Loop Registrar"}
+                </span>
               </div>
             </div>
 
             <div className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
-              <button className="p-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl hover:text-white cursor-pointer" title="Reminders">
-                <FiBell className="w-3.5 h-3.5" />
-              </button>
-              <button className="p-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl hover:text-white cursor-pointer" title="Settings">
-                <FiSettings className="w-3.5 h-3.5" />
+              <Link
+                href="/profile"
+                className="p-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl hover:text-white cursor-pointer transition-colors"
+                title="Profile Settings"
+              >
+                <FiUser className="w-3.5 h-3.5" />
+              </Link>
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="p-2 bg-[rgba(248,81,73,0.06)] border border-[rgba(248,81,73,0.2)] rounded-xl hover:bg-[rgba(248,81,73,0.12)] text-[var(--color-danger)] cursor-pointer transition-colors"
+                title="Log Out"
+              >
+                <FiLogOut className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -1183,7 +1201,7 @@ export default function DashboardClient() {
               ].map((act) => {
                 const Icon = act.icon;
                 return (
-                  <Link 
+                  <Link
                     key={act.id}
                     id={act.id}
                     href={act.href}
@@ -1208,7 +1226,7 @@ export default function DashboardClient() {
 
           {/* ─── C. LIVE TIMELINE PANELS (COMPACT) ─── */}
           <section className="glass rounded-xl border border-[var(--color-border)] p-4 space-y-3.5 shadow-sm flex-1 flex flex-col justify-between">
-            
+
             <div className="space-y-3.5 flex-1">
               <div className="flex items-center justify-between border-b border-[var(--color-border)]/40 pb-2.5">
                 <div className="space-y-0.5">
@@ -1240,13 +1258,12 @@ export default function DashboardClient() {
                     const isUpcoming = s.status === "upcoming";
 
                     return (
-                      <div 
+                      <div
                         key={s.id}
-                        className={`relative border rounded-lg p-2.5 transition-all duration-150 ${
-                          isOngoing 
-                            ? "bg-[rgba(103,182,107,0.04)] border-[rgba(103,182,107,0.25)] shadow-[0_2px_8px_rgba(103,182,107,0.04)]" 
+                        className={`relative border rounded-lg p-2.5 transition-all duration-150 ${isOngoing
+                            ? "bg-[rgba(103,182,107,0.04)] border-[rgba(103,182,107,0.25)] shadow-[0_2px_8px_rgba(103,182,107,0.04)]"
                             : "bg-[var(--color-bg-surface)]/60 border-[var(--color-border)]/60 hover:bg-[var(--color-bg-surface)]"
-                        }`}
+                          }`}
                       >
                         {/* Glow indicator line for ongoing */}
                         {isOngoing && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-success)] rounded-l" />}
@@ -1263,7 +1280,7 @@ export default function DashboardClient() {
                               )}
                             </div>
                             <span className="block text-[10px] text-[var(--color-text-secondary)] font-semibold truncate max-w-[170px]">{s.course_name}</span>
-                            
+
                             <div className="flex items-center gap-2 text-[9px] text-[var(--color-text-muted)] font-bold">
                               <span>Room {s.room_number}</span>
                               <span>•</span>
@@ -1343,13 +1360,12 @@ export default function DashboardClient() {
 
                     return (
                       <div key={idx} className="relative">
-                        <div className={`absolute -left-[18px] top-1.5 h-1.5 w-1.5 rounded-full border ${
-                          log.type === 'schedule' 
-                            ? "bg-rose-400 border-rose-400" 
-                            : log.type === 'room' 
-                              ? "bg-purple-400 border-purple-400" 
+                        <div className={`absolute -left-[18px] top-1.5 h-1.5 w-1.5 rounded-full border ${log.type === 'schedule'
+                            ? "bg-rose-400 border-rose-400"
+                            : log.type === 'room'
+                              ? "bg-purple-400 border-purple-400"
                               : "bg-indigo-400 border-indigo-400"
-                        }`} />
+                          }`} />
                         <div className="space-y-0.5">
                           <p className="text-[10px] text-[var(--color-text-primary)] font-semibold leading-relaxed">
                             {text}
