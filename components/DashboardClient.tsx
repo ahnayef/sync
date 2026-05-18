@@ -271,16 +271,40 @@ export default function DashboardClient() {
 
   // --- Recharts Data Mappings ---
   const weeklyDistributionData = useMemo(() => {
-    if (!data?.timeAnalytics?.dailyDistribution) return [];
     const days = ["sunday", "monday", "tuesday", "wednesday", "thursday"];
-    return days.map(day => {
-      const row = data.timeAnalytics.dailyDistribution.find((x: any) => x.day?.toLowerCase() === day);
-      return {
-        name: day.charAt(0).toUpperCase() + day.slice(1, 3), 
-        Classes: row ? Number(row.count) : 0
-      };
+    if (!data?.weeklySchedules) return [];
+
+    // Find all distinct departments
+    const deptsSet = new Set<string>();
+    data.weeklySchedules.forEach((s: any) => {
+      if (s.department_name) deptsSet.add(s.department_name);
     });
-  }, [data?.timeAnalytics?.dailyDistribution]);
+    const depts = Array.from(deptsSet);
+
+    return days.map(day => {
+      const result: Record<string, any> = {
+        name: day.charAt(0).toUpperCase() + day.slice(1, 3), // e.g. "Sun", "Mon"
+        dayRaw: day
+      };
+
+      // Initialize all departments with 0 count
+      depts.forEach(dept => {
+        result[dept] = 0;
+      });
+
+      // Count schedules for this day and department
+      data.weeklySchedules.forEach((s: any) => {
+        if (s.day?.toLowerCase() === day) {
+          const dept = s.department_name;
+          if (dept) {
+            result[dept] = (result[dept] || 0) + 1;
+          }
+        }
+      });
+
+      return result;
+    });
+  }, [data?.weeklySchedules]);
 
   const departmentsList = useMemo(() => {
     if (!data?.weeklySchedules) return [];
@@ -800,14 +824,23 @@ export default function DashboardClient() {
                         axisLine={false} 
                       />
                       <Tooltip content={<CustomRechartsTooltip />} />
-                      <Line 
-                        type="monotone" 
-                        dataKey="Classes" 
-                        stroke="var(--color-accent)" 
-                        strokeWidth={2}
-                        dot={{ stroke: 'var(--color-accent)', strokeWidth: 1, r: 3, fill: 'var(--color-bg-surface)' }}
-                        activeDot={{ r: 4 }}
-                      />
+                      {/* Dynamic colored lines per department */}
+                      {departmentsList.map((dept, index) => {
+                        const colors = ["#6f93da", "#9a7bd9", "#67b66b", "#c59d4a", "#d96b64"];
+                        const color = colors[index % colors.length];
+                        return (
+                          <Line 
+                            key={dept}
+                            type="monotone" 
+                            dataKey={dept} 
+                            stroke={color} 
+                            strokeWidth={2}
+                            dot={{ stroke: color, strokeWidth: 1, r: 3, fill: 'var(--color-bg-surface)' }}
+                            activeDot={{ r: 4 }}
+                            name={dept}
+                          />
+                        );
+                      })}
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
