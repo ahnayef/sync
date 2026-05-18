@@ -29,9 +29,9 @@ export default function UserNavbar() {
           maxWidth: "1200px",
           margin: "0 auto",
           padding: "0 24px",
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns: "1fr auto 1fr",
           alignItems: "center",
-          justifyContent: "space-between",
           height: "64px",
         }}
       >
@@ -106,7 +106,7 @@ export default function UserNavbar() {
         </div>
 
         {/* User info + Logout */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", justifySelf: "end" }}>
           {/* Avatar */}
           <div
             style={{
