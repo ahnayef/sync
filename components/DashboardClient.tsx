@@ -282,27 +282,53 @@ export default function DashboardClient() {
     });
   }, [data?.timeAnalytics?.dailyDistribution]);
 
+  const departmentsList = useMemo(() => {
+    if (!data?.weeklySchedules) return [];
+    const deptsSet = new Set<string>();
+    data.weeklySchedules.forEach((s: any) => {
+      if (s.department_name) deptsSet.add(s.department_name);
+    });
+    return Array.from(deptsSet);
+  }, [data?.weeklySchedules]);
+
   const peakHoursData = useMemo(() => {
     const hours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
     if (!data?.weeklySchedules) return [];
     
+    // Find all distinct departments
+    const deptsSet = new Set<string>();
+    data.weeklySchedules.forEach((s: any) => {
+      if (s.department_name) deptsSet.add(s.department_name);
+    });
+    const depts = Array.from(deptsSet);
+
     return hours.map(h => {
       const slotStart = timeToMinutes(h);
       const slotEnd = slotStart + 60;
       
-      let count = 0;
+      const result: Record<string, any> = {
+        hour: formatTo12h(h),
+        hourRaw: h
+      };
+
+      // Initialize all departments with 0 count
+      depts.forEach(dept => {
+        result[dept] = 0;
+      });
+
+      // Count classes per department for this hour slot
       data.weeklySchedules.forEach((s: any) => {
         const classStart = timeToMinutes(s.start_time);
         const classEnd = timeToMinutes(s.end_time);
         if (Math.max(classStart, slotStart) < Math.min(classEnd, slotEnd)) {
-          count += 1;
+          const dept = s.department_name;
+          if (dept) {
+            result[dept] = (result[dept] || 0) + 1;
+          }
         }
       });
       
-      return {
-        hour: h,
-        Classes: count
-      };
+      return result;
     });
   }, [data?.weeklySchedules]);
 
@@ -690,10 +716,16 @@ export default function DashboardClient() {
                       margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
                     >
                       <defs>
-                        <linearGradient id="peakHoursGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#9a7bd9" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#9a7bd9" stopOpacity={0.0}/>
-                        </linearGradient>
+                        {departmentsList.map((dept, index) => {
+                          const colors = ["#6f93da", "#9a7bd9", "#67b66b", "#c59d4a", "#d96b64"];
+                          const color = colors[index % colors.length];
+                          return (
+                            <linearGradient key={dept} id={`glow-${dept}`} x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor={color} stopOpacity={0.25}/>
+                              <stop offset="95%" stopColor={color} stopOpacity={0.0}/>
+                            </linearGradient>
+                          );
+                        })}
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.3} />
                       <XAxis 
@@ -710,14 +742,23 @@ export default function DashboardClient() {
                         axisLine={false} 
                       />
                       <Tooltip content={<CustomRechartsTooltip />} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="Classes" 
-                        stroke="#9a7bd9" 
-                        strokeWidth={2}
-                        fillOpacity={1} 
-                        fill="url(#peakHoursGlow)" 
-                      />
+                      {/* Dynamic overlapping glowing areas per department */}
+                      {departmentsList.map((dept, index) => {
+                        const colors = ["#6f93da", "#9a7bd9", "#67b66b", "#c59d4a", "#d96b64"];
+                        const color = colors[index % colors.length];
+                        return (
+                          <Area 
+                            key={dept}
+                            type="monotone" 
+                            dataKey={dept} 
+                            stroke={color} 
+                            strokeWidth={2}
+                            fillOpacity={1} 
+                            fill={`url(#glow-${dept})`}
+                            name={dept}
+                          />
+                        );
+                      })}
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (

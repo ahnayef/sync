@@ -90,8 +90,10 @@ export async function GET() {
 
     // 3. Weekly Heatmap Data (Times & Days)
     const [weeklySchedules] = await db.execute(`
-      SELECT s.day, TIME_FORMAT(s.start_time, '%H:%i') as start_time, TIME_FORMAT(s.end_time, '%H:%i') as end_time
+      SELECT s.day, TIME_FORMAT(s.start_time, '%H:%i') as start_time, TIME_FORMAT(s.end_time, '%H:%i') as end_time,
+             d.name as department_name
       FROM schedules s
+      LEFT JOIN departments d ON s.department_id = d.id
     `);
 
     // 4. Room Analytics
