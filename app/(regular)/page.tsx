@@ -129,7 +129,7 @@ export default function Home() {
                 SMART SCHEDULE MANAGEMENT
               </div>
 
-              <h1 className="text-[clamp(42px,7vw,78px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-[var(--color-text-primary)] animate-fade-in">
+              <h1 className="text-[clamp(30px,6.5vw,62px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-[var(--color-text-primary)] animate-fade-in">
                 Your routine, shaped into a cleaner workday.
               </h1>
 
@@ -142,7 +142,7 @@ export default function Home() {
                 <Link
                   href="/signup"
                   id="hero-cta-signup"
-                  className="group inline-flex items-center gap-2 rounded-[14px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-6 py-3.5 text-sm font-semibold text-white no-underline shadow-[0_18px_45px_rgba(79,142,247,0.28)] transition-transform duration-200 hover:-translate-y-0.5"
+                  className="group inline-flex items-center gap-2 rounded-[14px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-5 py-2.5 sm:px-6 sm:py-3.5 text-sm font-semibold text-white no-underline shadow-[0_18px_45px_rgba(79,142,247,0.28)] transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   Get started
                   <FiArrowRight className="transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -150,7 +150,7 @@ export default function Home() {
                 <Link
                   href="/about"
                   id="hero-cta-learn"
-                  className="inline-flex items-center gap-2 rounded-[14px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.7)] px-6 py-3.5 text-sm font-semibold text-[var(--color-text-secondary)] no-underline transition-colors duration-200 hover:border-white/15 hover:text-[var(--color-text-primary)]"
+                  className="inline-flex items-center gap-2 rounded-[14px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.7)] px-5 py-2.5 sm:px-6 sm:py-3.5 text-sm font-semibold text-[var(--color-text-secondary)] no-underline transition-colors duration-200 hover:border-white/15 hover:text-[var(--color-text-primary)]"
                 >
                   See how it works
                 </Link>
@@ -162,7 +162,7 @@ export default function Home() {
                     key={stat.label}
                     className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.66)] p-4 text-center shadow-[0_20px_45px_rgba(0,0,0,0.18)] backdrop-blur"
                   >
-                    <div className="text-2xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">{stat.value}</div>
+                    <div className="text-xl sm:text-2xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">{stat.value}</div>
                     <div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--color-text-muted)]">{stat.label}</div>
                   </div>
                 ))}
@@ -235,7 +235,7 @@ export default function Home() {
                       {insightCards.map((card) => (
                         <div key={card.label} className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.75)] p-4">
                           <div className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-muted)]">{card.label}</div>
-                          <div className="mt-2 text-2xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">{card.value}</div>
+                          <div className="mt-2 text-xl sm:text-2xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">{card.value}</div>
                           <div className="mt-1 text-sm text-[var(--color-text-secondary)]">{card.hint}</div>
                         </div>
                       ))}
@@ -264,7 +264,7 @@ export default function Home() {
                                 <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
                                   {item.time}
                                 </div>
-                                <div className="mt-1 text-base font-semibold text-[var(--color-text-primary)]">{item.title}</div>
+                                <div className="mt-1 text-sm md:text-base font-semibold text-[var(--color-text-primary)]">{item.title}</div>
                                 <div className="mt-1 text-sm text-[var(--color-text-secondary)]">{item.meta}</div>
                               </div>
                               <div className="flex items-center gap-2 self-start rounded-full border border-[var(--color-border)] bg-[rgba(21,28,37,0.8)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)] sm:self-center">
@@ -288,10 +288,10 @@ export default function Home() {
         <div className="mx-auto max-w-[1180px]">
           <div className="mb-10 flex flex-col gap-3 text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Why it feels better</p>
-            <h2 className="text-[clamp(28px,4vw,46px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
+            <h2 className="text-[clamp(22px,4vw,36px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
               Focused tools, lighter interface.
             </h2>
-            <p className="mx-auto max-w-[620px] text-base leading-7 text-[var(--color-text-secondary)]">
+            <p className="mx-auto max-w-[620px] text-sm md:text-base leading-7 text-[var(--color-text-secondary)]">
               The experience is designed to keep the important parts obvious: today’s routine, the next action, and the admin tools that actually matter.
             </p>
           </div>
@@ -303,7 +303,7 @@ export default function Home() {
                 className="group rounded-[22px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.72)] p-6 transition-all duration-200 hover:-translate-y-1 hover:border-white/10 hover:bg-[rgba(21,28,37,0.92)]"
               >
                 <div
-                  className="mb-5 flex h-12 w-12 items-center justify-center rounded-[16px] text-[22px] transition-transform duration-200 group-hover:scale-105"
+                  className="mb-5 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-[16px] text-[22px] transition-transform duration-200 group-hover:scale-105"
                   style={{
                     background: `${feat.color}18`,
                     border: `1px solid ${feat.color}2f`,
@@ -330,10 +330,10 @@ export default function Home() {
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9fc0ff]">Ready to get organized?</p>
-                <h2 className="mt-3 text-[clamp(28px,4vw,42px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
+                <h2 className="mt-3 text-[clamp(22px,4vw,38px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
                   Make the routine look simple, even when the schedule is not.
                 </h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-[var(--color-text-secondary)]">
+                <p className="mt-4 max-w-xl text-sm md:text-base leading-7 text-[var(--color-text-secondary)]">
                   Students get a clear view. Admins get a faster workflow. Everyone gets a calmer interface that is easier to trust.
                 </p>
               </div>
@@ -342,14 +342,14 @@ export default function Home() {
                 <Link
                   href="/signup"
                   id="cta-signup"
-                  className="inline-flex items-center justify-center rounded-[14px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-6 py-3.5 text-sm font-semibold text-white no-underline shadow-[0_18px_45px_rgba(79,142,247,0.24)] transition-transform duration-200 hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center rounded-[14px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-5 py-2.5 sm:px-6 sm:py-3.5 text-sm font-semibold text-white no-underline shadow-[0_18px_45px_rgba(79,142,247,0.24)] transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   Create free account
                 </Link>
                 <Link
                   href="/login"
                   id="cta-login"
-                  className="inline-flex items-center justify-center rounded-[14px] border border-[var(--color-border)] bg-[rgba(13,17,23,0.7)] px-6 py-3.5 text-sm font-semibold text-[var(--color-text-secondary)] no-underline transition-colors duration-200 hover:border-white/15 hover:text-[var(--color-text-primary)]"
+                  className="inline-flex items-center justify-center rounded-[14px] border border-[var(--color-border)] bg-[rgba(13,17,23,0.7)] px-5 py-2.5 sm:px-6 sm:py-3.5 text-sm font-semibold text-[var(--color-text-secondary)] no-underline transition-colors duration-200 hover:border-white/15 hover:text-[var(--color-text-primary)]"
                 >
                   Log in
                 </Link>
