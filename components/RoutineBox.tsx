@@ -29,10 +29,20 @@ export function RoutineBox({
 }) {
   const [hovered, setHovered] = useState(false);
   const [nowTick, setNowTick] = useState(Date.now());
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setNowTick(Date.now()), 30_000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 640px)");
+    const updateMobile = () => setIsMobile(media.matches);
+    updateMobile();
+
+    media.addEventListener("change", updateMobile);
+    return () => media.removeEventListener("change", updateMobile);
   }, []);
 
   const now = new Date(nowTick);
@@ -103,7 +113,7 @@ export function RoutineBox({
 
         {/* Course title */}
         <h2 id={`routine-title-${schedule.id}`} className="mb-1 text-[20px] font-extrabold leading-tight tracking-tight text-[var(--color-text-primary)]">
-          {truncate(schedule.course_name)}
+          {truncate(schedule.course_name, isMobile ? 25 : 35)}
         </h2>
 
         {/* Teacher */}
