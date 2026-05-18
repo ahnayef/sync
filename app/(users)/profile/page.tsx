@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import UserNavbar from "@/components/UserNavbar";
 
 export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
@@ -11,7 +12,9 @@ export default function ProfilePage() {
   const [batch] = useState("2024");
 
   return (
-    <div style={{ padding: "32px", maxWidth: "800px" }}>
+    <div style={{ minHeight: "100vh", background: "var(--color-bg-base)" }}>
+      <UserNavbar />
+      <main style={{ maxWidth: "800px", margin: "0 auto", padding: "48px 24px" }}>
       {/* Header */}
       <div style={{ marginBottom: "32px" }}>
         <h1 style={{ fontSize: "26px", fontWeight: 700, color: "var(--color-text-primary)", letterSpacing: "-0.02em", marginBottom: "6px" }}>
@@ -357,6 +360,7 @@ export default function ProfilePage() {
           Delete account
         </button>
       </div>
+      </main>
     </div>
   );
 }
