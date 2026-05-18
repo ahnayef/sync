@@ -12,9 +12,14 @@ import {
   FiSearch,
   FiChevronDown,
   FiX,
+  FiZap,
+  FiSettings,
+  FiCheckCircle,
+  FiRefreshCw,
+  FiClock,
 } from "react-icons/fi";
 
-type ViewMode = "list" | "upload" | "preview" | "fixing" | "done";
+type ViewMode = "list" | "upload" | "preview" | "fixing" | "done" | "sync";
 
 export type ScheduleRow = {
   id: number;
@@ -367,6 +372,129 @@ export default function ManageSchedulePage() {
   const [fixingId, setFixingId] = useState<number | null>(null);
   const [importError, setImportError] = useState("");
   const [appliedCount, setAppliedCount] = useState(0);
+
+  // Auto Sync States
+  const [syncConfigLoading, setSyncConfigLoading] = useState(false);
+  const [syncDepts, setSyncDepts] = useState<any[]>([]);
+  const [syncLogs, setSyncLogs] = useState<any[]>([]);
+  const [editingSyncLinks, setEditingSyncLinks] = useState<Record<number, string>>({});
+  const [syncingDeptId, setSyncingDeptId] = useState<number | null>(null);
+  const [savingDeptId, setSavingDeptId] = useState<number | null>(null);
+
+  const fetchSyncData = async () => {
+    setSyncConfigLoading(true);
+    try {
+      const res = await fetch("/api/schedules/sync");
+      if (!res.ok) throw new Error("Failed to load sync configurations.");
+      const data = await res.json();
+      setSyncDepts(data.departments || []);
+      setSyncLogs(data.logs || []);
+      
+      const links: Record<number, string> = {};
+      data.departments.forEach((d: any) => {
+        links[d.id] = d.sheet_link || "";
+      });
+      setEditingSyncLinks(links);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSyncConfigLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (step === "sync") {
+      fetchSyncData();
+    }
+  }, [step]);
+
+  const handleToggleSync = async (deptId: number, currentEnabled: boolean) => {
+    try {
+      const newEnabled = !currentEnabled;
+      const res = await fetch("/api/schedules/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          departmentId: deptId,
+          syncEnabled: newEnabled,
+          sheetLink: editingSyncLinks[deptId] || null
+        })
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to update sync setting");
+      }
+      
+      setSyncDepts(prev => prev.map(d => d.id === deptId ? { ...d, sync_enabled: newEnabled } : d));
+      await fetchSyncData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to toggle sync.");
+    }
+  };
+
+  const handleSaveSyncLink = async (deptId: number) => {
+    setSavingDeptId(deptId);
+    try {
+      const link = editingSyncLinks[deptId] || "";
+      const res = await fetch("/api/schedules/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          departmentId: deptId,
+          syncEnabled: syncDepts.find(d => d.id === deptId)?.sync_enabled || false,
+          sheetLink: link === "" ? null : link
+        })
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to save link");
+      }
+      
+      alert("Google Sheet link saved successfully!");
+      await fetchSyncData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to save link.");
+    } finally {
+      setSavingDeptId(null);
+    }
+  };
+
+  const handleTriggerManualSync = async (deptId: number) => {
+    setSyncingDeptId(deptId);
+    try {
+      const link = editingSyncLinks[deptId] || "";
+      if (!link) {
+        alert("Please enter and save a valid Google Sheet link first.");
+        return;
+      }
+      
+      const res = await fetch("/api/schedules/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          departmentId: deptId,
+          sheetLink: link,
+          triggerNow: true
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Sync failed.");
+      }
+      
+      alert(data.message || "Schedules synced successfully!");
+      await Promise.all([loadSchedules(), fetchSyncData()]);
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : "Sync failed.");
+      await fetchSyncData();
+    } finally {
+      setSyncingDeptId(null);
+    }
+  };
 
   const timeToMinutes = (timeStr: string) => {
     if (!timeStr) return 0;
@@ -802,6 +930,12 @@ export default function ManageSchedulePage() {
                 >
                   <FiBarChart2 /> Import Schedule
                 </button>
+                <button
+                  onClick={() => setStep("sync")}
+                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)] active:scale-[0.99]"
+                >
+                  <FiZap className="text-[var(--color-accent)] animate-pulse" /> Google Sheets Sync
+                </button>
               </div>
             </div>
           </section>
@@ -1088,7 +1222,7 @@ export default function ManageSchedulePage() {
       )}
 
       {/* ─── IMPORT WIZARD: HEADER & STEPPER ──────────────────────────────────── */}
-      {step !== "list" && (
+      {step !== "list" && step !== "sync" && (
         <>
           <div className="mb-10 flex items-start gap-4">
             <button onClick={() => setStep("list")} className="mt-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors">
@@ -1120,6 +1254,207 @@ export default function ManageSchedulePage() {
             })}
           </div>
         </>
+      )}
+
+      {/* ─── GOOGLE SHEETS AUTOMATED SYNC PANEL ───────────────────────────────── */}
+      {step === "sync" && (
+        <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
+          {/* Header */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--color-border)] pb-6">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setStep("list")} 
+                className="p-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
+                title="Back to Schedules"
+              >
+                <FiArrowLeft size={20} />
+              </button>
+              <div>
+                <h1 className="text-3xl font-bold text-[var(--color-text-primary)] tracking-[-0.02em] flex items-center gap-2">
+                  <FiZap className="text-[var(--color-accent)] animate-pulse" /> Google Sheets Sync
+                </h1>
+                <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                  Automate schedule synchronization via background daily cron updates
+                </p>
+              </div>
+            </div>
+
+            <button 
+              onClick={fetchSyncData} 
+              disabled={syncConfigLoading}
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)] disabled:opacity-50"
+            >
+              <FiRefreshCw className={syncConfigLoading ? "animate-spin" : ""} /> Refresh Status
+            </button>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            {/* Left Column: Config Panel */}
+            <div className="flex-1 w-full space-y-6">
+              {syncConfigLoading && syncDepts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-20 glass rounded-3xl border border-[var(--color-border)]">
+                  <FiRefreshCw className="animate-spin text-[var(--color-accent)] text-4xl mb-4" />
+                  <p className="text-sm text-[var(--color-text-secondary)]">Loading sync configurations...</p>
+                </div>
+              ) : (
+                syncDepts.map((dept) => {
+                  const isSyncing = syncingDeptId === dept.id;
+                  const isSaving = savingDeptId === dept.id;
+                  const currentLink = editingSyncLinks[dept.id] || "";
+                  
+                  return (
+                    <div 
+                      key={dept.id} 
+                      className="glass rounded-3xl border border-[var(--color-border)] p-6 shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--color-border)] pb-4 mb-5">
+                        <div>
+                          <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded bg-[var(--color-accent-muted)] text-[var(--color-accent)] mb-1">
+                            {dept.name}
+                          </span>
+                          <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
+                            {dept.full_name || `${dept.name} Department`}
+                          </h3>
+                        </div>
+
+                        {/* Switch */}
+                        <div className="flex items-center gap-2">
+                          <label className="relative inline-flex items-center cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={dept.sync_enabled === 1}
+                              onChange={() => handleToggleSync(dept.id, dept.sync_enabled === 1)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-[var(--color-bg-elevated)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-accent)]"></div>
+                            <span className="ml-2 text-xs font-semibold text-[var(--color-text-secondary)]">
+                              {dept.sync_enabled === 1 ? "Auto Sync Active" : "Auto Sync Disabled"}
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        {/* URL input */}
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[var(--color-text-secondary)] mb-1.5">
+                            Google Sheet URL / Link
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={currentLink}
+                              onChange={(e) => setEditingSyncLinks({
+                                ...editingSyncLinks,
+                                [dept.id]: e.target.value
+                              })}
+                              placeholder="Paste shared Google Sheets link (make sure link sharing is set to anyone with link)"
+                              className="flex-1 px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] focus:border-[rgba(79,142,247,0.45)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
+                            />
+                            <button
+                              disabled={isSaving}
+                              onClick={() => handleSaveSyncLink(dept.id)}
+                              className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:bg-[var(--color-bg-surface)] text-sm font-semibold text-[var(--color-text-primary)] transition-all disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {isSaving ? "Saving..." : "Save Link"}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Status/Actions footer */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--color-bg-subtle)] rounded-2xl p-4 border border-[var(--color-border)] mt-4">
+                          <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+                            <FiClock className="text-[var(--color-text-muted)]" />
+                            <span>Last Synced:</span>
+                            <span className="font-semibold text-[var(--color-text-primary)]">
+                              {dept.last_sync_at ? new Date(dept.last_sync_at).toLocaleString() : "Never synced"}
+                            </span>
+                          </div>
+
+                          <button
+                            disabled={isSyncing || !currentLink}
+                            onClick={() => handleTriggerManualSync(dept.id)}
+                            className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-2.5 text-xs font-bold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all hover:bg-[#5d95f7] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                          >
+                            {isSyncing ? (
+                              <>
+                                <FiRefreshCw className="animate-spin" /> Synchronizing...
+                              </>
+                            ) : (
+                              <>
+                                <FiZap /> Sync Now
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Right Column: Sync Logs Console */}
+            <div className="w-full lg:w-80 shrink-0 space-y-4">
+              <div className="glass rounded-3xl border border-[var(--color-border)] p-5 shadow-lg max-h-[600px] flex flex-col">
+                <div className="border-b border-[var(--color-border)] pb-3 mb-4 flex items-center justify-between">
+                  <h3 className="font-bold text-[var(--color-text-primary)] flex items-center gap-2 text-base">
+                    <FiSettings className="text-[var(--color-text-secondary)]" /> Sync Audit Logs
+                  </h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]">
+                    Recent
+                  </span>
+                </div>
+
+                <div className="overflow-y-auto space-y-3 custom-scrollbar flex-1 pr-1 max-h-[500px]">
+                  {syncLogs.length === 0 ? (
+                    <div className="text-center py-10 text-xs text-[var(--color-text-muted)]">
+                      No synchronization events recorded.
+                    </div>
+                  ) : (
+                    syncLogs.map((log) => {
+                      const isSuccess = log.status === "success";
+                      return (
+                        <div 
+                          key={log.id} 
+                          className={`p-3.5 rounded-2xl border text-xs leading-relaxed space-y-1.5 transition-all ${
+                            isSuccess 
+                              ? "bg-[rgba(63,185,80,0.03)] border-[rgba(63,185,80,0.15)] text-[var(--color-text-primary)]" 
+                              : "bg-[rgba(248,81,73,0.03)] border-[rgba(248,81,73,0.15)] text-[var(--color-text-primary)]"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)]">
+                              {log.department_name}
+                            </span>
+                            <span 
+                              style={{ 
+                                color: isSuccess ? "var(--color-success)" : "var(--color-danger)",
+                                background: isSuccess ? "rgba(63,185,80,0.1)" : "rgba(248,81,73,0.1)"
+                              }} 
+                              className="text-[9px] font-bold px-1.5 py-0.5 rounded border border-transparent whitespace-nowrap"
+                            >
+                              {isSuccess ? "Success" : "Failed"}
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-[var(--color-text-secondary)] break-words">
+                            {log.message}
+                          </p>
+
+                          <div className="text-[9px] text-[var(--color-text-muted)] flex items-center justify-end gap-1 font-mono pt-1 border-t border-[var(--color-border)]/20">
+                            <FiClock size={10} />
+                            <span>{new Date(log.created_at).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ─── IMPORT WIZARD: UPLOAD ────────────────────────────────────────────── */}

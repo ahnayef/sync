@@ -20,11 +20,14 @@ CREATE TABLE `users` (
 
 -- ─── 2. DEPARTMENTS ─────────────────────────────────────────
 CREATE TABLE `departments` (
-  `id`         int          PRIMARY KEY AUTO_INCREMENT,
-  `name`       varchar(255) UNIQUE,               -- short name, e.g. CSE
-  `full_name`  varchar(255) UNIQUE,               -- e.g. Computer Science & Engineering
-  `created_at` timestamp    DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `id`             int          PRIMARY KEY AUTO_INCREMENT,
+  `name`           varchar(255) UNIQUE,               -- short name, e.g. CSE
+  `full_name`      varchar(255) UNIQUE,               -- e.g. Computer Science & Engineering
+  `sheet_link`     varchar(1000) DEFAULT NULL,
+  `sync_enabled`   boolean      NOT NULL DEFAULT false,
+  `last_sync_at`   timestamp    NULL DEFAULT NULL,
+  `created_at`     timestamp    DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`     timestamp    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- ─── 3. TEACHERS ────────────────────────────────────────────
@@ -142,3 +145,13 @@ CREATE INDEX `idx_schedules_dept_day`
 -- Fast session token lookup
 CREATE INDEX `idx_sessions_user_expiry`
   ON `sessions` (`user_id`, `expires_at`);
+
+-- ─── 10. SHEET SYNC LOGS ────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `sheet_sync_logs` (
+  `id`            int          PRIMARY KEY AUTO_INCREMENT,
+  `department_id` int          NOT NULL,
+  `status`        enum('success','error') NOT NULL,
+  `message`       text,
+  `created_at`    timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`) ON DELETE CASCADE
+);
