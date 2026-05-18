@@ -662,7 +662,7 @@ export default function DashboardClient() {
                         tickLine={false}
                         axisLine={false} 
                       />
-                      <Tooltip content={<CustomRechartsTooltip />} />
+                      <Tooltip content={<CustomRechartsTooltip />} cursor={{ fill: "var(--color-accent-muted)" }} />
                       <Legend 
                         verticalAlign="top" 
                         height={32} 
@@ -911,7 +911,7 @@ export default function DashboardClient() {
                         axisLine={false}
                         width={65}
                       />
-                      <Tooltip content={<CustomRechartsTooltip />} />
+                      <Tooltip content={<CustomRechartsTooltip />} cursor={{ fill: "var(--color-accent-muted)" }} />
                       <Bar 
                         dataKey="Occupancy" 
                         fill="var(--color-accent)" 
@@ -993,7 +993,7 @@ export default function DashboardClient() {
                         axisLine={false}
                         unit="h"
                       />
-                      <Tooltip content={<CustomRechartsTooltip />} />
+                      <Tooltip content={<CustomRechartsTooltip />} cursor={{ fill: "var(--color-accent-muted)" }} />
                       <Bar 
                         dataKey="Hours" 
                         fill="url(#teacherWorkloadGradient)" 
