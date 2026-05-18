@@ -307,15 +307,36 @@ export default function DashboardClient() {
 
   const roomTypePieData = useMemo(() => {
     if (!data?.roomAnalytics?.occupancy) return [];
-    const classrooms = data.roomAnalytics.occupancy.filter((r: any) => r.room_type?.toLowerCase() === "classroom").length;
-    const labs = data.roomAnalytics.occupancy.filter((r: any) => r.room_type?.toLowerCase() === "lab").length;
-    const seminars = data.roomAnalytics.occupancy.filter((r: any) => r.room_type?.toLowerCase() === "seminar").length;
     
-    return [
-      { name: "Classrooms", value: classrooms, color: "#6f93da" },
-      { name: "Labs", value: labs, color: "#9a7bd9" },
-      { name: "Seminars", value: seminars, color: "#c59d4a" },
-    ].filter(x => x.value > 0);
+    const groups: Record<string, number> = {};
+    data.roomAnalytics.occupancy.forEach((r: any) => {
+      let type = r.room_type || "Other";
+      const lower = type.toLowerCase();
+      if (lower === "lecture hall") {
+        type = "Classrooms";
+      } else if (lower === "lab" || lower.includes("lab")) {
+        type = "Labs";
+      } else if (lower === "auditorium") {
+        type = "Auditoriums";
+      } else {
+        type = "Other";
+      }
+      
+      groups[type] = (groups[type] || 0) + 1;
+    });
+
+    const colorsMap: Record<string, string> = {
+      "Classrooms": "#6f93da",
+      "Labs": "#9a7bd9",
+      "Auditoriums": "#c59d4a",
+      "Other": "#d96b64",
+    };
+
+    return Object.entries(groups).map(([name, value]) => ({
+      name,
+      value,
+      color: colorsMap[name] || "#00d2ff"
+    }));
   }, [data?.roomAnalytics?.occupancy]);
 
   const teacherWorkloadBarData = useMemo(() => {
@@ -620,14 +641,12 @@ export default function DashboardClient() {
               </div>
 
               {/* Legends list */}
-              <div className="grid grid-cols-3 gap-1 pt-3 border-t border-[var(--color-border)]/40 text-[9px] font-bold text-[var(--color-text-secondary)]">
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pt-3 border-t border-[var(--color-border)]/40 text-[9px] font-bold text-[var(--color-text-secondary)]">
                 {roomTypePieData.map((item: any, idx: number) => (
-                  <div key={idx} className="flex flex-col items-center text-center">
-                    <span className="flex items-center gap-1">
-                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-[var(--color-text-muted)] font-semibold truncate max-w-[48px]">{item.name}</span>
-                    </span>
-                    <span className="font-extrabold font-mono text-[var(--color-text-primary)] mt-0.5">{item.value} Rooms</span>
+                  <div key={idx} className="flex items-center gap-1.5 text-center">
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-[var(--color-text-muted)] font-semibold">{item.name}:</span>
+                    <span className="font-extrabold font-mono text-[var(--color-text-primary)]">{item.value}</span>
                   </div>
                 ))}
               </div>
