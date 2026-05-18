@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FiSearch, FiX } from "react-icons/fi";
 
 export default function ManageRoomsPage() {
   const [rooms, setRooms] = useState<any[]>([]);
@@ -121,7 +122,7 @@ export default function ManageRoomsPage() {
             Room Management
           </h1>
           <p className="text-sm text-[var(--color-text-secondary)]">
-            {rooms.length} rooms registered
+            {loading ? "Loading rooms..." : `${rooms.length} rooms registered`}
           </p>
         </div>
         <button
@@ -133,30 +134,22 @@ export default function ManageRoomsPage() {
         </button>
       </div>
 
-      <div className="relative mb-5 max-w-[400px]">
-        <input
-          id="room-search"
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search rooms..."
-          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 pr-4 pl-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]"
-        />
-        <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-      </div>
+        <div className="relative mb-5 max-w-[420px]">
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+          <input
+            id="room-search"
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search rooms by number, building, or title..."
+            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 pr-10 pl-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} title="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] p-1 rounded-md hover:bg-[var(--color-bg-elevated)]">
+              <FiX />
+            </button>
+          )}
+        </div>
 
       <div className="overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)]">
         <table className="w-full border-collapse">
@@ -170,52 +163,78 @@ export default function ManageRoomsPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((room, index) => (
-              <tr
-                key={room.id}
-                id={`room-row-${room.id}`}
-                className={`border-b border-[var(--color-border)] ${index % 2 === 0 ? "bg-[var(--color-bg-surface)]" : "bg-[var(--color-bg-elevated)]/40"}`}
-              >
-                <td className="px-4 py-3 text-sm font-bold text-[var(--color-accent)]">
-                  {room.number}
-                </td>
-                <td className="px-4 py-3 text-sm text-[var(--color-text-primary)]">
-                  {room.title || "—"}
-                </td>
-                <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
-                  {room.buildingName}
-                </td>
-                <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
-                  {room.floorNumber}
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`text-[11px] font-bold tracking-wider px-2 py-0.5 rounded uppercase ${room.roomType === 'lab' ? "text-[var(--color-lab)] bg-[rgba(163,113,247,0.1)] border-[rgba(163,113,247,0.3)]" : "text-[var(--color-text-secondary)] bg-[var(--color-bg-elevated)] border border-[var(--color-border)]"}`}>
-                    {room.roomType}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
-                  {room.capacity}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex justify-end gap-2">
-                    <button
-                      id={`room-edit-${room.id}`}
-                      onClick={() => openEdit(room)}
-                      className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs transition-colors hover:bg-[var(--color-bg-elevated)]"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      id={`room-delete-${room.id}`}
-                      onClick={() => deleteRoom(room.id)}
-                      className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs transition-colors hover:bg-[rgba(248,81,73,0.06)]"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {loading ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <tr key={`skeleton-${idx}`} className="border-b border-[var(--color-border)]">
+                  <td className="px-4 py-4">
+                    <div className="h-4 w-12 rounded bg-[var(--color-bg-elevated)] animate-pulse" />
+                  </td>
+                  <td className="px-4 py-4"><div className="h-4 w-32 rounded bg-[var(--color-bg-elevated)] animate-pulse" /></td>
+                  <td className="px-4 py-4"><div className="h-4 w-24 rounded bg-[var(--color-bg-elevated)] animate-pulse" /></td>
+                  <td className="px-4 py-4"><div className="h-4 w-8 rounded bg-[var(--color-bg-elevated)] animate-pulse" /></td>
+                  <td className="px-4 py-4"><div className="h-4 w-20 rounded bg-[var(--color-bg-elevated)] animate-pulse" /></td>
+                  <td className="px-4 py-4"><div className="h-4 w-8 rounded bg-[var(--color-bg-elevated)] animate-pulse" /></td>
+                  <td className="px-4 py-4" />
+                </tr>
+              ))
+            ) : (
+              <> 
+                {filtered.map((room, index) => (
+                  <tr
+                    key={room.id}
+                    id={`room-row-${room.id}`}
+                    className={`border-b border-[var(--color-border)] ${index % 2 === 0 ? "bg-[var(--color-bg-surface)]" : "bg-[var(--color-bg-elevated)]/40"}`}
+                  >
+                    <td className="px-4 py-3 text-sm font-bold text-[var(--color-accent)]">
+                      {room.number}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-primary)]">
+                      {room.title || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+                      {room.buildingName}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+                      {room.floorNumber}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-[11px] font-bold tracking-wider px-2 py-0.5 rounded uppercase ${room.roomType === 'lab' ? "text-[var(--color-lab)] bg-[rgba(163,113,247,0.1)] border-[rgba(163,113,247,0.3)]" : "text-[var(--color-text-secondary)] bg-[var(--color-bg-elevated)] border border-[var(--color-border)]"}`}>
+                        {room.roomType}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+                      {room.capacity}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          id={`room-edit-${room.id}`}
+                          onClick={() => openEdit(room)}
+                          className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs transition-colors hover:bg-[var(--color-bg-elevated)]"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          id={`room-delete-${room.id}`}
+                          onClick={() => deleteRoom(room.id)}
+                          className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs transition-colors hover:bg-[rgba(248,81,73,0.06)]"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-8 text-center text-[var(--color-text-secondary)]">
+                      No rooms found.
+                    </td>
+                  </tr>
+                )}
+              </>
+            )}
           </tbody>
         </table>
       </div>
