@@ -9,173 +9,111 @@ export const metadata: Metadata = {
     "Loop is a modern schedule management app for students and administrators. View your routine, manage courses, and stay on track.",
 };
 
+const features = [
+  {
+    icon: "📅",
+    title: "Daily Routine View",
+    desc: "See your class schedule for any day at a glance, with gaps, room info, and teacher details.",
+    color: "#4f8ef7",
+  },
+  {
+    icon: "📚",
+    title: "Course Selection",
+    desc: "Pick the courses that matter to you. Your routine automatically updates to match.",
+    color: "#3fb950",
+  },
+  {
+    icon: "⚡",
+    title: "Smart Import",
+    desc: "Admins can upload Excel sheets and Loop intelligently parses and validates schedule data.",
+    color: "#a371f7",
+  },
+  {
+    icon: "👥",
+    title: "Multi-role Access",
+    desc: "Students get a clean view. Admins get powerful management tools. Everyone gets what they need.",
+    color: "#d29922",
+  },
+  {
+    icon: "🏫",
+    title: "Room & Teacher Mgmt",
+    desc: "Manage all rooms, teachers, and courses from a single clean admin dashboard.",
+    color: "#f85149",
+  },
+  {
+    icon: "🌙",
+    title: "Dark & Minimal",
+    desc: "Beautiful dark interface that's easy on the eyes, whether it's 8 AM or midnight.",
+    color: "#4f8ef7",
+  },
+];
+
+const sidebarItems = ["Routine", "Courses", "Profile"];
+const previewCards = [
+  { color: "#4f8ef7", width: "80%" },
+  { color: "#3fb950", width: "70%" },
+  { color: "#a371f7", width: "75%" },
+];
+
 export default function Home() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--color-bg-base)",
-      }}
-    >
+    <div className="flex min-h-screen flex-col bg-[var(--color-bg-base)]">
       <Navbar />
 
-      {/* Hero */}
-      <section
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          padding: "120px 24px 100px",
-          textAlign: "center",
-        }}
-      >
-        {/* Background glow blobs */}
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden px-6 pb-[100px] pt-[120px] text-center">
+        {/* Glow blobs */}
         <div
           aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-[-120px] h-[500px] w-[800px] -translate-x-1/2"
           style={{
-            position: "absolute",
-            top: "-120px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "800px",
-            height: "500px",
             background:
-              "radial-gradient(ellipse at center, rgba(79, 142, 247, 0.12) 0%, transparent 70%)",
-            pointerEvents: "none",
+              "radial-gradient(ellipse at center, rgba(79,142,247,0.12) 0%, transparent 70%)",
           }}
         />
         <div
           aria-hidden="true"
+          className="pointer-events-none absolute left-[20%] top-[40px] h-[400px] w-[400px]"
           style={{
-            position: "absolute",
-            top: "40px",
-            left: "20%",
-            width: "400px",
-            height: "400px",
             background:
-              "radial-gradient(ellipse at center, rgba(163, 113, 247, 0.06) 0%, transparent 70%)",
-            pointerEvents: "none",
+              "radial-gradient(ellipse at center, rgba(163,113,247,0.06) 0%, transparent 70%)",
           }}
         />
 
-        <div style={{ position: "relative", maxWidth: "760px", margin: "0 auto" }}>
+        <div className="relative mx-auto max-w-[760px]">
           {/* Badge */}
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "6px 14px",
-              borderRadius: "100px",
-              border: "1px solid rgba(79, 142, 247, 0.3)",
-              background: "rgba(79, 142, 247, 0.08)",
-              marginBottom: "32px",
-            }}
-          >
-            <span
-              style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                background: "#4f8ef7",
-                boxShadow: "0 0 8px #4f8ef7",
-                flexShrink: 0,
-              }}
-            />
-            <span
-              style={{
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "#4f8ef7",
-                letterSpacing: "0.04em",
-              }}
-            >
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/[0.08] px-3.5 py-1.5">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#4f8ef7] shadow-[0_0_8px_#4f8ef7]" />
+            <span className="text-xs font-semibold tracking-[0.04em] text-[#4f8ef7]">
               Smart Schedule Management
             </span>
           </div>
 
           {/* Headline */}
-          <h1
-            style={{
-              fontSize: "clamp(40px, 6vw, 72px)",
-              fontWeight: 800,
-              lineHeight: 1.1,
-              letterSpacing: "-0.03em",
-              color: "var(--color-text-primary)",
-              marginBottom: "24px",
-            }}
-          >
+          <h1 className="mb-6 text-[clamp(40px,6vw,72px)] font-extrabold leading-[1.1] tracking-[-0.03em] text-[var(--color-text-primary)]">
             Your schedule,{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg, #4f8ef7 0%, #a371f7 50%, #4f8ef7 100%)",
-                backgroundSize: "200%",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              perfectly organized
-            </span>
+            <span className="gradient-text">perfectly organized</span>
           </h1>
 
           {/* Subheadline */}
-          <p
-            style={{
-              fontSize: "18px",
-              lineHeight: 1.7,
-              color: "var(--color-text-secondary)",
-              marginBottom: "48px",
-              maxWidth: "580px",
-              margin: "0 auto 48px",
-            }}
-          >
+          <p className="mx-auto mb-12 max-w-[580px] text-lg leading-[1.7] text-[var(--color-text-secondary)]">
             Loop keeps students on top of their class routines and gives admins
             powerful tools to manage schedules — all in one minimal, beautiful app.
           </p>
 
-          {/* CTA */}
-          <div
-            style={{
-              display: "flex",
-              gap: "16px",
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
+          {/* CTA buttons */}
+          <div className="flex flex-wrap justify-center gap-4">
             <Link
               href="/signup"
               id="hero-cta-signup"
-              style={{
-                padding: "14px 32px",
-                borderRadius: "10px",
-                fontSize: "15px",
-                fontWeight: 600,
-                textDecoration: "none",
-                color: "white",
-                background: "linear-gradient(135deg, #4f8ef7, #6f6bf7)",
-                boxShadow:
-                  "0 0 30px rgba(79, 142, 247, 0.35), 0 4px 20px rgba(0,0,0,0.3)",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              }}
+              className="rounded-[10px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-8 py-3.5 text-[15px] font-semibold text-white no-underline shadow-[0_0_30px_rgba(79,142,247,0.35),0_4px_20px_rgba(0,0,0,0.3)] transition-all duration-200 hover:shadow-[0_0_40px_rgba(79,142,247,0.5)]"
             >
               Get started free
             </Link>
             <Link
               href="/about"
               id="hero-cta-learn"
-              style={{
-                padding: "14px 32px",
-                borderRadius: "10px",
-                fontSize: "15px",
-                fontWeight: 600,
-                textDecoration: "none",
-                color: "var(--color-text-secondary)",
-                border: "1px solid var(--color-border)",
-                background: "var(--color-bg-elevated)",
-                transition: "all 0.2s ease",
-              }}
+              className="rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-8 py-3.5 text-[15px] font-semibold text-[var(--color-text-secondary)] no-underline transition-all duration-200 hover:border-white/20 hover:text-white/80"
             >
               Learn more
             </Link>
@@ -183,113 +121,52 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Mock Dashboard Preview */}
-      <section style={{ padding: "0 24px 80px", position: "relative" }}>
-        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-          <div
-            style={{
-              borderRadius: "16px",
-              border: "1px solid var(--color-border)",
-              background: "var(--color-bg-surface)",
-              overflow: "hidden",
-              boxShadow: "0 40px 120px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,142,247,0.05)",
-            }}
-          >
+      {/* ── Mock Dashboard Preview ── */}
+      <section className="relative px-6 pb-20">
+        <div className="mx-auto max-w-[1000px]">
+          <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-[0_40px_120px_rgba(0,0,0,0.5),0_0_0_1px_rgba(79,142,247,0.05)]">
+
             {/* Mock browser bar */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "12px 16px",
-                borderBottom: "1px solid var(--color-border)",
-                background: "var(--color-bg-elevated)",
-              }}
-            >
+            <div className="flex items-center gap-2 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-3">
               {["#f85149", "#d29922", "#3fb950"].map((c) => (
                 <div
                   key={c}
-                  style={{
-                    width: "10px",
-                    height: "10px",
-                    borderRadius: "50%",
-                    background: c,
-                    opacity: 0.8,
-                  }}
+                  className="h-2.5 w-2.5 rounded-full opacity-80"
+                  style={{ background: c }}
                 />
               ))}
-              <div
-                style={{
-                  flex: 1,
-                  height: "24px",
-                  borderRadius: "6px",
-                  background: "var(--color-bg-subtle)",
-                  marginLeft: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  paddingLeft: "12px",
-                  gap: "8px",
-                }}
-              >
-                <div
-                  style={{
-                    width: "10px",
-                    height: "10px",
-                    borderRadius: "50%",
-                    background: "var(--color-border)",
-                  }}
-                />
-                <div
-                  style={{
-                    width: "120px",
-                    height: "6px",
-                    borderRadius: "3px",
-                    background: "var(--color-border)",
-                  }}
-                />
+              <div className="ml-2 flex flex-1 items-center gap-2 rounded-[6px] bg-[var(--color-bg-subtle)] py-1 pl-3">
+                <div className="h-2.5 w-2.5 rounded-full bg-[var(--color-border)]" />
+                <div className="h-1.5 w-[120px] rounded-[3px] bg-[var(--color-border)]" />
               </div>
             </div>
+
             {/* Mock routine preview */}
-            <div style={{ display: "flex", height: "320px" }}>
+            <div className="flex h-80">
               {/* Sidebar */}
-              <div
-                style={{
-                  width: "180px",
-                  borderRight: "1px solid var(--color-border)",
-                  background: "var(--color-bg-elevated)",
-                  padding: "16px 12px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "6px",
-                }}
-              >
-                {["Routine", "Courses", "Profile"].map((label, i) => (
+              <div className="flex w-[180px] shrink-0 flex-col gap-1.5 border-r border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-3">
+                {sidebarItems.map((label, i) => (
                   <div
                     key={label}
+                    className="flex items-center gap-2 rounded-[7px] px-2.5 py-2"
                     style={{
-                      padding: "8px 10px",
-                      borderRadius: "7px",
                       background: i === 0 ? "var(--color-accent-muted)" : "transparent",
-                      border: i === 0 ? "1px solid rgba(79,142,247,0.2)" : "1px solid transparent",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
+                      border: i === 0
+                        ? "1px solid rgba(79,142,247,0.2)"
+                        : "1px solid transparent",
                     }}
                   >
                     <div
+                      className="h-3.5 w-3.5 rounded-[3px]"
                       style={{
-                        width: "14px",
-                        height: "14px",
-                        borderRadius: "3px",
                         background: i === 0 ? "#4f8ef7" : "var(--color-border)",
                         opacity: i === 0 ? 1 : 0.5,
                       }}
                     />
                     <div
+                      className="h-2 rounded"
                       style={{
-                        height: "8px",
                         width: `${60 - i * 10}px`,
-                        borderRadius: "4px",
                         background: i === 0 ? "#4f8ef7" : "var(--color-border)",
                         opacity: i === 0 ? 1 : 0.4,
                       }}
@@ -297,60 +174,27 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+
               {/* Content area */}
-              <div style={{ flex: 1, padding: "20px", overflowY: "auto" }}>
-                <div
-                  style={{
-                    height: "20px",
-                    width: "160px",
-                    borderRadius: "6px",
-                    background: "var(--color-bg-subtle)",
-                    marginBottom: "16px",
-                  }}
-                />
-                {[
-                  { color: "#4f8ef7", width: "80%" },
-                  { color: "#3fb950", width: "70%" },
-                  { color: "#a371f7", width: "75%" },
-                ].map((card, i) => (
+              <div className="flex-1 overflow-y-auto p-5">
+                <div className="mb-4 h-5 w-40 rounded-[6px] bg-[var(--color-bg-subtle)]" />
+                {previewCards.map((card, i) => (
                   <div
                     key={i}
-                    style={{
-                      borderRadius: "10px",
-                      border: "1px solid var(--color-border)",
-                      background: "var(--color-bg-elevated)",
-                      padding: "14px",
-                      marginBottom: "10px",
-                      borderLeft: `3px solid ${card.color}`,
-                    }}
+                    className="mb-2.5 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-3.5"
+                    style={{ borderLeft: `3px solid ${card.color}` }}
                   >
-                    <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+                    <div className="mb-2 flex gap-2">
                       <div
-                        style={{
-                          height: "8px",
-                          width: "50px",
-                          borderRadius: "4px",
-                          background: card.color,
-                          opacity: 0.8,
-                        }}
+                        className="h-2 w-[50px] rounded opacity-80"
+                        style={{ background: card.color }}
                       />
                       <div
-                        style={{
-                          height: "8px",
-                          width: card.width,
-                          borderRadius: "4px",
-                          background: "var(--color-border)",
-                        }}
+                        className="h-2 rounded bg-[var(--color-border)]"
+                        style={{ width: card.width }}
                       />
                     </div>
-                    <div
-                      style={{
-                        height: "6px",
-                        width: "60%",
-                        borderRadius: "4px",
-                        background: "var(--color-bg-subtle)",
-                      }}
-                    />
+                    <div className="h-1.5 w-[60%] rounded bg-[var(--color-bg-subtle)]" />
                   </div>
                 ))}
               </div>
@@ -359,122 +203,40 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
-      <section style={{ padding: "60px 24px 100px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "64px" }}>
-            <h2
-              style={{
-                fontSize: "clamp(28px, 4vw, 44px)",
-                fontWeight: 700,
-                letterSpacing: "-0.02em",
-                color: "var(--color-text-primary)",
-                marginBottom: "16px",
-              }}
-            >
+      {/* ── Features ── */}
+      <section className="px-6 pb-24 pt-16">
+        <div className="mx-auto max-w-[1100px]">
+          {/* Section header */}
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-[clamp(28px,4vw,44px)] font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">
               Everything you need
             </h2>
-            <p
-              style={{
-                fontSize: "16px",
-                color: "var(--color-text-secondary)",
-                maxWidth: "480px",
-                margin: "0 auto",
-                lineHeight: 1.6,
-              }}
-            >
+            <p className="mx-auto max-w-[480px] text-base leading-relaxed text-[var(--color-text-secondary)]">
               A complete platform for both students and administrators.
             </p>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "20px",
-            }}
-          >
-            {[
-              {
-                icon: "📅",
-                title: "Daily Routine View",
-                desc: "See your class schedule for any day at a glance, with gaps, room info, and teacher details.",
-                color: "#4f8ef7",
-              },
-              {
-                icon: "📚",
-                title: "Course Selection",
-                desc: "Pick the courses that matter to you. Your routine automatically updates to match.",
-                color: "#3fb950",
-              },
-              {
-                icon: "⚡",
-                title: "Smart Import",
-                desc: "Admins can upload Excel sheets and Loop intelligently parses and validates schedule data.",
-                color: "#a371f7",
-              },
-              {
-                icon: "👥",
-                title: "Multi-role Access",
-                desc: "Students get a clean view. Admins get powerful management tools. Everyone gets what they need.",
-                color: "#d29922",
-              },
-              {
-                icon: "🏫",
-                title: "Room & Teacher Mgmt",
-                desc: "Manage all rooms, teachers, and courses from a single clean admin dashboard.",
-                color: "#f85149",
-              },
-              {
-                icon: "🌙",
-                title: "Dark & Minimal",
-                desc: "Beautiful dark interface that's easy on the eyes, whether it's 8 AM or midnight.",
-                color: "#4f8ef7",
-              },
-            ].map((feat) => (
+          {/* Feature grid */}
+          <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+            {features.map((feat) => (
               <div
                 key={feat.title}
-                style={{
-                  borderRadius: "14px",
-                  border: "1px solid var(--color-border)",
-                  background: "var(--color-bg-surface)",
-                  padding: "28px",
-                  transition: "border-color 0.2s ease, transform 0.2s ease",
-                }}
+                className="rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-white/10"
               >
+                {/* Icon box — dynamic color per card */}
                 <div
+                  className="mb-4 flex h-11 w-11 items-center justify-center rounded-[10px] text-[22px]"
                   style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "10px",
                     background: `${feat.color}18`,
                     border: `1px solid ${feat.color}30`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "22px",
-                    marginBottom: "16px",
                   }}
                 >
                   {feat.icon}
                 </div>
-                <h3
-                  style={{
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    color: "var(--color-text-primary)",
-                    marginBottom: "8px",
-                  }}
-                >
+                <h3 className="mb-2 text-base font-semibold text-[var(--color-text-primary)]">
                   {feat.title}
                 </h3>
-                <p
-                  style={{
-                    fontSize: "14px",
-                    color: "var(--color-text-secondary)",
-                    lineHeight: 1.6,
-                  }}
-                >
+                <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
                   {feat.desc}
                 </p>
               </div>
@@ -483,93 +245,39 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section style={{ padding: "0 24px 100px" }}>
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-          <div
-            style={{
-              borderRadius: "20px",
-              padding: "60px 48px",
-              textAlign: "center",
-              background: "linear-gradient(135deg, rgba(79,142,247,0.1) 0%, rgba(163,113,247,0.1) 100%)",
-              border: "1px solid rgba(79,142,247,0.2)",
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
+      {/* ── CTA Banner ── */}
+      <section className="px-6 pb-24">
+        <div className="mx-auto max-w-[800px]">
+          <div className="relative overflow-hidden rounded-[20px] border border-blue-400/20 bg-gradient-to-br from-blue-500/10 to-purple-500/10 px-12 py-16 text-center">
+            {/* Inner glow */}
             <div
               aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-[-60px] h-[200px] w-[400px] -translate-x-1/2"
               style={{
-                position: "absolute",
-                top: "-60px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: "400px",
-                height: "200px",
-                background: "radial-gradient(ellipse, rgba(79,142,247,0.15) 0%, transparent 70%)",
-                pointerEvents: "none",
+                background:
+                  "radial-gradient(ellipse, rgba(79,142,247,0.15) 0%, transparent 70%)",
               }}
             />
-            <h2
-              style={{
-                fontSize: "clamp(24px, 3vw, 36px)",
-                fontWeight: 700,
-                letterSpacing: "-0.02em",
-                color: "var(--color-text-primary)",
-                marginBottom: "16px",
-              }}
-            >
+
+            <h2 className="relative mb-4 text-[clamp(24px,3vw,36px)] font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">
               Ready to get organized?
             </h2>
-            <p
-              style={{
-                fontSize: "16px",
-                color: "var(--color-text-secondary)",
-                marginBottom: "36px",
-                maxWidth: "400px",
-                margin: "0 auto 36px",
-                lineHeight: 1.6,
-              }}
-            >
+            <p className="relative mx-auto mb-9 max-w-[400px] text-base leading-relaxed text-[var(--color-text-secondary)]">
               Join students and administrators already using Loop to stay on schedule.
             </p>
-            <div
-              style={{
-                display: "flex",
-                gap: "16px",
-                justifyContent: "center",
-                flexWrap: "wrap",
-              }}
-            >
+
+            <div className="relative flex flex-wrap justify-center gap-4">
               <Link
                 href="/signup"
                 id="cta-signup"
-                style={{
-                  padding: "13px 28px",
-                  borderRadius: "10px",
-                  fontSize: "15px",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  color: "white",
-                  background: "linear-gradient(135deg, #4f8ef7, #6f6bf7)",
-                  boxShadow: "0 0 30px rgba(79, 142, 247, 0.35)",
-                }}
+                className="rounded-[10px] bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-7 py-3 text-[15px] font-semibold text-white no-underline shadow-[0_0_30px_rgba(79,142,247,0.35)] transition-all duration-200 hover:shadow-[0_0_40px_rgba(79,142,247,0.5)]"
               >
                 Create free account
               </Link>
               <Link
                 href="/login"
                 id="cta-login"
-                style={{
-                  padding: "13px 28px",
-                  borderRadius: "10px",
-                  fontSize: "15px",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  color: "var(--color-text-secondary)",
-                  border: "1px solid var(--color-border)",
-                  background: "rgba(13,17,23,0.6)",
-                }}
+                className="rounded-[10px] border border-[var(--color-border)] bg-[rgba(13,17,23,0.6)] px-7 py-3 text-[15px] font-semibold text-[var(--color-text-secondary)] no-underline transition-all duration-200 hover:border-white/20 hover:text-white/80"
               >
                 Log in
               </Link>
