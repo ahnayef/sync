@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { FiInbox, FiCheck, FiSave, FiSearch, FiUser, FiCalendar, FiSliders } from "react-icons/fi";
+import { FiInbox, FiCheck, FiSave, FiSearch, FiUser, FiCalendar, FiSliders, FiX } from "react-icons/fi";
 
 interface CourseTeacher {
   courseId: number;
@@ -24,6 +24,7 @@ const selectCls =
 function courseRowCls(selected: boolean) {
   return [
     "group flex h-full min-h-[132px] w-full cursor-pointer flex-col justify-between gap-2.5 rounded-xl border px-4 py-3.5 text-left transition-all duration-200",
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/30",
     selected
       ? "border-blue-400/35 bg-blue-500/[0.06] shadow-[0_0_12px_rgba(59,130,246,0.03)]"
       : "border-[var(--color-border)] bg-[var(--color-bg-surface)] hover:border-white/10 hover:bg-[var(--color-bg-elevated)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.15)]",
@@ -194,6 +195,20 @@ export default function CoursesPage() {
     }
   };
 
+  const selectAllVisible = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      filtered.forEach((c) => next.add(`${c.courseId}-${c.teacherId}`));
+      return next;
+    });
+    setSaved(false);
+  };
+
+  const clearSelection = () => {
+    setSelected(new Set());
+    setSaved(false);
+  };
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
       <main className="mx-auto max-w-[1100px] px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
@@ -210,36 +225,55 @@ export default function CoursesPage() {
             </p>
           </div>
 
-          <button
-            id="courses-save"
-            type="button"
-            disabled={saving}
-            onClick={saveSelections}
-            className={[
-              "inline-flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all sm:w-auto",
-              saved
-                ? "border-green-500/30 bg-green-500/15 text-green-500"
-                : "border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] active:scale-95",
-              saving ? "opacity-50 cursor-not-allowed" : "",
-            ].join(" ")}
-          >
-            {saving ? (
-              <span className="flex items-center gap-2">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Saving...
-              </span>
-            ) : saved ? (
-              <>
-                <FiCheck className="text-lg" />
-                Saved Changes
-              </>
-            ) : (
-              <>
-                <FiSave className="opacity-70" />
-                Save Routine Selections
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={selectAllVisible}
+              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]"
+            >
+              Select all
+            </button>
+
+            <button
+              type="button"
+              onClick={clearSelection}
+              disabled={selected.size === 0}
+              className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium ${selected.size === 0 ? "opacity-50 cursor-not-allowed" : "bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-surface)]"} text-[var(--color-text-secondary)]`}
+            >
+              Clear
+            </button>
+
+            <button
+              id="courses-save"
+              type="button"
+              disabled={saving}
+              onClick={saveSelections}
+              className={[
+                "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium",
+                saved
+                  ? "border-green-500/30 bg-green-500/15 text-green-500"
+                  : "border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] active:scale-95",
+                saving ? "opacity-50 cursor-not-allowed" : "",
+              ].join(" ")}
+            >
+              {saving ? (
+                <span className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  Saving...
+                </span>
+              ) : saved ? (
+                <>
+                  <FiCheck className="text-lg" />
+                  Saved Changes
+                </>
+              ) : (
+                <>
+                  <FiSave className="opacity-70" />
+                  Save Routine Selections
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Dynamic Filtering and Sorting Controls Container */}
