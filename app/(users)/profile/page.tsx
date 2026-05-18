@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiEdit2, FiCamera, FiUser, FiMail, FiHash, FiShield, FiX, FiCheck } from "react-icons/fi";
 import { useSession } from "next-auth/react";
 
@@ -23,6 +23,20 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setAvatarUrl(url);
+    }
+  };
 
   useEffect(() => {
     if (session?.user) {
@@ -136,10 +150,20 @@ export default function ProfilePage() {
             )}
             <button
               id="profile-change-avatar"
-              className="absolute bottom-0 right-0 w-7 h-7 rounded-full border-2 border-[var(--color-bg-surface)] bg-[var(--color-accent)] flex items-center justify-center text-white cursor-pointer hover:bg-[#5d95f7] transition-colors"
+              onClick={handleAvatarClick}
+              aria-label="Change avatar"
+              className="absolute bottom-0 right-0 w-8 h-8 rounded-full border-2 border-[var(--color-bg-surface)] bg-[var(--color-accent)] flex items-center justify-center text-white cursor-pointer hover:bg-[#5d95f7] transition-colors"
             >
-              <FiCamera size={13} />
+              <FiCamera size={14} />
             </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="hidden"
+              aria-hidden
+            />
           </div>
 
           {/* Details */}
@@ -176,8 +200,9 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        {/* Personal Information Form */}
-        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8 mb-6">
+        {/* Personal Information + Change Password (responsive grid) */}
+        <div className="grid gap-6 lg:grid-cols-2 mb-6">
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8">
           <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-6">
             Personal Information
           </h3>
@@ -248,10 +273,10 @@ export default function ProfilePage() {
               </button>
             )}
           </div>
-        </div>
+          </div>
 
-        {/* Change Password */}
-        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8 mb-6">
+          {/* Change Password */}
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8">
           <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-6">
             Change Password
           </h3>
@@ -312,6 +337,7 @@ export default function ProfilePage() {
             >
               {passwordLoading ? "Updating..." : "Update password"}
             </button>
+          </div>
           </div>
         </div>
 
