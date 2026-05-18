@@ -133,64 +133,23 @@ export default function ManageCoursesPage() {
 
       <div className="relative mx-auto max-w-7xl space-y-6">
         <section className="glass relative overflow-hidden rounded-3xl border border-[var(--color-border)] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.24)] sm:p-6 lg:p-7">
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.02),transparent_35%,rgba(255,255,255,0.02))]" />
-          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(79,142,247,0.18)] bg-[rgba(79,142,247,0.08)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
-                Course catalog
-              </div>
-              <div className="max-w-2xl space-y-2">
-                <h1 className="text-[28px] font-bold tracking-tight text-[var(--color-text-primary)] sm:text-[34px]">
-                  Manage courses with clearer structure and faster edits.
-                </h1>
-                <p className="max-w-xl text-sm leading-6 text-[var(--color-text-secondary)] sm:text-[15px]">
-                  Search by code, name, or department, then filter lab and theory entries without losing context.
-                </p>
-              </div>
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-2">
+              <h1 className="text-[26px] font-bold text-[var(--color-text-primary)]">Course Management</h1>
+              <p className="text-sm text-[var(--color-text-secondary)]">Manage course codes, names, and department assignments.</p>
             </div>
 
-            <button
-              id="add-course-btn"
-              onClick={openAdd}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(79,142,247,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#5d95f7] active:translate-y-0"
-            >
-              + Add Course
-            </button>
-          </div>
-
-          <div className="relative mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
-                Total courses
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:block rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+                {courses.length} courses • {departments.length} departments
               </div>
-              <div className="mt-2 text-2xl font-bold text-[var(--color-text-primary)]">
-                {loading ? "—" : courses.length}
-              </div>
-              <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-                Registered in the current catalog
-              </p>
-            </div>
-            <div className="rounded-2xl border border-[rgba(163,113,247,0.16)] bg-[rgba(163,113,247,0.08)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-lab)]">
-                Lab courses
-              </div>
-              <div className="mt-2 text-2xl font-bold text-[var(--color-text-primary)]">
-                {loading ? "—" : labCount}
-              </div>
-              <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-                Practical sessions and lab sections
-              </p>
-            </div>
-            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
-                Theory courses
-              </div>
-              <div className="mt-2 text-2xl font-bold text-[var(--color-text-primary)]">
-                {loading ? "—" : theoryCount}
-              </div>
-              <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-                Lecture-heavy and non-lab entries
-              </p>
+              <button
+                id="add-course-btn"
+                onClick={openAdd}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.22)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
+              >
+                + Add Course
+              </button>
             </div>
           </div>
         </section>
