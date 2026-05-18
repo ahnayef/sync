@@ -11,6 +11,7 @@ import {
   FiDownloadCloud,
   FiSearch,
   FiChevronDown,
+  FiX,
 } from "react-icons/fi";
 
 type ViewMode = "list" | "upload" | "preview" | "fixing" | "done";
@@ -327,11 +328,28 @@ export default function ManageSchedulePage() {
   // List View State
   const [schedules, setSchedules] = useState(MOCK_DATA);
   const [departments, setDepartments] = useState<DepartmentOption[]>([]);
+  const [courses, setCourses] = useState<CourseOption[]>(COURSES);
+  const [teachersList, setTeachersList] = useState<TeacherOption[]>(TEACHERS);
+  const [batchesList, setBatchesList] = useState<BatchOption[]>(BATCHES);
+  const [roomsList, setRoomsList] = useState<string[]>(ROOMS);
   const [listLoading, setListLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
+  const [dayFilter, setDayFilter] = useState<string | "All">("All");
+  const [typeFilter, setTypeFilter] = useState<"All" | "Lab" | "Theory">("All");
+  const [sortBy, setSortBy] = useState<"day" | "course" | "time">("day");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  const filtersActive = Boolean(
+    search.trim() ||
+    selectedDept !== "All" ||
+    dayFilter !== "All" ||
+    typeFilter !== "All" ||
+    sortBy !== "day" ||
+    sortDir !== "asc"
+  );
 
   // Edit Form State
   const [editData, setEditData] = useState({
@@ -406,9 +424,13 @@ export default function ManageSchedulePage() {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const [departmentRes, scheduleRes] = await Promise.all([
+        const [departmentRes, scheduleRes, coursesRes, teachersRes, batchesRes, roomsRes] = await Promise.all([
           fetch("/api/departments", { cache: "no-store" }),
           fetch("/api/schedules", { cache: "no-store" }),
+          fetch("/api/courses", { cache: "no-store" }),
+          fetch("/api/teachers", { cache: "no-store" }),
+          fetch("/api/batches", { cache: "no-store" }),
+          fetch("/api/rooms", { cache: "no-store" }),
         ]);
         if (departmentRes.ok) {
           const rows = (await departmentRes.json()) as DepartmentOption[];
@@ -422,6 +444,67 @@ export default function ManageSchedulePage() {
         if (scheduleRes.ok) {
           const rows = (await scheduleRes.json()) as ScheduleApiRow[];
           setSchedules(rows.map(mapScheduleApiRow));
+        }
+        // optional: fetch additional lists, normalize shapes and fall back to demo constants if unavailable
+        if (coursesRes && coursesRes.ok) {
+          const data = await coursesRes.json();
+          if (Array.isArray(data) && data.length) {
+            const normalized = data.map((c: any) => ({
+              code: c.code || c.course_code || c.code_name || c.id || String(c.id || ""),
+              title: c.title || c.course_name || c.name || c.course_title || "Untitled",
+              dept: c.dept || c.department || c.department_name || "",
+              isLab: Boolean(c.isLab || c.is_lab || c.lab)
+            }));
+            setCourses(normalized);
+          } else {
+            setCourses(COURSES);
+          }
+        }
+        if (teachersRes && teachersRes.ok) {
+          const data = await teachersRes.json();
+          if (Array.isArray(data) && data.length) {
+            const normalized = data.map((t: any) => ({
+              short: t.short || t.short_name || t.code || t.initials || (t.name ? t.name.split(" ").map((p:string)=>p[0]).join('.') : ""),
+              name: t.name || t.full_name || t.teacher_name || t.display_name || ""
+            }));
+            setTeachersList(normalized);
+          } else {
+            setTeachersList(TEACHERS);
+          }
+        }
+        if (batchesRes && batchesRes.ok) {
+          const data = await batchesRes.json();
+          if (Array.isArray(data) && data.length) {
+            const normalized = data.map((b: any) => ({
+              name: b.name || b.batch_name || b.session || (b.label || ""),
+              dept: b.dept || b.department || b.department_name || b.department_code || "",
+              session: b.session || b.batch_session || null
+            }));
+            setBatchesList(normalized);
+          } else {
+            setBatchesList(BATCHES);
+          }
+        }
+        if (roomsRes && roomsRes.ok) {
+          const data = await roomsRes.json();
+          if (Array.isArray(data) && data.length) {
+            const normalized = data.map((r: any) => {
+              if (typeof r === "string") {
+                const m = String(r).match(/\d+/);
+                return m ? m[0] : r;
+              }
+              const num = r.room_number ?? r.number ?? r.number_string ?? null;
+              if (num !== null && num !== undefined) return String(num);
+              if (r.room_title) {
+                const m = String(r.room_title).match(/\d+/);
+                if (m) return m[0];
+              }
+              return String(r.id ?? r.label ?? r.title ?? "");
+            });
+            setRoomsList(normalized);
+          } else {
+            setRoomsList(ROOMS);
+          }
         }
       } catch (error) {
         console.error(error);
@@ -471,13 +554,42 @@ export default function ManageSchedulePage() {
   };
 
   // --- List View Methods ---
-  const filteredSchedules = schedules.filter(s => {
-    const matchesSearch = s.courseCode.toLowerCase().includes(search.toLowerCase()) ||
-      s.courseTitle.toLowerCase().includes(search.toLowerCase()) ||
-      s.teacher.toLowerCase().includes(search.toLowerCase());
-    const matchesDept = selectedDept === "All" || s.dept === selectedDept;
-    return matchesSearch && matchesDept;
-  });
+  const filteredSchedules = (() => {
+    const searchLower = search.trim().toLowerCase();
+    const dayOrder = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    let rows = schedules.filter((s) => {
+      const matchesSearch =
+        !searchLower ||
+        s.courseCode.toLowerCase().includes(searchLower) ||
+        s.courseTitle.toLowerCase().includes(searchLower) ||
+        s.teacher.toLowerCase().includes(searchLower);
+
+      const matchesDept = selectedDept === "All" || s.dept === selectedDept;
+      const matchesDay = dayFilter === "All" || s.day === dayFilter;
+      const matchesType = typeFilter === "All" || (typeFilter === "Lab" ? s.isLab : !s.isLab);
+
+      return matchesSearch && matchesDept && matchesDay && matchesType;
+    });
+
+    const comparator = (a: ScheduleRow, b: ScheduleRow) => {
+      let res = 0;
+      if (sortBy === "day") {
+        res = dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
+        if (res === 0) res = timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+      } else if (sortBy === "time") {
+        res = timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+        if (res === 0) res = dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
+      } else if (sortBy === "course") {
+        res = a.courseCode.localeCompare(b.courseCode) || a.courseTitle.localeCompare(b.courseTitle);
+      }
+
+      return sortDir === "asc" ? res : -res;
+    };
+
+    rows.sort(comparator);
+    return rows;
+  })();
 
   const openEditModal = (schedule: ScheduleRow) => {
     setEditingId(schedule.id);
@@ -614,32 +726,70 @@ export default function ManageSchedulePage() {
             </div>
           </div>
 
-          <div className="flex gap-4 mb-6 flex-wrap">
-            <div className="relative flex-1 max-w-[400px]">
+          <div className="flex flex-col sm:flex-row gap-3 mb-6 items-start">
+            <div className="relative flex-1 max-w-full sm:max-w-[520px]">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by course, teacher..."
-                className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] py-2.5 pr-4 pl-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)]"
+                placeholder="Search by course code, title, or teacher..."
+                className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] py-3 pr-10 pl-12 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)]"
               />
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+              {search && (
+                <button onClick={() => setSearch("")} title="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] p-1 rounded-md hover:bg-[var(--color-bg-elevated)]">
+                  <FiX size={14} />
+                </button>
+              )}
             </div>
 
-            <div className="flex gap-2">
-              <span className="text-sm font-medium text-[var(--color-text-secondary)] self-center mr-1">Dept:</span>
-              {["All", ...departmentNames].map(dept => (
-                <button
-                  key={dept}
-                  onClick={() => setSelectedDept(dept)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedDept === dept
-                    ? "bg-[var(--color-accent)] text-white shadow-md"
-                    : "bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:bg-[var(--color-bg-elevated)]"
-                    }`}
-                >
-                  {dept}
-                </button>
-              ))}
+            <div className="flex gap-2 items-center w-full sm:w-auto">
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-[var(--color-text-secondary)]">Department</label>
+                <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
+                  <option value="All">All</option>
+                  {departmentNames.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-[var(--color-text-secondary)]">Day</label>
+                <select value={dayFilter} onChange={(e) => setDayFilter(e.target.value)} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
+                  <option value="All">All</option>
+                  <option value="Sunday">Sunday</option>
+                  <option value="Monday">Monday</option>
+                  <option value="Tuesday">Tuesday</option>
+                  <option value="Wednesday">Wednesday</option>
+                  <option value="Thursday">Thursday</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-[var(--color-text-secondary)]">Type</label>
+                <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
+                  <option value="All">All</option>
+                  <option value="Lab">Lab</option>
+                  <option value="Theory">Theory</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 ml-auto">
+              <div className="flex items-center gap-1 bg-[var(--color-bg-elevated)] rounded-lg px-2 py-1">
+                <button onClick={() => setSortBy("day")} className={`px-3 py-1 text-sm rounded ${sortBy === "day" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Day</button>
+                <button onClick={() => setSortBy("time")} className={`px-3 py-1 text-sm rounded ${sortBy === "time" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Time</button>
+                <button onClick={() => setSortBy("course")} className={`px-3 py-1 text-sm rounded ${sortBy === "course" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Course</button>
+                <button onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")} title="Toggle sort direction" className="px-2 py-1 rounded text-sm border border-[var(--color-border)] bg-[var(--color-bg-surface)]">{sortDir === "asc" ? "↑" : "↓"}</button>
+              </div>
+
+              <button
+                onClick={() => { setSearch(""); setSelectedDept("All"); setDayFilter("All"); setTypeFilter("All"); setSortBy("day"); setSortDir("asc"); }}
+                aria-pressed={filtersActive}
+                title={filtersActive ? "Clear active filters" : "No filters applied"}
+                className={`ml-2 ${filtersActive ? "px-5 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all" : "px-3 py-1.5 rounded-lg text-sm transition-all border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)]"}`}
+              >
+                Clear
+              </button>
             </div>
           </div>
 
@@ -664,7 +814,7 @@ export default function ManageSchedulePage() {
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-0.5">
                           {(() => {
-                            const isLab = COURSES.find(c => c.code === row.courseCode)?.isLab || row.isLab;
+                            const isLab = (courses.find(c => c.code === row.courseCode) || COURSES.find(c => c.code === row.courseCode))?.isLab || row.isLab;
                             return (
                               <code className={`text-[11px] font-bold px-1.5 py-[2px] rounded w-fit ${isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
                                 {row.courseCode}
@@ -678,7 +828,7 @@ export default function ManageSchedulePage() {
                         {row.teacher || "—"}
                       </td>
                       <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
-                        {row.batch} ({row.section})
+                        {row.dept ? `${row.dept} - ${row.batch}` : row.batch} ({row.section})
                       </td>
                       <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">
                         {row.startTime} - {row.endTime}
@@ -730,8 +880,8 @@ export default function ManageSchedulePage() {
                   <div className="col-span-2">
                     <SearchableSelect
                       label="Course"
-                      options={COURSES.filter(c => c.dept === editData.dept)}
-                      value={editData.courseCode ? COURSES.find(c => c.code === editData.courseCode) : null}
+                      options={(courses || COURSES).filter(c => c.dept === editData.dept)}
+                      value={editData.courseCode ? (courses.find(c => c.code === editData.courseCode) || COURSES.find(c => c.code === editData.courseCode)) : null}
                       onChange={(c: CourseOption) => setEditData({ ...editData, courseCode: c.code, courseTitle: c.title })}
                       placeholder="Select Course"
                       displayValue={(c: CourseOption) => `${c.code} — ${c.title}`}
@@ -748,8 +898,8 @@ export default function ManageSchedulePage() {
                   <div className="col-span-2">
                     <SearchableSelect
                       label="Teacher"
-                      options={TEACHERS}
-                      value={editData.teacher ? TEACHERS.find(t => t.short === editData.teacher) : null}
+                      options={teachersList.length ? teachersList : TEACHERS}
+                      value={editData.teacher ? (teachersList.find(t => t.short === editData.teacher) || TEACHERS.find(t => t.short === editData.teacher)) : null}
                       onChange={(t: TeacherOption) => setEditData({ ...editData, teacher: t.short })}
                       placeholder="Select Teacher"
                       displayValue={(t: TeacherOption) => t.short}
@@ -766,13 +916,13 @@ export default function ManageSchedulePage() {
                   <div>
                     <SearchableSelect
                       label="Batch"
-                      options={BATCHES.filter(b => b.dept === editData.dept)}
-                      value={editData.batch ? BATCHES.find(b => b.name === editData.batch) : null}
-                      onChange={(b: BatchOption) => setEditData({ ...editData, batch: b.name })}
+                      options={(batchesList.length ? batchesList : BATCHES).filter((b: any) => ((b.dept || b.department) === editData.dept) || !editData.dept)}
+                      value={editData.batch ? (batchesList.find(b => b.name === editData.batch) || BATCHES.find(b => b.name === editData.batch)) : null}
+                      onChange={(b: any) => setEditData({ ...editData, batch: b.name })}
                       placeholder="Select Batch"
-                      displayValue={(b: BatchOption) => b.name}
-                      searchKey={(b: BatchOption) => b.name}
-                      renderOption={(b: BatchOption) => <span>{b.name}</span>}
+                      displayValue={(b: any) => `${b.dept ? b.dept + " - " : ""}${b.session || b.name}`}
+                      searchKey={(b: any) => `${b.name} ${b.dept || ""} ${b.session || ""}`}
+                      renderOption={(b: any) => <span>{b.dept ? `${b.dept} - ${b.session || b.name}` : b.name}</span>}
                     />
                   </div>
 
@@ -823,7 +973,7 @@ export default function ManageSchedulePage() {
                   <div>
                     <SearchableSelect
                       label="Room"
-                      options={ROOMS}
+                      options={roomsList.length ? roomsList : ROOMS}
                       value={editData.room}
                       onChange={(room: string) => setEditData({ ...editData, room })}
                       placeholder="Select Room"
@@ -895,7 +1045,7 @@ export default function ManageSchedulePage() {
           <div className="mb-5"><FiBarChart2 className="inline text-3xl text-[var(--color-text-muted)] mb-5" /></div>
           <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2.5">Drop your schedule file here</h2>
           <p className="text-sm text-[var(--color-text-secondary)] mb-8">{loadingSheet ? "Parsing schedule and checking database records..." : "Supports .xlsx, .xls, .csv files. Max size 10MB."}</p>
-          <label htmlFor="schedule-file-input" className="inline-flex items-center gap-2 px-7 py-3 rounded-[10px] cursor-pointer text-base font-semibold text-white bg-[var(--color-accent)] shadow-[0_10px_24px_rgba(79,142,247,0.18)] hover:bg-[#5d95f7] hover:shadow-[0_14px_30px_rgba(79,142,247,0.22)] transition-all duration-200 active:scale-95">
+          <label htmlFor="schedule-file-input" className="inline-flex items-center gap-2 px-7 py-3 rounded-[10px] cursor-pointer text-base font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all duration-200">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg> Browse file
           </label>
           <input id="schedule-file-input" type="file" accept=".xlsx,.xls,.csv" onChange={handleFileInput} style={{ display: "none" }} />
@@ -914,7 +1064,7 @@ export default function ManageSchedulePage() {
 
             <div className="flex gap-2 items-center flex-wrap justify-center w-full">
               <input aria-label="Google Sheet URL" placeholder="Paste Google Sheet link or ID" value={googleUrl} onChange={(e) => setGoogleUrl(e.target.value)} className="flex-1 min-w-[260px] px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[#4f8ef7] focus:ring-offset-1 transition-all" />
-              <button id="load-google-sheet" onClick={handleLoadGoogleSheet} disabled={loadingSheet} title="Load from Google Sheet" className={`p-2.5 rounded-lg border-none text-white font-semibold transition-all duration-200 flex items-center justify-center ${loadingSheet ? "bg-[rgba(79,142,247,0.16)] cursor-wait" : "bg-[var(--color-accent)] cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg active:scale-95"}`}>
+              <button id="load-google-sheet" onClick={handleLoadGoogleSheet} disabled={loadingSheet} title="Load from Google Sheet" className={`p-2.5 rounded-lg border-none text-white font-semibold transition-all duration-200 flex items-center justify-center ${loadingSheet ? "bg-[rgba(79,142,247,0.16)] cursor-wait" : "bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95"}`}>
                 {loadingSheet ? (
                   <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 ) : (
