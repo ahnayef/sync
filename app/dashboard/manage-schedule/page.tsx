@@ -340,6 +340,7 @@ export default function ManageSchedulePage() {
   const [roomsData, setRoomsData] = useState<any[]>([]); // Full room objects with IDs
   const [listLoading, setListLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [showFiltersMobile, setShowFiltersMobile] = useState(false);
   const [selectedDept, setSelectedDept] = useState("All");
   const [dayFilter, setDayFilter] = useState<string | "All">("All");
   const [typeFilter, setTypeFilter] = useState<"All" | "Lab" | "Theory">("All");
@@ -906,7 +907,7 @@ export default function ManageSchedulePage() {
   };
 
   return (
-    <div className="p-8 max-w-[1200px] mx-auto">
+    <div className="p-4 sm:p-8 max-w-[1200px] mx-auto">
 
       {/* ─── LIST VIEW ──────────────────────────────────────────────────────── */}
       {step === "list" && (
@@ -918,26 +919,26 @@ export default function ManageSchedulePage() {
                 <p className="text-sm text-[var(--color-text-secondary)]">{listLoading ? "Loading schedules..." : `${schedules.length} classes scheduled`}</p>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                 <button
                   onClick={() => {
                     setEditingId(null);
                     setEditData({ day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: selectedDept === "All" ? "CSE" : selectedDept, startTime: "08:00", endTime: "09:30", room: "" });
                     setShowEditModal(true);
                   }}
-                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)]"
                 >
                   <FiPlus /> Add Single Class
                 </button>
                 <button
                   onClick={() => setStep("upload")}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-3 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
                 >
                   <FiBarChart2 /> Import Schedule
                 </button>
                 <button
                   onClick={() => setStep("sync")}
-                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)] active:scale-[0.99]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)] active:scale-[0.99]"
                 >
                   <FiZap className="text-[var(--color-accent)] animate-pulse" /> Google Sheets Sync
                 </button>
@@ -946,35 +947,43 @@ export default function ManageSchedulePage() {
           </section>
 
           <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.12)] sm:p-5 mb-6">
-            <div className="flex flex-col sm:flex-row gap-3 items-start">
-              <div className="relative flex-1 max-w-full sm:max-w-[520px]">
-                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+            <div className="flex flex-col sm:flex-row gap-3 items-start w-full">
+              <div className="relative flex-1 max-w-full sm:max-w-[520px] min-w-0">
+                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by course code, title, or teacher..."
-                  className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-3 pr-12 pl-11 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[rgba(79,142,247,0.35)]"
+                  placeholder="Search..."
+                  className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 pr-10 pl-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[rgba(79,142,247,0.35)]"
                 />
                 {search && (
-                  <button onClick={() => setSearch("")} title="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]">
+                  <button onClick={() => setSearch("")} title="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]">
                     <FiX size={14} />
                   </button>
                 )}
+
+                {/* Mobile filters toggle */}
+                <div className="sm:hidden mt-2">
+                  <button onClick={() => setShowFiltersMobile(!showFiltersMobile)} className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-sm text-[var(--color-text-primary)]">
+                    <span>Filters</span>
+                    <FiChevronDown className={`text-[var(--color-text-muted)] transition-transform ${showFiltersMobile ? "rotate-180" : ""}`} />
+                  </button>
+                </div>
               </div>
 
-              <div className="flex gap-2 items-center w-full sm:w-auto">
-                <div className="flex items-center gap-2">
+              <div className={`${showFiltersMobile ? "block" : "hidden"} sm:flex flex-col sm:flex-row gap-2 items-start sm:items-center w-full sm:w-auto`}>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                   <label className="text-xs text-[var(--color-text-secondary)]">Department</label>
-                  <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
+                  <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
                     <option value="All">All</option>
                     {departmentNames.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                   <label className="text-xs text-[var(--color-text-secondary)]">Day</label>
-                  <select value={dayFilter} onChange={(e) => setDayFilter(e.target.value)} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
+                  <select value={dayFilter} onChange={(e) => setDayFilter(e.target.value)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
                     <option value="All">All</option>
                     <option value="Sunday">Sunday</option>
                     <option value="Monday">Monday</option>
@@ -984,9 +993,9 @@ export default function ManageSchedulePage() {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                   <label className="text-xs text-[var(--color-text-secondary)]">Type</label>
-                  <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
+                  <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
                     <option value="All">All</option>
                     <option value="Lab">Lab</option>
                     <option value="Theory">Theory</option>
@@ -994,11 +1003,11 @@ export default function ManageSchedulePage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 ml-auto">
-                <div className="flex items-center gap-1 bg-[var(--color-bg-elevated)] rounded-lg px-2 py-1">
-                  <button onClick={() => setSortBy("day")} className={`px-3 py-1 text-sm rounded ${sortBy === "day" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Day</button>
-                  <button onClick={() => setSortBy("time")} className={`px-3 py-1 text-sm rounded ${sortBy === "time" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Time</button>
-                  <button onClick={() => setSortBy("course")} className={`px-3 py-1 text-sm rounded ${sortBy === "course" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Course</button>
+              <div className={`${showFiltersMobile ? "flex" : "hidden"} sm:flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto ml-0 sm:ml-auto`}>
+                <div className="flex items-center gap-1 bg-[var(--color-bg-elevated)] rounded-lg px-2 py-1 overflow-x-auto">
+                  <button onClick={() => setSortBy("day")} className={`px-2 py-1 text-sm rounded ${sortBy === "day" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Day</button>
+                  <button onClick={() => setSortBy("time")} className={`px-2 py-1 text-sm rounded ${sortBy === "time" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Time</button>
+                  <button onClick={() => setSortBy("course")} className={`px-2 py-1 text-sm rounded ${sortBy === "course" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Course</button>
                   <button onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")} title="Toggle sort direction" className="px-2 py-1 rounded text-sm border border-[var(--color-border)] bg-[var(--color-bg-surface)]">{sortDir === "asc" ? "↑" : "↓"}</button>
                 </div>
 
@@ -1006,7 +1015,7 @@ export default function ManageSchedulePage() {
                   onClick={() => { setSearch(""); setSelectedDept("All"); setDayFilter("All"); setTypeFilter("All"); setSortBy("day"); setSortDir("asc"); }}
                   aria-pressed={filtersActive}
                   title={filtersActive ? "Clear active filters" : "No filters applied"}
-                  className={`ml-2 ${filtersActive ? "px-5 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all" : "px-3 py-1.5 rounded-lg text-sm transition-all border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)]"}`}
+                  className={`w-full sm:w-auto ${filtersActive ? "px-5 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all" : "px-3 py-1.5 rounded-lg text-sm transition-all border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)]"}`}
                 >
                   Clear
                 </button>
@@ -1014,7 +1023,7 @@ export default function ManageSchedulePage() {
             </div>
           </section>
 
-          <div className="rounded-[14px] border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-surface)]">
+          <div className="rounded-[14px] border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-surface)] hidden sm:block">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse min-w-[900px]">
                 <thead>
@@ -1075,19 +1084,51 @@ export default function ManageSchedulePage() {
                 </tbody>
               </table>
             </div>
-          </div>
+            </div>
+
+            {/* Mobile Card List */}
+            <div className="sm:hidden mt-3 space-y-3">
+              {filteredSchedules.map((row) => (
+                <div key={row.id} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <code className={`text-[11px] font-bold px-1.5 py-[2px] rounded ${row.isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.08)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.08)]"}`}>
+                          {row.courseCode}
+                        </code>
+                        <span className="text-sm font-medium text-[var(--color-text-primary)] truncate">{row.courseTitle}</span>
+                      </div>
+                      <div className="mt-1 text-xs text-[var(--color-text-secondary)] truncate">{row.teacher} · {row.dept} · {row.batch} ({row.section})</div>
+                    </div>
+
+                    <div className="flex-shrink-0 text-right">
+                      <div className="text-[10px] text-[var(--color-text-muted)]">{row.startTime} - {row.endTime}</div>
+                      <div className="text-sm font-semibold text-[var(--color-text-primary)] mt-1">Room {row.room}</div>
+                      <div className="flex gap-2 mt-3 justify-end">
+                        <button onClick={() => openEditModal(row)} className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm transition-colors hover:bg-[var(--color-bg-elevated)]">Edit</button>
+                        <button onClick={async () => { await fetch(`/api/schedules?id=${row.id}`, { method: "DELETE" }); setSchedules(schedules.filter(s => s.id !== row.id)); }} className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]">Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {filteredSchedules.length === 0 && (
+                <div className="text-center py-8 text-[var(--color-text-secondary)]">No schedules found.</div>
+              )}
+            </div>
 
           {showEditModal && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-6 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}>
-              <div className="w-full max-w-[640px] rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8 my-8 shadow-2xl">
-                <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[var(--color-accent-muted)] text-[var(--color-accent)] flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-3 sm:p-6 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}>
+              <div className="w-full max-w-sm sm:max-w-[640px] rounded-xl sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 sm:p-8 my-4 sm:my-8 shadow-2xl">
+                <h2 className="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] mb-4 sm:mb-6 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--color-accent-muted)] text-[var(--color-accent)] flex items-center justify-center flex-shrink-0">
                     {editingId ? <FiEdit2 size={16} /> : <FiPlus size={16} />}
                   </div>
-                  {editingId ? "Edit Class Schedule" : "Add New Class"}
+                  <span className="truncate">{editingId ? "Edit Class Schedule" : "Add New Class"}</span>
                 </h2>
 
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
                   <div className="col-span-2">
                     <SearchableSelect
                       label="Department"
@@ -1210,14 +1251,14 @@ export default function ManageSchedulePage() {
                   </div>
                 )}
 
-                <div className="flex gap-3 mt-8">
-                  <button onClick={() => setShowEditModal(false)} className="flex-1 px-4 py-3 rounded-xl border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm font-semibold transition-colors hover:bg-[var(--color-bg-elevated)]">Cancel</button>
+                <div className="flex gap-2 sm:gap-3 mt-6 sm:mt-8">
+                  <button onClick={() => setShowEditModal(false)} className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs sm:text-sm font-semibold transition-colors hover:bg-[var(--color-bg-elevated)]">Cancel</button>
                   <button
                     disabled={!!formError || !editData.courseCode || !editData.teacher || !editData.batch || !editData.room}
                     onClick={saveEdit}
-                    className="flex-1 px-4 py-3 rounded-xl bg-[var(--color-accent)] text-white font-semibold shadow-lg shadow-[var(--color-accent)]/20 transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-[var(--color-accent)] text-white font-semibold text-xs sm:text-sm shadow-lg shadow-[var(--color-accent)]/20 transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
-                    {editingId ? "Update Schedule" : "Add to Schedule"}
+                    {editingId ? "Update" : "Add"}
                   </button>
                 </div>
               </div>
@@ -1239,21 +1280,21 @@ export default function ManageSchedulePage() {
             </div>
           </div>
 
-          <div className="flex gap-0 mb-8 items-center">
+          <div className="flex gap-0 mb-6 sm:mb-8 items-center flex-wrap sm:flex-nowrap overflow-x-auto">
             {(["Upload", "Preview", "Fix Errors", "Done"] as const).map((label, i) => {
               const stepMap: Record<string, number> = { upload: 0, preview: 1, fixing: 2, done: 3 };
               const current = stepMap[step];
               const isDone = i < current;
               const isActive = i === current;
               return (
-                <div key={label} className="flex items-center">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${isActive ? "border-[#4f8ef7] bg-[rgba(79,142,247,0.15)] shadow-[0_0_12px_rgba(79,142,247,0.2)]" : isDone ? "border-[#3fb950] bg-[rgba(63,185,80,0.12)] shadow-[0_0_12px_rgba(63,185,80,0.15)]" : `border-[var(--color-border)] bg-transparent`}`}>
-                      {isDone ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3fb950" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> : <span className={`text-xs font-bold ${isActive ? "text-[#4f8ef7]" : "text-[var(--color-text-muted)]"}`}>{i + 1}</span>}
+                <div key={label} className="flex items-center w-1/4 sm:w-auto sm:flex-1">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${isActive ? "border-[#4f8ef7] bg-[rgba(79,142,247,0.15)] shadow-[0_0_12px_rgba(79,142,247,0.2)]" : isDone ? "border-[#3fb950] bg-[rgba(63,185,80,0.12)] shadow-[0_0_12px_rgba(63,185,80,0.15)]" : `border-[var(--color-border)] bg-transparent`}`}>
+                      {isDone ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3fb950" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg> : <span className={`text-[10px] sm:text-xs font-bold ${isActive ? "text-[#4f8ef7]" : "text-[var(--color-text-muted)]"}`}>{i + 1}</span>}
                     </div>
-                    <span className={`text-[11px] whitespace-nowrap ${isActive ? "font-semibold text-[#4f8ef7]" : isDone ? "font-normal text-[#3fb950]" : "font-normal text-[var(--color-text-muted)]"}`}>{label}</span>
+                    <span className={`text-[9px] sm:text-[11px] whitespace-nowrap max-w-[50px] sm:max-w-none text-center ${isActive ? "font-semibold text-[#4f8ef7]" : isDone ? "font-normal text-[#3fb950]" : "font-normal text-[var(--color-text-muted)]"}`}>{label}</span>
                   </div>
-                  {i < 3 && <div className={`w-[60px] h-px ${isDone ? "bg-[#3fb950]" : "bg-[var(--color-border)]"} mx-2 mb-[22px]`} />}
+                  {i < 3 && <div className={`w-2 sm:w-[60px] h-px ${isDone ? "bg-[#3fb950]" : "bg-[var(--color-border)]"} mx-1 sm:mx-2 mb-[18px] sm:mb-[22px] flex-shrink-0`} />}
                 </div>
               );
             })}
@@ -1263,23 +1304,23 @@ export default function ManageSchedulePage() {
 
       {/* ─── GOOGLE SHEETS AUTOMATED SYNC PANEL ───────────────────────────────── */}
       {step === "sync" && (
-        <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="space-y-4 sm:space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
           {/* Header */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--color-border)] pb-6">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--color-border)] pb-4 sm:pb-6">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button 
                 onClick={() => setStep("list")} 
-                className="p-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
+                className="p-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors flex-shrink-0"
                 title="Back to Schedules"
               >
                 <FiArrowLeft size={20} />
               </button>
-              <div>
-                <h1 className="text-3xl font-bold text-[var(--color-text-primary)] tracking-[-0.02em] flex items-center gap-2">
-                  <FiZap className="text-[var(--color-accent)] animate-pulse" /> Google Sheets Sync
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-3xl font-bold text-[var(--color-text-primary)] tracking-[-0.02em] flex items-center gap-2 flex-wrap">
+                  <FiZap className="text-[var(--color-accent)] animate-pulse flex-shrink-0" /> <span className="truncate">Google Sheets Sync</span>
                 </h1>
-                <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                  Automate schedule synchronization via background daily cron updates
+                <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mt-1 line-clamp-1 sm:line-clamp-none">
+                  Automate schedule synchronization
                 </p>
               </div>
             </div>
@@ -1287,7 +1328,7 @@ export default function ManageSchedulePage() {
             <button 
               onClick={fetchSyncData} 
               disabled={syncConfigLoading || justRefreshed}
-              className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 ${
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 ${
                 justRefreshed 
                   ? "border-[#3fb950]/40 bg-[rgba(63,185,80,0.06)] text-[#3fb950]" 
                   : "border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
@@ -1295,11 +1336,11 @@ export default function ManageSchedulePage() {
             >
               {justRefreshed ? (
                 <>
-                  <FiCheckCircle className="animate-bounce" /> Status Refreshed!
+                  <FiCheckCircle className="animate-bounce flex-shrink-0" /> <span className="hidden sm:inline">Status Refreshed!</span><span className="sm:hidden">Done!</span>
                 </>
               ) : (
                 <>
-                  <FiRefreshCw className={syncConfigLoading ? "animate-spin" : ""} /> Refresh Status
+                  <FiRefreshCw className={`${syncConfigLoading ? "animate-spin" : ""} flex-shrink-0`} /> <span className="hidden sm:inline">Refresh Status</span><span className="sm:hidden">Refresh</span>
                 </>
               )}
             </button>
@@ -1357,7 +1398,7 @@ export default function ManageSchedulePage() {
                           <label className="block text-[12px] font-semibold text-[var(--color-text-secondary)] mb-1.5">
                             Google Sheet URL / Link
                           </label>
-                          <div className="flex gap-2">
+                          <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
                             <input
                               type="text"
                               value={currentLink}
@@ -1365,13 +1406,13 @@ export default function ManageSchedulePage() {
                                 ...editingSyncLinks,
                                 [dept.id]: e.target.value
                               })}
-                              placeholder="Paste shared Google Sheets link (make sure link sharing is set to anyone with link)"
-                              className="flex-1 px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] focus:border-[rgba(79,142,247,0.45)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
+                              placeholder="Paste shared Google Sheets link"
+                              className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-xs sm:text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] focus:border-[rgba(79,142,247,0.45)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
                             />
                             <button
                               disabled={isSaving}
                               onClick={() => handleSaveSyncLink(dept.id)}
-                              className="px-4 py-2.5 rounded-xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:bg-[var(--color-bg-surface)] text-sm font-semibold text-[var(--color-text-primary)] transition-all disabled:opacity-50 whitespace-nowrap"
+                              className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:bg-[var(--color-bg-surface)] text-xs sm:text-sm font-semibold text-[var(--color-text-primary)] transition-all disabled:opacity-50 whitespace-nowrap"
                             >
                               {isSaving ? "Saving..." : "Save Link"}
                             </button>
@@ -1476,10 +1517,10 @@ export default function ManageSchedulePage() {
 
       {/* ─── IMPORT WIZARD: UPLOAD ────────────────────────────────────────────── */}
       {step === "upload" && (
-        <div id="schedule-drop-zone" onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={handleFileDrop} className={`rounded-2xl border-2 border-dashed px-10 py-24 text-center transition-all duration-200 ${dragging ? "border-[#4f8ef7] bg-[rgba(79,142,247,0.08)] shadow-[inset_0_0_24px_rgba(79,142,247,0.1)]" : "border-[var(--color-border)] bg-[var(--color-bg-surface)] hover:border-[var(--color-accent)] hover:bg-[rgba(79,142,247,0.02)]"}`}>
-          <div className="mb-5"><FiBarChart2 className="inline text-3xl text-[var(--color-text-muted)] mb-5" /></div>
-          <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2.5">Drop your schedule file here</h2>
-          <p className="text-sm text-[var(--color-text-secondary)] mb-8">{loadingSheet ? "Parsing schedule and checking database records..." : "Supports .xlsx, .xls, .csv files. Max size 10MB."}</p>
+        <div id="schedule-drop-zone" onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={handleFileDrop} className={`rounded-xl sm:rounded-2xl border-2 border-dashed px-4 sm:px-10 py-12 sm:py-24 text-center transition-all duration-200 ${dragging ? "border-[#4f8ef7] bg-[rgba(79,142,247,0.08)] shadow-[inset_0_0_24px_rgba(79,142,247,0.1)]" : "border-[var(--color-border)] bg-[var(--color-bg-surface)] hover:border-[var(--color-accent)] hover:bg-[rgba(79,142,247,0.02)]"}`}>
+          <div className="mb-3 sm:mb-5"><FiBarChart2 className="inline text-2xl sm:text-3xl text-[var(--color-text-muted)] mb-4 sm:mb-5" /></div>
+          <h2 className="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] mb-2">Drop your schedule file here</h2>
+          <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mb-6 sm:mb-8">{loadingSheet ? "Parsing schedule..." : "Supports .xlsx, .xls, .csv files. Max 10MB."}</p>
           <label htmlFor="schedule-file-input" className="inline-flex items-center gap-2 px-7 py-3 rounded-[10px] cursor-pointer text-base font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all duration-200">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg> Browse file
           </label>
@@ -1497,8 +1538,8 @@ export default function ManageSchedulePage() {
               />
             </div>
 
-            <div className="flex gap-2 items-center flex-wrap justify-center w-full">
-              <input aria-label="Google Sheet URL" placeholder="Paste Google Sheet link or ID" value={googleUrl} onChange={(e) => setGoogleUrl(e.target.value)} className="flex-1 min-w-[260px] px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[#4f8ef7] focus:ring-offset-1 transition-all" />
+            <div className="flex flex-col sm:flex-row gap-2 items-center justify-center w-full">
+              <input aria-label="Google Sheet URL" placeholder="Paste Google Sheet link or ID" value={googleUrl} onChange={(e) => setGoogleUrl(e.target.value)} className="w-full sm:flex-1 sm:min-w-[260px] px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[#4f8ef7] focus:ring-offset-1 transition-all text-sm" />
               <button id="load-google-sheet" onClick={handleLoadGoogleSheet} disabled={loadingSheet} title="Load from Google Sheet" className={`p-2.5 rounded-lg border-none text-white font-semibold transition-all duration-200 flex items-center justify-center ${loadingSheet ? "bg-[rgba(79,142,247,0.16)] cursor-wait" : "bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95"}`}>
                 {loadingSheet ? (
                   <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
