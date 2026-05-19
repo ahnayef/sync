@@ -39,7 +39,7 @@ const quickNotes = [
 ];
 
 const inputCls =
-  "w-full rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3.5 py-3 text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 placeholder:text-[var(--color-text-muted)] focus:border-blue-400/50";
+  "w-full rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-2.5 sm:py-3 text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 placeholder:text-[var(--color-text-muted)] focus:border-blue-400/50";
 
 export default function ContactPage() {
   return (
@@ -62,19 +62,19 @@ export default function ContactPage() {
                   GET IN TOUCH
                 </div>
 
-                <h1 className="max-w-3xl text-[clamp(38px,6vw,64px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-[var(--color-text-primary)]">
+                <h1 className="max-w-3xl text-[clamp(26px,6vw,48px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-[var(--color-text-primary)]">
                   We&apos;d love to <span className="gradient-text">hear from you</span>
                 </h1>
 
-                <p className="mt-6 max-w-[560px] text-[17px] leading-8 text-[var(--color-text-secondary)]">
+                <p className="mt-6 max-w-[560px] text-sm md:text-[17px] leading-7 text-[var(--color-text-secondary)]">
                   Have a question, found a bug, or want help with a schedule issue? Send a message and we&apos;ll route it to the right place.
                 </p>
 
-                <div className="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                <div className="mt-8 grid gap-3 grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                   {quickNotes.map((note) => (
                     <div
                       key={note}
-                      className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.55)] px-4 py-3 text-sm leading-6 text-[var(--color-text-secondary)]"
+                      className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.55)] px-3 py-2 text-sm leading-6 text-[var(--color-text-secondary)]"
                     >
                       {note}
                     </div>
@@ -82,23 +82,23 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <div className="grid gap-3 rounded-[24px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.62)] p-4 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="grid gap-3 rounded-[24px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.62)] p-3 sm:grid-cols-3 lg:grid-cols-1">
                 {contactItems.map((item) => {
                   const Icon = item.icon;
                   return (
                     <div
                       key={item.label}
-                      className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.85)] p-4"
+                      className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.85)] p-3 sm:p-4"
                     >
                       <div
-                        className="mb-4 flex h-11 w-11 items-center justify-center rounded-[14px]"
+                        className="mb-3 flex h-10 w-10 items-center justify-center rounded-[14px]"
                         style={{
                           background: `${item.color}18`,
                           border: `1px solid ${item.color}30`,
                           color: item.color,
                         }}
                       >
-                        <Icon size={18} />
+                        <Icon size={16} />
                       </div>
                       <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
                         {item.label}
@@ -112,7 +112,7 @@ export default function ContactPage() {
           </section>
 
           <section className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6 sm:p-8">
+              <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5 sm:p-8">
               <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#4f8ef718] text-[#8fb5ff]">
                   <FiMessageSquare size={18} />
@@ -123,7 +123,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <form className="flex flex-col gap-[18px]">
+              <form className="flex flex-col gap-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   {nameFields.map((field) => (
                     <div key={field.id}>
@@ -191,7 +191,7 @@ export default function ContactPage() {
                 <button
                   id="contact-submit"
                   type="submit"
-                  className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-6 py-3 text-[15px] font-semibold text-white shadow-[0_0_24px_rgba(79,142,247,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_32px_rgba(79,142,247,0.45)]"
+                  className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-4 py-2.5 sm:px-6 sm:py-3 text-sm font-semibold text-white shadow-[0_0_20px_rgba(79,142,247,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_28px_rgba(79,142,247,0.42)]"
                 >
                   Send message
                   <FiArrowRight />
@@ -213,9 +213,9 @@ export default function ContactPage() {
                 ].map((step, index) => (
                   <div
                     key={step}
-                    className="flex gap-4 rounded-[20px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.72)] p-4"
+                    className="flex gap-3 rounded-[20px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.72)] p-3 sm:p-4"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#4f8ef718] text-sm font-semibold text-[#9fc0ff]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#4f8ef718] text-xs font-semibold text-[#9fc0ff]">
                       0{index + 1}
                     </div>
                     <p className="text-sm leading-7 text-[var(--color-text-secondary)]">{step}</p>
