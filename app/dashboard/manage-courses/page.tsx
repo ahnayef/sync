@@ -129,24 +129,24 @@ export default function ManageCoursesPage() {
 
   return (
     <div className="relative p-4 sm:p-6 lg:p-8">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_top_left,rgba(111,147,218,0.16),transparent_36%),radial-gradient(circle_at_top_right,rgba(163,113,247,0.12),transparent_28%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 sm:h-56 bg-[radial-gradient(circle_at_top_left,rgba(111,147,218,0.16),transparent_36%),radial-gradient(circle_at_top_right,rgba(163,113,247,0.12),transparent_28%)]" />
 
-      <div className="relative mx-auto max-w-7xl space-y-6">
-        <section className="glass relative overflow-hidden rounded-3xl border border-[var(--color-border)] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.24)] sm:p-6 lg:p-7">
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-2">
-              <h1 className="text-[26px] font-bold text-[var(--color-text-primary)]">Course Management</h1>
-              <p className="text-sm text-[var(--color-text-secondary)]">Manage course codes, names, and department assignments.</p>
+      <div className="relative mx-auto max-w-7xl space-y-4 sm:space-y-6">
+        <section className="glass relative overflow-hidden rounded-2xl sm:rounded-3xl border border-[var(--color-border)] p-4 sm:p-5 lg:p-6 shadow-[0_24px_60px_rgba(0,0,0,0.24)]">
+          <div className="relative flex flex-col gap-4 sm:gap-6">
+            <div className="space-y-1 sm:space-y-2">
+              <h1 className="text-xl sm:text-2xl md:text-[24px] lg:text-[26px] font-bold text-[var(--color-text-primary)]">Course Management</h1>
+              <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">Manage course codes, names, and department assignments.</p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:block rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="hidden sm:block rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 sm:px-4 py-2 text-xs sm:text-xs text-[var(--color-text-secondary)]">
                 {courses.length} courses • {departments.length} departments
               </div>
               <button
                 id="add-course-btn"
                 onClick={openAdd}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.22)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
+                className="inline-flex items-center justify-center gap-2 rounded-lg sm:rounded-xl bg-[var(--color-accent)] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.22)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]"
               >
                 + Add Course
               </button>
@@ -154,30 +154,30 @@ export default function ManageCoursesPage() {
           </div>
         </section>
 
-        <section className="glass rounded-3xl border border-[var(--color-border)] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18)] sm:p-5">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full lg:max-w-[520px]">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+        <section className="glass rounded-2xl sm:rounded-3xl border border-[var(--color-border)] p-3 sm:p-4 lg:p-5 shadow-[0_18px_50px_rgba(0,0,0,0.18)]">
+          <div className="flex flex-col gap-3">
+            <div className="relative w-full">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] text-sm" />
               <input
                 id="course-search"
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search courses by code, name, or department"
-                className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-3 pr-12 pl-11 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[rgba(79,142,247,0.35)]"
+                placeholder="Search courses..."
+                className="w-full rounded-lg sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 sm:py-3 pr-3 sm:pr-4 pl-9 sm:pl-11 text-xs sm:text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[rgba(79,142,247,0.35)]"
               />
               {search && (
                 <button
                   onClick={() => setSearch("")}
                   title="Clear search"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]"
                 >
-                  <FiX />
+                  <FiX size={16} />
                 </button>
               )}
             </div>
 
-            <div className="flex flex-wrap gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-1.5">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 rounded-lg sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-1.5">
               {(["all", "theory", "lab"] as const).map((f) => {
                 const isActive = filterLab === f;
                 return (
@@ -185,7 +185,7 @@ export default function ManageCoursesPage() {
                     key={f}
                     id={`filter-${f}`}
                     onClick={() => setFilterLab(f)}
-                    className={`rounded-xl px-4 py-2 text-sm transition-all ${isActive ? "bg-[var(--color-accent-muted)] font-semibold text-[var(--color-accent)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"}`}
+                    className={`rounded-lg sm:rounded-xl px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-all ${isActive ? "bg-[var(--color-accent-muted)] font-semibold text-[var(--color-accent)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"}`}
                   >
                     {f.charAt(0).toUpperCase() + f.slice(1)}
                   </button>
@@ -194,7 +194,7 @@ export default function ManageCoursesPage() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+          <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-2 text-xs sm:text-xs text-[var(--color-text-secondary)]">
             <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-1">
               {activeFilterLabel}
             </span>
@@ -207,7 +207,7 @@ export default function ManageCoursesPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-[0_18px_48px_rgba(0,0,0,0.14)]">
+        <section className="overflow-hidden rounded-2xl sm:rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-[0_18px_48px_rgba(0,0,0,0.14)]">
           <div className="hidden sm:block">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
@@ -216,7 +216,7 @@ export default function ManageCoursesPage() {
                     {["Code", "Name", "Type", "Department", "Actions"].map((h) => (
                       <th
                         key={h}
-                        className="px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]"
+                        className="px-3 sm:px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]"
                       >
                         {h}
                       </th>
@@ -243,14 +243,14 @@ export default function ManageCoursesPage() {
                           id={`course-row-${c.id}`}
                           className={`border-b ${i < filtered.length - 1 ? "border-[var(--color-border)]" : ""} bg-[var(--color-bg-surface)] transition-colors hover:bg-[var(--color-bg-elevated)]/40`}
                         >
-                          <td className="px-4 py-4 align-top">
+                          <td className="px-3 sm:px-4 py-4 align-top">
                             <code
                               className={`inline-flex rounded-full px-3 py-1 text-xs font-bold tracking-wide ${c.isLab ? "text-[var(--color-lab)] bg-[rgba(163,113,247,0.1)]" : "text-[var(--color-accent)] bg-[var(--color-accent-muted)]"}`}
                             >
                               {c.code}
                             </code>
                           </td>
-                          <td className="px-4 py-4 align-top">
+                          <td className="px-3 sm:px-4 py-4 align-top">
                             <div className="space-y-1">
                               <div className="text-sm font-semibold text-[var(--color-text-primary)]">
                                 {c.name}
@@ -260,29 +260,29 @@ export default function ManageCoursesPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-4 align-top">
+                          <td className="px-3 sm:px-4 py-4 align-top">
                             <span
                               className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${c.isLab ? "border-[rgba(163,113,247,0.22)] bg-[rgba(163,113,247,0.1)] text-[var(--color-lab)]" : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]"}`}
                             >
                               {c.isLab ? "Lab" : "Theory"}
                             </span>
                           </td>
-                          <td className="px-4 py-4 align-top">
+                          <td className="px-3 sm:px-4 py-4 align-top">
                             <div className="text-sm text-[var(--color-text-primary)]">{departmentName}</div>
                           </td>
-                          <td className="px-4 py-4 align-top">
+                          <td className="px-3 sm:px-4 py-4 align-top">
                             <div className="flex gap-2">
                               <button
                                 id={`course-edit-${c.id}`}
                                 onClick={() => openEdit(c)}
-                                className="rounded-lg border border-[var(--color-border)] bg-transparent px-3 py-1.5 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"
+                                className="rounded-lg border border-[var(--color-border)] bg-transparent px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"
                               >
                                 Edit
                               </button>
                               <button
                                 id={`course-delete-${c.id}`}
                                 onClick={() => deleteCourse(c.id)}
-                                className="rounded-lg border border-[rgba(248,81,73,0.2)] bg-transparent px-3 py-1.5 text-sm text-[var(--color-danger)] transition-colors hover:bg-[rgba(248,81,73,0.08)]"
+                                className="rounded-lg border border-[rgba(248,81,73,0.2)] bg-transparent px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm text-[var(--color-danger)] transition-colors hover:bg-[rgba(248,81,73,0.08)]"
                               >
                                 Delete
                               </button>
@@ -313,7 +313,7 @@ export default function ManageCoursesPage() {
               Array.from({ length: 4 }).map((_, idx) => (
                 <div
                   key={`mob-skel-${idx}`}
-                  className="mb-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-4 animate-pulse"
+                  className="mb-3 rounded-lg sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-3 sm:p-4 animate-pulse"
                 >
                   <div className="h-4 w-20 rounded bg-[var(--color-bg-subtle)]" />
                   <div className="mt-3 h-4 w-3/4 rounded bg-[var(--color-bg-subtle)]" />
@@ -321,7 +321,7 @@ export default function ManageCoursesPage() {
                 </div>
               ))
             ) : filtered.length === 0 ? (
-              <div className="p-8 text-center text-[var(--color-text-secondary)]">
+              <div className="p-8 text-center text-xs sm:text-sm text-[var(--color-text-secondary)]">
                 <div className="text-base font-semibold text-[var(--color-text-primary)]">No courses found</div>
                 <p className="mt-2 text-sm leading-6">Try a different search term or switch to another filter.</p>
               </div>
@@ -332,7 +332,7 @@ export default function ManageCoursesPage() {
                   return (
                     <article
                       key={c.id}
-                      className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-[0_10px_24px_rgba(0,0,0,0.12)]"
+                      className="rounded-lg sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-3 sm:p-4 shadow-[0_10px_24px_rgba(0,0,0,0.12)]"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1 space-y-3">
@@ -347,7 +347,7 @@ export default function ManageCoursesPage() {
                             </span>
                           </div>
                           <div className="space-y-1">
-                            <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">{c.name}</h3>
+                            <h3 className="text-xs sm:text-sm font-semibold text-[var(--color-text-primary)]">{c.name}</h3>
                             <p className="text-xs leading-5 text-[var(--color-text-secondary)]">
                               Department: {departmentName}
                             </p>
@@ -356,13 +356,13 @@ export default function ManageCoursesPage() {
                         <div className="flex shrink-0 flex-col gap-2">
                           <button
                             onClick={() => openEdit(c)}
-                            className="rounded-lg border border-[var(--color-border)] bg-transparent px-3 py-1.5 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]"
+                            className="rounded-lg border border-[var(--color-border)] bg-transparent px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => deleteCourse(c.id)}
-                            className="rounded-lg border border-[rgba(248,81,73,0.2)] px-3 py-1.5 text-sm text-[var(--color-danger)] transition-colors hover:bg-[rgba(248,81,73,0.08)]"
+                            className="rounded-lg border border-[rgba(248,81,73,0.2)] px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-[var(--color-danger)] transition-colors hover:bg-[rgba(248,81,73,0.08)]"
                           >
                             Delete
                           </button>
@@ -378,35 +378,35 @@ export default function ManageCoursesPage() {
 
         {showModal && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm sm:p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-3 sm:p-4 md:p-6 backdrop-blur-sm"
             onClick={(e) => {
               if (e.target === e.currentTarget) setShowModal(false);
             }}
           >
-            <div className="w-full max-w-2xl rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-[0_28px_80px_rgba(0,0,0,0.4)]">
-              <div className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] px-5 py-4 sm:px-6">
+            <div className="w-full max-w-xl sm:max-w-2xl rounded-2xl sm:rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] shadow-[0_28px_80px_rgba(0,0,0,0.4)] max-h-[90vh] overflow-y-auto">
+              <div className="flex items-start justify-between gap-3 sm:gap-4 border-b border-[var(--color-border)] px-4 sm:px-5 lg:px-6 py-3 sm:py-4">
                 <div>
-                  <h2 className="text-lg font-bold text-[var(--color-text-primary)]">
+                  <h2 className="text-base sm:text-lg font-bold text-[var(--color-text-primary)]">
                     {editingId ? "Edit Course" : "Add Course"}
                   </h2>
-                  <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                  <p className="mt-1 text-xs sm:text-sm text-[var(--color-text-secondary)]">
                     Keep the course code unique and choose the correct department before saving.
                   </p>
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="rounded-lg p-2 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"
+                  className="rounded-lg p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"
                   aria-label="Close modal"
                 >
-                  <FiX />
+                  <FiX size={18} />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 p-5 sm:p-6 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 p-4 sm:p-5 lg:p-6 md:grid-cols-2">
                 <div>
                   <label
                     htmlFor="modal-course-code"
-                    className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]"
+                    className="mb-2 block text-xs sm:text-sm font-medium text-[var(--color-text-secondary)]"
                   >
                     Course Code
                   </label>
@@ -416,14 +416,14 @@ export default function ManageCoursesPage() {
                     value={newCode}
                     onChange={(e) => setNewCode(e.target.value)}
                     placeholder="e.g. CSE401"
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-3 text-sm text-[var(--color-text-primary)] outline-none transition-colors focus:border-[rgba(79,142,247,0.35)]"
+                    className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[var(--color-text-primary)] outline-none transition-colors focus:border-[rgba(79,142,247,0.35)]"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="modal-course-name"
-                    className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]"
+                    className="mb-2 block text-xs sm:text-sm font-medium text-[var(--color-text-secondary)]"
                   >
                     Course Name
                   </label>
@@ -433,14 +433,14 @@ export default function ManageCoursesPage() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g. Compiler Design"
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-3 text-sm text-[var(--color-text-primary)] outline-none transition-colors focus:border-[rgba(79,142,247,0.35)]"
+                    className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[var(--color-text-primary)] outline-none transition-colors focus:border-[rgba(79,142,247,0.35)]"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="modal-course-dept"
-                    className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]"
+                    className="mb-2 block text-xs sm:text-sm font-medium text-[var(--color-text-secondary)]"
                   >
                     Department
                   </label>
@@ -448,7 +448,7 @@ export default function ManageCoursesPage() {
                     id="modal-course-dept"
                     value={newDeptId}
                     onChange={(e) => setNewDeptId(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-3 text-sm text-[var(--color-text-primary)] outline-none transition-colors focus:border-[rgba(79,142,247,0.35)]"
+                    className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[var(--color-text-primary)] outline-none transition-colors focus:border-[rgba(79,142,247,0.35)]"
                   >
                     <option value="" disabled>
                       Select Department
@@ -463,7 +463,7 @@ export default function ManageCoursesPage() {
 
                 <button
                   type="button"
-                  className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors ${newIsLab ? "border-[rgba(163,113,247,0.24)] bg-[rgba(163,113,247,0.08)]" : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-subtle)]"}`}
+                  className={`flex items-center gap-2 sm:gap-3 rounded-lg sm:rounded-2xl border px-3 sm:px-4 py-2 sm:py-3 text-left transition-colors ${newIsLab ? "border-[rgba(163,113,247,0.24)] bg-[rgba(163,113,247,0.08)]" : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-subtle)]"}`}
                   onClick={() => setNewIsLab(!newIsLab)}
                 >
                   <div
@@ -485,7 +485,7 @@ export default function ManageCoursesPage() {
                     )}
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-[var(--color-text-primary)]">
+                    <div className="text-xs sm:text-sm font-medium text-[var(--color-text-primary)]">
                       This is a Lab course
                     </div>
                     <div className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
@@ -494,11 +494,11 @@ export default function ManageCoursesPage() {
                   </div>
                 </button>
 
-                <div className="md:col-span-2 flex flex-col gap-3 pt-2 sm:flex-row">
+                <div className="md:col-span-2 flex flex-col gap-2 sm:gap-3 pt-2 sm:pt-3 sm:flex-row">
                   <button
                     id="modal-course-cancel"
                     onClick={() => setShowModal(false)}
-                    className="flex-1 rounded-xl border border-[var(--color-border)] bg-transparent px-4 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]"
+                    className="flex-1 rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-transparent px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]"
                   >
                     Cancel
                   </button>
@@ -506,7 +506,7 @@ export default function ManageCoursesPage() {
                     id="modal-course-save"
                     onClick={saveCourse}
                     disabled={saving || !newCode || !newDeptId}
-                    className="flex-1 rounded-xl bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(79,142,247,0.22)] transition-all duration-200 hover:translate-y-[-1px] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="flex-1 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-[0_12px_28px_rgba(79,142,247,0.22)] transition-all duration-200 hover:translate-y-[-1px] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {saving ? "Saving..." : editingId ? "Save Changes" : "Save Course"}
                   </button>

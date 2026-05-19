@@ -56,7 +56,7 @@ const CircularProgress = ({ percent, color = "var(--color-accent)" }: { percent:
   const offset = circumference - (percent / 100) * circumference;
 
   return (
-    <div className="relative flex items-center justify-center h-12 w-12">
+    <div className="relative flex items-center justify-center h-10 sm:h-12 w-10 sm:w-12">
       <svg className="w-full h-full transform -rotate-90">
         {/* Background Circle */}
         <circle
@@ -83,7 +83,7 @@ const CircularProgress = ({ percent, color = "var(--color-accent)" }: { percent:
           className="transition-all duration-500 ease-out"
         />
       </svg>
-      <span className="absolute text-[9px] font-extrabold font-mono text-[var(--color-text-primary)]">
+      <span className="absolute text-[8px] sm:text-[9px] font-extrabold font-mono text-[var(--color-text-primary)]">
         {Math.round(percent)}%
       </span>
     </div>

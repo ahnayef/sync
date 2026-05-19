@@ -87,44 +87,44 @@ export default function ManageModeratorsPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
-      <main className="mx-auto max-w-[1000px] px-5 py-8 sm:px-6 sm:py-10">
+      <main className="mx-auto max-w-[1000px] px-3 sm:px-5 py-4 sm:py-8 lg:px-6 lg:py-10">
         {/* Header */}
-        <section className="glass relative overflow-hidden rounded-3xl border border-[var(--color-border)] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.16)] sm:p-6 lg:p-7 mb-8">
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <h1 className="text-[26px] font-bold text-[var(--color-text-primary)]">Moderator Management</h1>
-                <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-[var(--color-accent-muted)] text-xs font-bold text-[var(--color-accent)]">
+        <section className="glass relative overflow-hidden rounded-2xl sm:rounded-3xl border border-[var(--color-border)] p-4 sm:p-5 lg:p-6 shadow-[0_24px_60px_rgba(0,0,0,0.16)] mb-4 sm:mb-8">
+          <div className="relative flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-1 sm:space-y-2">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <h1 className="text-xl sm:text-2xl md:text-[24px] lg:text-[26px] font-bold text-[var(--color-text-primary)]">Moderator Management</h1>
+                <span className="inline-flex items-center justify-center h-5 sm:h-6 w-5 sm:w-6 rounded-full bg-[var(--color-accent-muted)] text-xs font-bold text-[var(--color-accent)]">
                   {moderators.length}
                 </span>
               </div>
-              <p className="text-sm text-[var(--color-text-secondary)]">{loading ? "Loading moderators..." : `${filtering ? `${filtered.length} ` : ""}moderators managing restricted permissions`}</p>
+              <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">{loading ? "Loading moderators..." : `${filtering ? `${filtered.length} ` : ""}moderators managing restricted permissions`}</p>
             </div>
             <button
               id="add-mod-btn"
               onClick={openAdd}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)]"
+              className="inline-flex items-center gap-2 rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-2.5 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)]"
             >
-              <FiPlus /> Add Moderator
+              + Add Moderator
             </button>
           </div>
         </section>
 
         {/* Search */}
-        <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.12)] sm:p-5 mb-6">
-          <div className="flex flex-col sm:flex-row gap-3 items-start">
-            <div className="relative flex-1 max-w-full sm:max-w-[520px]">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+        <section className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-3 sm:p-4 lg:p-5 shadow-[0_18px_48px_rgba(0,0,0,0.12)] mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start">
+            <div className="relative flex-1 w-full">
+              <FiSearch className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
               <input
                 id="mod-search"
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search email or name..."
-                className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-3 pr-12 pl-11 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[rgba(79,142,247,0.35)]"
+                className="w-full rounded-lg sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 pr-9 sm:pr-12 pl-9 sm:pl-11 text-xs sm:text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[rgba(79,142,247,0.35)]"
               />
               {search && (
-                <button onClick={() => setSearch("")} title="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]">
+                <button onClick={() => setSearch("")} title="Clear search" className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]">
                   <FiX size={14} />
                 </button>
               )}
@@ -132,15 +132,15 @@ export default function ManageModeratorsPage() {
           </div>
         </section>
 
-        {/* Table */}
-        <section className="rounded-3xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-surface)] shadow-[0_18px_48px_rgba(0,0,0,0.12)]">
+        {/* Desktop Table */}
+        <section className="hidden sm:block rounded-2xl sm:rounded-3xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-bg-surface)] shadow-[0_18px_48px_rgba(0,0,0,0.12)]">
           <table className="w-full">
             <thead>
               <tr className="border-b border-[var(--color-border)]">
                 {["User", "Role", "Added On", "Actions"].map((h) => (
                   <th
                     key={h}
-                    className="px-5 py-4 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider"
+                    className="px-4 sm:px-5 py-3 sm:py-4 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider"
                   >
                     {h}
                   </th>
@@ -150,19 +150,19 @@ export default function ManageModeratorsPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-12">
+                  <td colSpan={4} className="px-4 sm:px-5 py-8 sm:py-12">
                     <div className="flex items-center justify-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-accent)]/30 border-t-[var(--color-accent)]" />
-                      <span className="text-sm text-[var(--color-text-secondary)]">Loading moderators...</span>
+                      <span className="text-xs sm:text-sm text-[var(--color-text-secondary)]">Loading moderators...</span>
                     </div>
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-12">
+                  <td colSpan={4} className="px-4 sm:px-5 py-8 sm:py-12">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="text-2xl opacity-40">👥</div>
-                      <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+                      <span className="text-xs sm:text-sm font-medium text-[var(--color-text-secondary)]">
                         {search ? "No moderators match your search" : "No moderators yet"}
                       </span>
                       <span className="text-xs text-[var(--color-text-muted)]">
@@ -177,29 +177,29 @@ export default function ManageModeratorsPage() {
                     key={m.id}
                     className="border-b border-[var(--color-border)] hover:bg-[var(--color-bg-elevated)]/30 transition-colors"
                   >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#a371f7] text-sm font-bold text-white">
+                    <td className="px-4 sm:px-5 py-3 sm:py-4">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex h-8 sm:h-9 w-8 sm:w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#a371f7] text-xs sm:text-sm font-bold text-white flex-shrink-0">
                           {m.name?.[0]?.toUpperCase() || m.email[0].toUpperCase()}
                         </div>
-                        <div>
-                          <div className="text-sm font-semibold text-[var(--color-text-primary)]">{m.name || "Moderator"}</div>
-                          <div className="text-xs text-[var(--color-text-muted)]">{m.email}</div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-semibold text-[var(--color-text-primary)]">{m.name || "Moderator"}</div>
+                          <div className="text-xs text-[var(--color-text-muted)] truncate">{m.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md text-[#a371f7] bg-[rgba(163,113,247,0.1)] border border-[rgba(163,113,247,0.2)]">
+                    <td className="px-4 sm:px-5 py-3 sm:py-4">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[#a371f7] bg-[rgba(163,113,247,0.1)] border border-[rgba(163,113,247,0.2)]">
                         <FiShield size={12} /> Moderator
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-sm text-[var(--color-text-secondary)]">
+                    <td className="px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-[var(--color-text-secondary)]">
                       {new Date(m.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 sm:px-5 py-3 sm:py-4">
                       <button
                         onClick={() => deleteModerator(m.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-red-400/20 bg-transparent text-red-400/80 text-xs font-medium transition-all hover:bg-red-500/10 hover:text-red-400 active:scale-95"
+                        className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md border border-red-400/20 bg-transparent text-red-400/80 text-xs font-medium transition-all hover:bg-red-500/10 hover:text-red-400 active:scale-95"
                       >
                         <FiTrash2 size={13} /> Remove
                       </button>
@@ -211,63 +211,123 @@ export default function ManageModeratorsPage() {
           </table>
         </section>
 
+        {/* Mobile Card View */}
+        <div className="sm:hidden space-y-3">
+          {loading ? (
+            <div className="flex items-center justify-center gap-2 py-8">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-accent)]/30 border-t-[var(--color-accent)]" />
+              <span className="text-xs text-[var(--color-text-secondary)]">Loading moderators...</span>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-8">
+              <div className="text-2xl opacity-40">👥</div>
+              <span className="text-xs font-medium text-[var(--color-text-secondary)]">
+                {search ? "No moderators match your search" : "No moderators yet"}
+              </span>
+              <span className="text-xs text-[var(--color-text-muted)]">
+                {search ? "Try a different search term" : "Add one to get started"}
+              </span>
+            </div>
+          ) : (
+            filtered.map((m) => (
+              <div
+                key={m.id}
+                className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)]/40 p-3 space-y-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#a371f7] text-xs font-bold text-white flex-shrink-0">
+                      {m.name?.[0]?.toUpperCase() || m.email[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[var(--color-text-primary)]">{m.name || "Moderator"}</p>
+                      <p className="text-xs text-[var(--color-text-muted)] truncate">{m.email}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-xs bg-[var(--color-bg-surface)] rounded p-2">
+                  <div>
+                    <span className="text-[10px] text-[var(--color-text-muted)] block">Role</span>
+                    <span className="font-semibold text-[#a371f7]">Moderator</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-[var(--color-text-muted)] block">Added</span>
+                    <span className="font-semibold text-[var(--color-text-primary)]">
+                      {new Date(m.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => deleteModerator(m.id)}
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md border border-red-400/20 bg-transparent text-red-400/80 text-xs font-medium transition-all hover:bg-red-500/10 hover:text-red-400 active:scale-95"
+                >
+                  <FiTrash2 size={13} /> Remove
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
         {/* Modal */}
         {showModal && (
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-6 overflow-y-auto"
             onClick={(e) => {
               if (e.target === e.currentTarget && !submitting) setShowModal(false);
             }}
           >
-            <div className="w-full max-w-[440px] rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
-              <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
+            <div className="w-full max-w-[440px] rounded-lg sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 sm:p-6 lg:p-8 my-4 sm:my-8 shadow-[0_20px_60px_rgba(0,0,0,0.3)] max-h-[90vh] overflow-y-auto">
+              <h2 className="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] mb-2">
                 Add New Moderator
               </h2>
-              <p className="text-sm text-[var(--color-text-secondary)] mb-6">
+              <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mb-4 sm:mb-6">
                 Send an invitation to create a new moderator account with restricted admin permissions.
               </p>
               
               {error && (
-                <div className="mb-4 text-sm text-red-300 bg-red-500/10 p-3 rounded-lg border border-red-400/20 flex items-center gap-2">
-                  <span>⚠️</span>
-                  {error}
+                <div className="mb-4 text-xs sm:text-sm text-red-300 bg-red-500/10 p-3 rounded-lg border border-red-400/20 flex items-start gap-2">
+                  <span className="flex-shrink-0">⚠️</span>
+                  <span>{error}</span>
                 </div>
               )}
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[var(--color-text-primary)] mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-[var(--color-text-primary)] mb-1.5 sm:mb-2">
                     Email Address
                   </label>
                   <div className="relative">
-                    <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                    <FiMail className="absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
                     <input
                       type="email"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                       placeholder="moderator@university.edu"
                       disabled={submitting}
-                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 pr-4 pl-11 text-sm text-[var(--color-text-primary)] outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-2.5 pr-3 sm:pr-4 pl-9 sm:pl-11 text-xs sm:text-sm text-[var(--color-text-primary)] outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
-                <div className="flex gap-3 mt-2">
+                <div className="flex gap-2 sm:gap-3 mt-2 sm:mt-4">
                   <button
                     onClick={() => setShowModal(false)}
                     disabled={submitting}
-                    className="flex-1 px-4 py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] font-medium hover:bg-[var(--color-bg-elevated)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-xs sm:text-sm text-[var(--color-text-secondary)] font-medium hover:bg-[var(--color-bg-elevated)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={saveModerator}
                     disabled={submitting}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.25)] transition-all duration-200 hover:shadow-[0_12px_32px_rgba(79,142,247,0.35)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-lg bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-xs sm:text-sm text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.25)] transition-all duration-200 hover:shadow-[0_12px_32px_rgba(79,142,247,0.35)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {submitting ? (
                       <>
-                        <div className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                        Sending...
+                        <div className="h-3 w-3 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        <span className="hidden sm:inline">Sending...</span>
+                        <span className="sm:hidden">...</span>
                       </>
                     ) : (
                       "Send Invitation"
