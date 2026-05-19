@@ -244,14 +244,20 @@ export default function ManageRoomsPage() {
             </table>
           </div>
 
-          {/* Mobile Card View */}
-          <div className="sm:hidden space-y-2">
+          {/* Mobile Card View (improved) */}
+          <div className="sm:hidden mt-3 space-y-3">
             {loading ? (
               Array.from({ length: 4 }).map((_, idx) => (
-                <div key={`skeleton-${idx}`} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)]/50 p-3 space-y-2">
-                  <div className="h-4 w-1/2 rounded bg-[var(--color-bg-elevated)] animate-pulse" />
-                  <div className="h-3 w-3/4 rounded bg-[var(--color-bg-elevated)] animate-pulse" />
-                  <div className="h-3 w-1/3 rounded bg-[var(--color-bg-elevated)] animate-pulse" />
+                <div key={`skeleton-${idx}`} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)]/50 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="h-4 w-28 rounded bg-[var(--color-bg-elevated)] animate-pulse" />
+                      <div className="h-3 w-36 rounded bg-[var(--color-bg-elevated)] mt-2 animate-pulse" />
+                    </div>
+                    <div className="w-20">
+                      <div className="h-4 w-full rounded bg-[var(--color-bg-elevated)] animate-pulse" />
+                    </div>
+                  </div>
                 </div>
               ))
             ) : (
@@ -260,56 +266,42 @@ export default function ManageRoomsPage() {
                   <div
                     key={room.id}
                     id={`room-card-${room.id}`}
-                    className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)]/40 p-3 space-y-2"
+                    className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)]/60 p-3 shadow-sm"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm font-bold text-[var(--color-accent)]">#{room.number}</span>
-                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${room.roomType === 'lab' ? "text-[var(--color-lab)] bg-[rgba(163,113,247,0.1)]" : "text-[var(--color-text-secondary)] bg-[var(--color-bg-elevated)]"}`}>
-                            {room.roomType}
-                          </span>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="text-sm font-bold text-[var(--color-accent)]">#{room.number}</div>
+                        <div className={`text-[10px] font-bold mt-1 px-1.5 py-0.5 rounded uppercase ${room.roomType === 'lab' ? "text-[var(--color-lab)] bg-[rgba(163,113,247,0.1)]" : "text-[var(--color-text-secondary)] bg-[var(--color-bg-elevated)]"}`}>
+                          {room.roomType}
                         </div>
-                        {room.title && <p className="text-xs text-[var(--color-text-primary)] mt-1 font-medium">{room.title}</p>}
                       </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 text-xs text-[var(--color-text-secondary)]">
-                      <div>
-                        <span className="text-[10px] text-[var(--color-text-muted)]">Building</span>
-                        <p className="font-medium text-[var(--color-text-primary)]">{room.buildingName}</p>
+
+                      <div className="flex-shrink-0 flex flex-col items-end gap-2">
+                        <p className="text-[10px] text-[var(--color-text-muted)]">Capacity</p>
+                        <p className="text-sm font-semibold text-[var(--color-text-primary)]">{room.capacity}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <button
+                            id={`room-edit-mobile-${room.id}`}
+                            onClick={() => openEdit(room)}
+                            className="px-3 py-1 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs transition-colors hover:bg-[var(--color-bg-elevated)]"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            id={`room-delete-mobile-${room.id}`}
+                            onClick={() => deleteRoom(room.id)}
+                            className="px-3 py-1 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs transition-colors hover:bg-[rgba(248,81,73,0.06)]"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-[10px] text-[var(--color-text-muted)]">Floor</span>
-                        <p className="font-medium text-[var(--color-text-primary)]">{room.floorNumber}</p>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-[var(--color-text-muted)]">Capacity</span>
-                        <p className="font-medium text-[var(--color-text-primary)]">{room.capacity}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 pt-2 border-t border-[var(--color-border)]/50">
-                      <button
-                        id={`room-edit-mobile-${room.id}`}
-                        onClick={() => openEdit(room)}
-                        className="flex-1 px-2 py-1.5 rounded-sm border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs transition-colors hover:bg-[var(--color-bg-elevated)]"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        id={`room-delete-mobile-${room.id}`}
-                        onClick={() => deleteRoom(room.id)}
-                        className="flex-1 px-2 py-1.5 rounded-sm border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs transition-colors hover:bg-[rgba(248,81,73,0.06)]"
-                      >
-                        Delete
-                      </button>
                     </div>
                   </div>
                 ))}
 
                 {filtered.length === 0 && (
-                  <div className="text-center py-8 text-xs text-[var(--color-text-secondary)]">
-                    No rooms found.
-                  </div>
+                  <div className="text-center py-8 text-xs text-[var(--color-text-secondary)]">No rooms found.</div>
                 )}
               </>
             )}
