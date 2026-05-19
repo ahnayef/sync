@@ -28,6 +28,7 @@ export type ScheduleRow = {
   courseTitle: string;
   teacher: string;
   batch: string;
+  batchSession?: string | null;
   section: string;
   dept: string;
   startTime: string;
@@ -95,6 +96,7 @@ const MOCK_DATA: ScheduleRow[] = [
     courseTitle: "Data Structures",
     teacher: "DR. RAHMAN",
     batch: "CSE 21",
+    batchSession: "21",
     section: "A",
     dept: "CSE",
     startTime: "08:00 AM",
@@ -110,6 +112,7 @@ const MOCK_DATA: ScheduleRow[] = [
     courseTitle: "Discrete Mathematics",
     teacher: "PROF. AHMED",
     batch: "CSE 22",
+    batchSession: "22",
     section: "B",
     dept: "MAT",
     startTime: "10:00 AM",
@@ -125,6 +128,7 @@ const MOCK_DATA: ScheduleRow[] = [
     courseTitle: "OS Lab",
     teacher: "DR. KARIM",
     batch: "CSE 20",
+    batchSession: "20",
     section: "A",
     dept: "CSE",
     startTime: "01:00 PM",
@@ -317,6 +321,7 @@ function mapScheduleApiRow(row: ScheduleApiRow): ScheduleRow {
     courseTitle: row.course_name || "Untitled course",
     teacher: row.teacher_short || row.teacher_name || "",
     batch: row.batch_name || row.batch_session || "",
+    batchSession: row.batch_session || null,
     section: row.section || "none",
     dept: row.department_name || "",
     startTime: displayTime(row.start_time || "00:00"),
@@ -325,6 +330,17 @@ function mapScheduleApiRow(row: ScheduleApiRow): ScheduleRow {
     isLab: Boolean(row.is_lab),
     status: "ok",
   };
+}
+
+function formatBatchSec(row: ScheduleRow) {
+  const batchLabel = row.batchSession || row.batch;
+  const sectionLabel = row.section && row.section !== "none" ? row.section : "none";
+
+  if (row.dept) {
+    return `${row.dept} - ${batchLabel} (${sectionLabel})`;
+  }
+
+  return `${batchLabel} (${sectionLabel})`;
 }
 
 export default function ManageSchedulePage() {
@@ -1058,7 +1074,7 @@ export default function ManageSchedulePage() {
                         {row.teacher || "—"}
                       </td>
                       <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)]">
-                        {row.dept ? `${row.dept} - ${row.batch}` : row.batch} ({row.section})
+                        {formatBatchSec(row)}
                       </td>
                       <td className="px-4 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">
                         {row.startTime} - {row.endTime}
@@ -1098,7 +1114,7 @@ export default function ManageSchedulePage() {
                         </code>
                         <span className="text-sm font-medium text-[var(--color-text-primary)] truncate">{row.courseTitle}</span>
                       </div>
-                      <div className="mt-1 text-xs text-[var(--color-text-secondary)] truncate">{row.teacher} · {row.dept} · {row.batch} ({row.section})</div>
+                      <div className="mt-1 text-xs text-[var(--color-text-secondary)] truncate">{row.teacher} · {formatBatchSec(row)}</div>
                     </div>
 
                     <div className="flex-shrink-0 text-right">
