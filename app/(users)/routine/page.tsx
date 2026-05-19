@@ -8,7 +8,7 @@ import { RoutineSchema } from "@/app/types/routine";
 
 const navBtnCls = (disabled: boolean) =>
   [
-    "flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[11px] border-0 transition-all duration-200",
+    "flex h-9 w-9 sm:h-[42px] sm:w-[42px] shrink-0 items-center justify-center rounded-[11px] border-0 transition-all duration-200",
     disabled
       ? "cursor-not-allowed bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)] shadow-none"
       : "cursor-pointer bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white shadow-[0_0_16px_rgba(79,142,247,0.35)]",
@@ -32,12 +32,12 @@ function gapLabel(endTime: string, nextStart: string): string {
 /* ─── Skeleton ─── */
 function Skeleton() {
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-3 sm:gap-4">
       {[0, 1].map((i) => (
         <div
           key={i}
           className={[
-            "h-40 rounded-[18px] bg-[length:200%_100%] bg-gradient-to-r from-[var(--color-bg-elevated)] via-[var(--color-bg-subtle)] to-[var(--color-bg-elevated)] animate-[shimmer_1.4s_infinite]",
+            "h-32 rounded-[18px] bg-[length:200%_100%] bg-gradient-to-r from-[var(--color-bg-elevated)] via-[var(--color-bg-subtle)] to-[var(--color-bg-elevated)] animate-[shimmer_1.4s_infinite] sm:h-40",
             i === 0 ? "opacity-100" : "opacity-70",
           ].join(" ")}
         />
@@ -137,7 +137,7 @@ export default function RoutinePage() {
         type="button"
         onClick={toggleFocusMode}
         title={focusMode ? "Disable Focus Mode" : "Enable Focus Mode"}
-        className="fixed right-6 bottom-6 z-50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-0 bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white shadow-[0_4px_20px_rgba(79,142,247,0.45)] transition-transform duration-150 hover:scale-[1.08]"
+        className="fixed right-4 bottom-4 sm:right-6 sm:bottom-6 z-50 flex h-10 w-10 sm:h-12 sm:w-12 cursor-pointer items-center justify-center rounded-full border-0 bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white shadow-[0_4px_20px_rgba(79,142,247,0.45)] transition-transform duration-150 hover:scale-[1.08]"
       >
         {focusMode ? (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -152,11 +152,11 @@ export default function RoutinePage() {
         )}
       </button>
 
-      <main className="mx-auto max-w-[580px] px-5 pt-11 pb-20">
+      <main className="mx-auto max-w-[580px] px-4 pt-6 pb-16 sm:px-5 sm:pt-11 sm:pb-20">
         {/* Day header — hidden in focus mode */}
         {!focusMode && (
-          <div className="mb-9 flex flex-col items-center gap-2">
-            <div className="flex items-center gap-[18px]">
+          <div className="mb-6 flex flex-col items-center gap-2 sm:mb-9">
+            <div className="flex items-center gap-3 sm:gap-[18px]">
               {/* Prev */}
               <button
                 id="day-prev"
@@ -165,12 +165,12 @@ export default function RoutinePage() {
                 disabled={atStart}
                 className={navBtnCls(atStart)}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="15 18 9 12 15 6"/>
                 </svg>
               </button>
 
-              <h1 className="m-0 min-w-[190px] text-center text-4xl font-extrabold tracking-[-0.03em] text-[var(--color-text-primary)]">
+              <h1 className="m-0 min-w-[120px] text-center text-[clamp(24px,6vw,42px)] font-extrabold tracking-[-0.03em] text-[var(--color-text-primary)] sm:min-w-[190px]">
                 {today}
               </h1>
 
@@ -182,13 +182,13 @@ export default function RoutinePage() {
                 disabled={atEnd}
                 className={navBtnCls(atEnd)}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="9 18 15 12 9 6"/>
                 </svg>
               </button>
             </div>
 
-            <p className="m-0 text-sm font-medium text-[var(--color-text-secondary)]">
+            <p className="m-0 text-xs font-medium text-[var(--color-text-secondary)] sm:text-sm">
               {formattedDate}
             </p>
           </div>
@@ -197,21 +197,21 @@ export default function RoutinePage() {
         {/* Schedule content */}
         {isWeekend ? (
           !focusMode && (
-            <div className="mt-8 flex flex-col items-center gap-2.5 text-[17px] font-semibold text-success">
-              No classes today <FiStar className="ml-2 text-2xl text-[var(--color-accent)]" />
+            <div className="mt-6 flex flex-col items-center gap-2.5 text-sm font-semibold text-success sm:mt-8 sm:text-[17px]">
+              No classes today <FiStar className="ml-2 text-lg sm:text-2xl text-[var(--color-accent)]" />
             </div>
           )
         ) : (loading || changingDay) ? (
           <Skeleton />
         ) : filteredRoutines.length === 0 ? (
-          <div className="rounded-[18px] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] px-8 py-[72px] text-center">
-            <div className="mb-3">
-              <FiInbox className="mx-auto text-[36px] text-[var(--color-text-muted)]" />
+          <div className="rounded-[18px] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] px-5 py-10 text-center sm:px-8 sm:py-[72px]">
+            <div className="mb-2 sm:mb-3">
+              <FiInbox className="mx-auto text-2xl sm:text-[36px] text-[var(--color-text-muted)]" />
             </div>
-            <h3 className="mb-1.5 text-[17px] font-semibold text-[var(--color-text-primary)]">
+            <h3 className="mb-1 text-base font-semibold text-[var(--color-text-primary)] sm:mb-1.5 sm:text-[17px]">
               No classes on {today}
             </h3>
-            <p className="text-sm text-[var(--color-text-secondary)]">Nothing scheduled for this day.</p>
+            <p className="text-xs text-[var(--color-text-secondary)] sm:text-sm">Nothing scheduled for this day.</p>
           </div>
         ) : (
           <div className="flex flex-col">

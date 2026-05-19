@@ -66,7 +66,7 @@ export function RoutineBox({
         tabIndex={0}
         role="article"
         aria-labelledby={`routine-title-${schedule.id}`}
-        className={`group relative w-full rounded-[18px] border px-5 py-5 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/25 ${
+        className={`group relative w-full rounded-[18px] border px-4 py-4 sm:px-5 sm:py-5 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/25 ${
           hovered
             ? "border-blue-400/30 bg-blue-500/[0.03] shadow-[0_10px_30px_rgba(79,142,247,0.06)] -translate-y-0.5"
             : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)]"
@@ -80,24 +80,24 @@ export function RoutineBox({
         )}
 
         {/* Top row: course code | badges + timer */}
-        <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="mb-2 flex items-center justify-between gap-2 sm:mb-3 sm:gap-3">
           {/* Course code */}
-          <span className="whitespace-nowrap rounded-md border px-3 py-1 text-[11px] font-mono font-semibold tracking-wider text-[var(--color-text-secondary)] bg-[var(--color-bg-subtle)] border-[var(--color-border)]">
+          <span className="whitespace-nowrap rounded-md border px-2 py-0.5 text-[9.5px] font-mono font-semibold tracking-wider text-[var(--color-text-secondary)] bg-[var(--color-bg-subtle)] border-[var(--color-border)] sm:px-3 sm:py-1 sm:text-[11px]">
             {schedule.course_code}
           </span>
 
           {/* Right badges */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-1.5 flex-shrink-0 sm:gap-3">
             {/* Section */}
             {schedule.section && schedule.section !== "none" && (
-                <span className="rounded-full bg-[#7c3aed] px-3 py-1 text-[11px] font-bold text-white">
+                <span className="rounded-full bg-[#7c3aed] px-2 py-0.5 text-[9.5px] font-bold text-white sm:px-3 sm:py-1 sm:text-[11px]">
                   Sec {schedule.section}
                 </span>
             )}
 
             {/* Lab */}
             {schedule.is_lab && (
-                <span className="rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-3.5 py-1 text-[11px] font-bold text-white">
+                <span className="rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-2.5 py-0.5 text-[9.5px] font-bold text-white sm:px-3.5 sm:py-1 sm:text-[11px]">
                   LAB
                 </span>
             )}
@@ -112,37 +112,17 @@ export function RoutineBox({
         </div>
 
         {/* Course title */}
-        <h2 id={`routine-title-${schedule.id}`} className="mb-1 text-[20px] font-extrabold leading-tight tracking-tight text-[var(--color-text-primary)]">
+        <h2 id={`routine-title-${schedule.id}`} className="mb-1 text-[clamp(16px,4vw,20px)] font-extrabold leading-tight tracking-tight text-[var(--color-text-primary)] sm:mb-1">
           {truncate(schedule.course_name, isMobile ? 25 : 35)}
         </h2>
 
         {/* Teacher */}
-        <p className="mb-4 text-sm text-[var(--color-text-secondary)]">{schedule.teacher_name}</p>
+        <p className="mb-3 text-xs text-[var(--color-text-secondary)] sm:mb-4 sm:text-sm">{schedule.teacher_name}</p>
 
         {/* Bottom: time + room */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
           {/* Time */}
-          <div className="flex items-center gap-3">
-            <svg
-              width="17"
-              height="17"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#4f8ef7"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-            <span className="text-sm font-semibold text-[var(--color-text-primary)]">
-              {fmt24to12(schedule.start_time)} – {fmt24to12(schedule.end_time)}
-            </span>
-          </div>
-
-          {/* Room */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <svg
               width="15"
               height="15"
@@ -152,19 +132,41 @@ export function RoutineBox({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="sm:w-[17px] sm:h-[17px]"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span className="text-xs font-semibold text-[var(--color-text-primary)] sm:text-sm">
+              {fmt24to12(schedule.start_time)} – {fmt24to12(schedule.end_time)}
+            </span>
+          </div>
+
+          {/* Room */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#4f8ef7"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="sm:w-[15px] sm:h-[15px]"
             >
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
               <circle cx="12" cy="10" r="3" />
             </svg>
-            <span className="text-sm font-semibold text-[var(--color-text-primary)]">Room {schedule.room_number}</span>
+            <span className="text-xs font-semibold text-[var(--color-text-primary)] sm:text-sm">Room {schedule.room_number}</span>
           </div>
         </div>
       </div>
 
       {/* Gap to next class */}
       {nextClassAfter && (
-        <div className="mt-3 flex items-center justify-center gap-2.5 py-3 text-[13px] font-medium text-[var(--color-text-muted)]">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="mt-2 flex items-center justify-center gap-2 py-2 text-[11px] font-medium text-[var(--color-text-muted)] sm:mt-3 sm:gap-2.5 sm:py-3 sm:text-[13px]">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-[13px] sm:h-[13px]">
             <line x1="12" y1="2" x2="12" y2="22" />
             <polyline points="8 6 12 2 16 6" />
             <polyline points="8 18 12 22 16 18" />
