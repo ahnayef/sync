@@ -16,14 +16,14 @@ interface CourseTeacher {
 }
 
 const inputCls =
-  "w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-3 pr-4 pl-11 text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 placeholder:text-[var(--color-text-muted)] focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/15";
+  "w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2.5 sm:py-3 pr-4 pl-10 sm:pl-11 text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 placeholder:text-[var(--color-text-muted)] focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/15";
 
 const selectCls =
-  "w-full rounded-xl border border-white/10 bg-[var(--color-bg-elevated)] px-4 py-2.5 text-sm text-[var(--color-text-secondary)] outline-none cursor-pointer transition-all hover:border-white/20 hover:text-[var(--color-text-primary)] focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30";
+  "w-full rounded-xl border border-white/10 bg-[var(--color-bg-elevated)] px-3.5 py-2 sm:py-2.5 text-sm text-[var(--color-text-secondary)] outline-none cursor-pointer transition-all hover:border-white/20 hover:text-[var(--color-text-primary)] focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30";
 
 function courseRowCls(selected: boolean) {
   return [
-    "group flex h-full min-h-[132px] w-full cursor-pointer flex-col justify-between gap-2.5 rounded-xl border px-4 py-3.5 text-left transition-all duration-200",
+    "group flex h-full min-h-[112px] sm:min-h-[132px] w-full cursor-pointer flex-col justify-between gap-2.5 rounded-xl border px-4 py-3.5 text-left transition-all duration-200",
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/30",
     selected
       ? "border-blue-400/35 bg-blue-500/[0.06] shadow-[0_0_12px_rgba(59,130,246,0.03)]"
@@ -211,13 +211,13 @@ export default function CoursesPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
-      <main className="mx-auto max-w-[1100px] px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
+      <main className="mx-auto max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-muted)]">
               Student portal
             </p>
-            <h1 className="mt-2 text-2xl font-bold tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-3xl">
+            <h1 className="mt-2 text-[clamp(20px,4.5vw,28px)] sm:text-[32px] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
               Course Selection
             </h1>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
@@ -225,31 +225,36 @@ export default function CoursesPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-auto flex-nowrap">
             <button
               type="button"
               onClick={selectAllVisible}
-              className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]"
+              aria-label="Select all visible courses"
+              className="inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 h-9 bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]"
             >
-              Select all
+              <FiCheck className="text-xl" />
+              <span className="text-[11px] text-[var(--color-text-secondary)]">Select All</span>
             </button>
 
             <button
               type="button"
               onClick={clearSelection}
+              aria-label="Clear selection"
               disabled={selected.size === 0}
-              className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium ${selected.size === 0 ? "opacity-50 cursor-not-allowed" : "bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-surface)]"} text-[var(--color-text-secondary)]`}
+              className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 h-9 ${selected.size === 0 ? "opacity-50 cursor-not-allowed" : "bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-surface)]"} text-[var(--color-text-secondary)]`}
             >
-              Clear
+              <FiX className="text-xl" />
+              <span className="text-[11px] text-[var(--color-text-secondary)]">Clear</span>
             </button>
 
             <button
               id="courses-save"
               type="button"
+              aria-label="Save routine selections"
               disabled={saving}
               onClick={saveSelections}
               className={[
-                "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium",
+                "inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 h-9 text-sm font-medium",
                 saved
                   ? "border-green-500/30 bg-green-500/15 text-green-500"
                   : "border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] active:scale-95",
@@ -257,19 +262,19 @@ export default function CoursesPage() {
               ].join(" ")}
             >
               {saving ? (
-                <span className="flex items-center gap-2">
+                <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Saving...
-                </span>
+                  <span className="text-[11px] text-[var(--color-text-secondary)]">Saving</span>
+                </>
               ) : saved ? (
                 <>
-                  <FiCheck className="text-lg" />
-                  Saved Changes
+                  <FiCheck className="text-xl" />
+                  <span className="text-[11px] text-green-500">Saved</span>
                 </>
               ) : (
                 <>
-                  <FiSave className="opacity-70" />
-                  Save Routine Selections
+                  <FiSave className="opacity-70 text-xl" />
+                  <span className="text-[11px] text-[var(--color-text-secondary)]">Save</span>
                 </>
               )}
             </button>
@@ -295,7 +300,7 @@ export default function CoursesPage() {
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
-              <input
+                <input
                 id="courses-search"
                 type="search"
                 value={search}
@@ -514,12 +519,12 @@ export default function CoursesPage() {
                       </div>
 
                       <span
-                        className={[
-                          "flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200",
-                          isSelected
-                            ? "border-[#4f8ef7] bg-[#4f8ef7]"
-                            : "border-[var(--color-border)] bg-transparent group-hover:border-white/20",
-                        ].join(" ")}
+                          className={[
+                              "flex h-5 w-5 sm:h-6 sm:w-6 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200",
+                              isSelected
+                                ? "border-[#4f8ef7] bg-[#4f8ef7]"
+                                : "border-[var(--color-border)] bg-transparent group-hover:border-white/20",
+                            ].join(" ")}
                         aria-hidden
                       >
                         {isSelected ? (
@@ -532,19 +537,19 @@ export default function CoursesPage() {
 
                     {/* Middle Section: Course Title & Instructor */}
                     <div className="min-w-0 space-y-1 w-full mt-1">
-                      <p className="text-[13.5px] font-semibold leading-snug text-[var(--color-text-primary)] line-clamp-2">
+                      <p className="text-sm sm:text-[13.5px] font-semibold leading-snug text-[var(--color-text-primary)] line-clamp-2">
                         {course.courseTitle}
                       </p>
-                      <p className="flex items-center gap-1.5 text-[11.5px] text-[var(--color-text-secondary)]">
+                      <p className="flex items-center gap-1.5 text-xs sm:text-[11.5px] text-[var(--color-text-secondary)]">
                         <FiUser className="shrink-0 opacity-60 text-blue-400" />
                         {course.teacherName}
                       </p>
                     </div>
 
                     {/* Bottom Row: Dynamic Batch Session Pill & Cohort Label */}
-                    <div className="flex items-center justify-between gap-2 w-full mt-2 pt-2 border-t border-white/[0.04]">
+                    <div className="flex flex-col sm:flex-row sm:items-center items-start justify-between gap-2 w-full mt-2 pt-2 border-t border-white/[0.04]">
                       {course.batchSessions ? (
-                        <span className="flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-400/20 px-2 py-0.5 text-[9px] font-semibold text-blue-300">
+                        <span className="flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-400/20 px-2 py-0.5 text-[9px] font-semibold text-blue-300 truncate max-w-full sm:max-w-[160px]">
                           <FiCalendar size={9} className="shrink-0 text-blue-400" />
                           Session: {course.batchSessions}
                         </span>
@@ -552,7 +557,7 @@ export default function CoursesPage() {
                         <div />
                       )}
                       {course.batchNames && (
-                        <span className="text-[9.5px] text-white/30 truncate max-w-[120px]" title={course.batchNames}>
+                        <span className="text-[9.5px] text-white/30 truncate max-w-full sm:max-w-[120px]" title={course.batchNames}>
                           {course.batchNames}
                         </span>
                       )}
