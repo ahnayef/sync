@@ -8,12 +8,10 @@ import {
   FiHome,
   FiMoon,
   FiArrowRight,
-  FiShield,
-  FiClock,
-  FiSliders,
 } from "react-icons/fi";
 import type { Metadata } from "next";
 import { LogoIcon } from "@/components/Icon";
+import HomeMockup from "@/components/HomeMockup";
 
 export const metadata: Metadata = {
   title: "Loop — Smart Schedule Management",
@@ -66,32 +64,7 @@ const stats = [
   { value: "Fast", label: "schedule updates" },
 ];
 
-const routineItems = [
-  {
-    time: "08:30",
-    title: "Discrete Mathematics",
-    meta: "Room 402 · Prof. Karim",
-    accent: "#4f8ef7",
-  },
-  {
-    time: "10:00",
-    title: "Database Systems",
-    meta: "Lab 2 · Dr. Nahar",
-    accent: "#3fb950",
-  },
-  {
-    time: "01:15",
-    title: "Software Engineering",
-    meta: "Room 105 · Team project",
-    accent: "#a371f7",
-  },
-];
-
-const insightCards = [
-  { label: "Today", value: "5", unit: "classes", hint: "2 gaps" },
-  { label: "Imported", value: "98%", unit: "", hint: "validated" },
-  { label: "Changes", value: "Live", unit: "", hint: "instant sync" },
-];
+// Mockup data is now self-contained inside components/HomeMockup.tsx
 
 export default function Home() {
   return (
@@ -169,128 +142,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 rounded-[32px] bg-[radial-gradient(circle_at_top,rgba(79,142,247,0.15),transparent_48%)] blur-2xl" />
-              <div className="relative overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[rgba(13,17,23,0.9)] shadow-[0_30px_100px_rgba(0,0,0,0.45)]">
-                <div className="flex items-center gap-2 border-b border-[var(--color-border)] bg-[rgba(21,28,37,0.85)] px-4 py-3">
-                  {["#f85149", "#d29922", "#3fb950"].map((c) => (
-                    <div key={c} className="h-2.5 w-2.5 rounded-full opacity-90" style={{ background: c }} />
-                  ))}
-                  <div className="ml-2 flex flex-1 items-center gap-3 rounded-[10px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] px-3 py-2">
-                    <div className="h-2.5 w-2.5 rounded-full bg-[#4f8ef7]" />
-                    <div className="h-2 w-32 rounded-full bg-[var(--color-border)] sm:w-40" />
-                  </div>
-                </div>
-
-                <div className="grid gap-0 lg:grid-cols-[180px_1fr]">
-                  <aside className="border-b border-[var(--color-border)] bg-[rgba(21,28,37,0.82)] p-4 lg:border-b-0 lg:border-r">
-                    <div className="mb-4 rounded-[18px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.65)] p-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#4f8ef71a] text-[#8fb5ff]">
-                          <FiClock />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-[var(--color-text-primary)]">Today</p>
-                          <p className="text-xs text-[var(--color-text-muted)]">5 classes, 2 gaps</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        {[
-                          { icon: FiSliders, label: "Routine" },
-                          { icon: FiBook, label: "Courses" },
-                          { icon: FiUsers, label: "People" },
-                          { icon: FiShield, label: "Admin" },
-                        ].map(({ icon: Icon, label }, index) => (
-                        <div
-                          key={label}
-                          className="flex items-center gap-3 rounded-[14px] border px-3 py-2.5 text-sm"
-                          style={{
-                            background:
-                              index === 0 ? "var(--color-accent-muted)" : "rgba(11,16,21,0.4)",
-                            borderColor:
-                              index === 0 ? "rgba(79,142,247,0.22)" : "transparent",
-                          }}
-                        >
-                          <Icon
-                            className={index === 0 ? "text-[#8fb5ff]" : "text-[var(--color-text-muted)]"}
-                          />
-                          <span
-                            className={
-                              index === 0
-                                ? "font-medium text-[var(--color-text-primary)]"
-                                : "text-[var(--color-text-secondary)]"
-                            }
-                          >
-                            {label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </aside>
-
-                  <div className="grid gap-4 p-4 sm:p-5">
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      {insightCards.map((card) => (
-                        <div key={card.label} className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.75)] p-3 flex flex-col justify-between min-h-[84px]">
-                          <div>
-                            <div className="text-[10px] uppercase tracking-[0.16em] text-[var(--color-text-muted)] leading-none">{card.label}</div>
-                            <div className="mt-1.5 flex items-baseline gap-1 whitespace-nowrap">
-                              <span className="text-lg sm:text-xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">
-                                {card.value}
-                              </span>
-                              {card.unit && (
-                                <span className="text-[10px] font-semibold text-[var(--color-text-secondary)] lowercase">
-                                  {card.unit}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="mt-1 text-[10px] text-[var(--color-text-secondary)]">{card.hint}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-3.5">
-                      <div className="mb-3.5 flex items-center justify-between gap-4">
-                        <div>
-                          <p className="text-xs font-semibold text-[var(--color-text-primary)]">Routine preview</p>
-                          <p className="text-[11px] text-[var(--color-text-muted)]">A clean, scannable day view</p>
-                        </div>
-                        <span className="rounded-full border border-[#3fb95033] bg-[#3fb95014] px-2 py-0.5 text-[10px] font-semibold text-[#8ae39d]">
-                          Synced
-                        </span>
-                      </div>
-
-                      <div className="space-y-2">
-                        {routineItems.map((item) => (
-                          <div
-                            key={item.title}
-                            className="rounded-[14px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] p-3 transition-transform duration-200 hover:-translate-y-0.5"
-                            style={{ boxShadow: `inset 3px 0 0 ${item.accent}` }}
-                          >
-                            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-                              <div>
-                                <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
-                                  {item.time}
-                                </div>
-                                <div className="mt-0.5 text-xs sm:text-sm font-semibold text-[var(--color-text-primary)]">{item.title}</div>
-                                <div className="mt-0.5 text-[11px] text-[var(--color-text-secondary)]">{item.meta}</div>
-                              </div>
-                              <div className="flex items-center gap-1.5 self-start rounded-full border border-[var(--color-border)] bg-[rgba(21,28,37,0.8)] px-2 py-1 text-[10px] text-[var(--color-text-secondary)] sm:self-center">
-                                <span className="h-1.5 w-1.5 rounded-full" style={{ background: item.accent }} />
-                                On track
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <HomeMockup />
           </div>
         </div>
       </section>
