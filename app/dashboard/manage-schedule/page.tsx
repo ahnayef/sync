@@ -963,43 +963,45 @@ export default function ManageSchedulePage() {
           </section>
 
           <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.12)] sm:p-5 mb-6">
-            <div className="flex flex-col sm:flex-row gap-3 items-start w-full">
-              <div className="relative flex-1 max-w-full sm:max-w-[520px] min-w-0">
-                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search..."
-                  className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 pr-10 pl-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[rgba(79,142,247,0.35)]"
-                />
-                {search && (
-                  <button onClick={() => setSearch("")} title="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]">
-                    <FiX size={14} />
-                  </button>
-                )}
+            <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center w-full">
+              <div className="flex-1 max-w-full sm:max-w-[520px] min-w-0">
+                <div className="relative w-full">
+                  <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search..."
+                    className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 pr-10 pl-10 text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[rgba(79,142,247,0.35)]"
+                  />
+                  {search && (
+                    <button onClick={() => setSearch("")} title="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]">
+                      <FiX size={14} />
+                    </button>
+                  )}
+                </div>
 
                 {/* Mobile filters toggle */}
                 <div className="sm:hidden mt-2">
-                  <button onClick={() => setShowFiltersMobile(!showFiltersMobile)} className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-sm text-[var(--color-text-primary)]">
-                    <span>Filters</span>
+                  <button onClick={() => setShowFiltersMobile(!showFiltersMobile)} className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-sm text-[var(--color-text-primary)] font-medium">
+                    <span>Filters & Sorting</span>
                     <FiChevronDown className={`text-[var(--color-text-muted)] transition-transform ${showFiltersMobile ? "rotate-180" : ""}`} />
                   </button>
                 </div>
               </div>
 
-              <div className={`${showFiltersMobile ? "block" : "hidden"} sm:flex flex-col sm:flex-row gap-2 items-start sm:items-center w-full sm:w-auto`}>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <label className="text-xs text-[var(--color-text-secondary)]">Department</label>
-                  <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
+              <div className={`${showFiltersMobile ? "flex flex-col" : "hidden"} sm:flex sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto`}>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 w-full sm:w-auto">
+                  <label className="text-xs font-semibold text-[var(--color-text-secondary)] sm:min-w-fit">Department</label>
+                  <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none focus:border-[var(--color-accent)]">
                     <option value="All">All</option>
                     {departmentNames.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <label className="text-xs text-[var(--color-text-secondary)]">Day</label>
-                  <select value={dayFilter} onChange={(e) => setDayFilter(e.target.value)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 w-full sm:w-auto">
+                  <label className="text-xs font-semibold text-[var(--color-text-secondary)] sm:min-w-fit">Day</label>
+                  <select value={dayFilter} onChange={(e) => setDayFilter(e.target.value)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none focus:border-[var(--color-accent)]">
                     <option value="All">All</option>
                     <option value="Sunday">Sunday</option>
                     <option value="Monday">Monday</option>
@@ -1009,9 +1011,9 @@ export default function ManageSchedulePage() {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <label className="text-xs text-[var(--color-text-secondary)]">Type</label>
-                  <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 w-full sm:w-auto">
+                  <label className="text-xs font-semibold text-[var(--color-text-secondary)] sm:min-w-fit">Type</label>
+                  <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none focus:border-[var(--color-accent)]">
                     <option value="All">All</option>
                     <option value="Lab">Lab</option>
                     <option value="Theory">Theory</option>
@@ -1019,19 +1021,22 @@ export default function ManageSchedulePage() {
                 </div>
               </div>
 
-              <div className={`${showFiltersMobile ? "flex" : "hidden"} sm:flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto ml-0 sm:ml-auto`}>
-                <div className="flex items-center gap-1 bg-[var(--color-bg-elevated)] rounded-lg px-2 py-1 overflow-x-auto">
-                  <button onClick={() => setSortBy("day")} className={`px-2 py-1 text-sm rounded ${sortBy === "day" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Day</button>
-                  <button onClick={() => setSortBy("time")} className={`px-2 py-1 text-sm rounded ${sortBy === "time" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Time</button>
-                  <button onClick={() => setSortBy("course")} className={`px-2 py-1 text-sm rounded ${sortBy === "course" ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-secondary)]"}`}>Course</button>
-                  <button onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")} title="Toggle sort direction" className="px-2 py-1 rounded text-sm border border-[var(--color-border)] bg-[var(--color-bg-surface)]">{sortDir === "asc" ? "↑" : "↓"}</button>
+              <div className={`${showFiltersMobile ? "flex flex-col" : "hidden"} sm:flex sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto ml-0 sm:ml-auto`}>
+                <div className="flex items-center gap-1 bg-[var(--color-bg-elevated)] rounded-lg px-2 py-1 overflow-x-auto w-full sm:w-auto justify-between sm:justify-start">
+                  <span className="text-xs font-semibold text-[var(--color-text-secondary)] sm:hidden px-1">Sort by:</span>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => setSortBy("day")} className={`px-2 py-1 text-sm rounded ${sortBy === "day" ? "bg-[var(--color-accent)] text-white font-medium" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-surface)]"}`}>Day</button>
+                    <button onClick={() => setSortBy("time")} className={`px-2 py-1 text-sm rounded ${sortBy === "time" ? "bg-[var(--color-accent)] text-white font-medium" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-surface)]"}`}>Time</button>
+                    <button onClick={() => setSortBy("course")} className={`px-2 py-1 text-sm rounded ${sortBy === "course" ? "bg-[var(--color-accent)] text-white font-medium" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-surface)]"}`}>Course</button>
+                    <button onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")} title="Toggle sort direction" className="px-2.5 py-1 rounded text-sm border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors">{sortDir === "asc" ? "↑" : "↓"}</button>
+                  </div>
                 </div>
 
                 <button
                   onClick={() => { setSearch(""); setSelectedDept("All"); setDayFilter("All"); setTypeFilter("All"); setSortBy("day"); setSortDir("asc"); }}
                   aria-pressed={filtersActive}
                   title={filtersActive ? "Clear active filters" : "No filters applied"}
-                  className={`w-full sm:w-auto ${filtersActive ? "px-5 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all" : "px-3 py-1.5 rounded-lg text-sm transition-all border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)]"}`}
+                  className={`w-full sm:w-auto ${filtersActive ? "px-5 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all" : "px-3 py-1.5 rounded-lg text-sm transition-all border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)]"}`}
                 >
                   Clear
                 </button>
@@ -1103,40 +1108,74 @@ export default function ManageSchedulePage() {
             </div>
 
             {/* Mobile Card List */}
-            <div className="sm:hidden mt-3 space-y-3">
+            <div className="sm:hidden mt-4 space-y-3.5">
               {filteredSchedules.map((row) => (
-                <div key={row.id} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <code className={`text-[11px] font-bold px-1.5 py-[2px] rounded ${row.isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.08)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.08)]"}`}>
-                          {row.courseCode}
-                        </code>
-                        <span className="text-sm font-medium text-[var(--color-text-primary)] truncate">{row.courseTitle}</span>
-                      </div>
-                      <div className="mt-1 text-xs text-[var(--color-text-secondary)] truncate">{row.teacher} · {formatBatchSec(row)}</div>
+                <div key={row.id} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-4 shadow-sm hover:shadow-md transition-shadow animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between gap-2 mb-2.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      {(() => {
+                        const isLab = (courses.find(c => c.code === row.courseCode) || COURSES.find(c => c.code === row.courseCode))?.isLab || row.isLab;
+                        return (
+                          <code className={`text-[10px] font-bold px-2 py-0.5 rounded ${isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
+                            {row.courseCode}
+                          </code>
+                        );
+                      })()}
+                      <span className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">{row.day}</span>
                     </div>
+                    <div className="text-[11px] font-semibold text-[var(--color-text-primary)] bg-[var(--color-bg-surface)] px-2.5 py-1 rounded-lg border border-[var(--color-border)]">
+                      Room {row.room}
+                    </div>
+                  </div>
 
-                    <div className="flex-shrink-0 text-right">
-                      <div className="text-[10px] text-[var(--color-text-muted)]">{row.startTime} - {row.endTime}</div>
-                      <div className="text-sm font-semibold text-[var(--color-text-primary)] mt-1">Room {row.room}</div>
-                      <div className="flex gap-2 mt-3 justify-end">
-                        <button onClick={() => openEditModal(row)} className="px-3 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm transition-colors hover:bg-[var(--color-bg-elevated)]">Edit</button>
-                        <button onClick={async () => { await fetch(`/api/schedules?id=${row.id}`, { method: "DELETE" }); setSchedules(schedules.filter(s => s.id !== row.id)); }} className="px-3 py-1.5 rounded-md border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-sm transition-colors hover:bg-[rgba(248,81,73,0.06)]">Delete</button>
-                      </div>
+                  <h3 className="text-sm font-bold text-[var(--color-text-primary)] leading-snug mb-1.5">
+                    {row.courseTitle}
+                  </h3>
+
+                  <div className="space-y-1 mb-3.5">
+                    <div className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1.5">
+                      <span className="font-medium text-[var(--color-text-primary)]">{row.teacher || "No Teacher"}</span>
+                      <span className="text-[var(--color-text-muted)]">•</span>
+                      <span>{formatBatchSec(row)}</span>
                     </div>
+                    <div className="text-xs text-[var(--color-text-muted)] flex items-center gap-1">
+                      <FiClock size={12} className="shrink-0" />
+                      <span>{row.startTime} - {row.endTime}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-3 border-t border-[var(--color-border)]/50">
+                    <button 
+                      onClick={() => openEditModal(row)} 
+                      className="flex-1 py-2 text-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] text-xs font-semibold transition-colors hover:bg-[var(--color-bg-elevated)]"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={async () => { 
+                        if (confirm("Are you sure you want to delete this class?")) {
+                          await fetch(`/api/schedules?id=${row.id}`, { method: "DELETE" }); 
+                          setSchedules(schedules.filter(s => s.id !== row.id)); 
+                        }
+                      }} 
+                      className="flex-1 py-2 text-center rounded-xl border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs font-semibold transition-colors hover:bg-[rgba(248,81,73,0.06)]"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}
 
               {filteredSchedules.length === 0 && (
-                <div className="text-center py-8 text-[var(--color-text-secondary)]">No schedules found.</div>
+                <div className="text-center py-12 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] text-sm">
+                  No schedules found.
+                </div>
               )}
             </div>
 
           {showEditModal && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-3 sm:p-6 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}>
-              <div className="w-full max-w-sm sm:max-w-[640px] rounded-xl sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 sm:p-8 my-4 sm:my-8 shadow-2xl">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center sm:items-center z-[60] p-3 sm:p-6 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}>
+              <div className="w-full max-w-sm sm:max-w-[640px] rounded-xl sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 sm:p-8 my-4 sm:my-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                 <h2 className="text-lg sm:text-xl font-bold text-[var(--color-text-primary)] mb-4 sm:mb-6 flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-[var(--color-accent-muted)] text-[var(--color-accent)] flex items-center justify-center flex-shrink-0">
                     {editingId ? <FiEdit2 size={16} /> : <FiPlus size={16} />}
@@ -1437,7 +1476,7 @@ export default function ManageSchedulePage() {
 
                         {/* Status/Actions footer */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--color-bg-subtle)] rounded-2xl p-4 border border-[var(--color-border)] mt-4">
-                          <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-secondary)]">
                             <FiClock className="text-[var(--color-text-muted)]" />
                             <span>Last Synced:</span>
                             <span className="font-semibold text-[var(--color-text-primary)]">
@@ -1448,7 +1487,7 @@ export default function ManageSchedulePage() {
                           <button
                             disabled={isSyncing || !currentLink}
                             onClick={() => handleTriggerManualSync(dept.id)}
-                            className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-2.5 text-xs font-bold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all hover:bg-[#5d95f7] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-4 py-2.5 text-xs font-bold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all hover:bg-[#5d95f7] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                           >
                             {isSyncing ? (
                               <>
@@ -1594,7 +1633,8 @@ export default function ManageSchedulePage() {
             </div>
           </div>
 
-          <div className="rounded-[14px] border border-[var(--color-border)] overflow-hidden mb-6 shadow-sm">
+          {/* Desktop Table View */}
+          <div className="rounded-[14px] border border-[var(--color-border)] overflow-hidden mb-6 shadow-sm hidden sm:block">
             <div className="overflow-x-auto bg-[var(--color-bg-surface)]">
               <table className="w-full border-collapse min-w-[800px]">
                 <thead>
@@ -1652,6 +1692,56 @@ export default function ManageSchedulePage() {
             </div>
           </div>
 
+          {/* Mobile Card Preview List */}
+          <div className="sm:hidden mt-3 mb-6 space-y-4">
+            {importRows.map((row) => {
+              const sc = STATUS_CONFIG[row.status];
+              return (
+                <div key={row.clientId} className={`rounded-2xl border p-4 shadow-sm ${row.status === "error" ? "border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.03)]" : "border-[var(--color-border)] bg-[var(--color-bg-elevated)]"} animate-in fade-in duration-200`}>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span style={{ color: sc.color, background: sc.bg, borderColor: sc.border }} className="text-[10px] font-bold px-2 py-0.5 border rounded-lg uppercase tracking-wider">{sc.label}</span>
+                    <span className="text-[11px] font-semibold text-[var(--color-text-muted)] font-mono">{displayDay(row.day)} · {displayTime(row.start_time)} - {displayTime(row.end_time)}</span>
+                  </div>
+                  
+                  <h3 className="text-sm font-bold text-[var(--color-text-primary)] leading-snug mb-2">
+                    {row.course_name || "Unresolved course"}
+                  </h3>
+                  
+                  <div className="space-y-1 text-xs text-[var(--color-text-secondary)]">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <code className={`text-[10px] font-bold px-1.5 py-[2px] rounded ${row.is_lab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
+                        {row.course_code}
+                      </code>
+                      <span className="text-[var(--color-text-muted)]">•</span>
+                      <span className={row.teacher_id ? "font-semibold text-[var(--color-text-primary)]" : "text-[var(--color-danger)] font-medium"}>
+                        {row.teacher_short_name || "Missing Teacher"}
+                      </span>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 text-[var(--color-text-muted)] mt-1">
+                      <span>Batch: <span className="text-[var(--color-text-secondary)] font-medium">{row.batch} ({row.section === "none" ? "—" : row.section})</span></span>
+                      <span>•</span>
+                      <span>Room: <span className="text-[var(--color-text-secondary)] font-medium">{row.room_number ?? "—"}</span></span>
+                      <span>•</span>
+                      <span>Dept: <span className="text-[var(--color-text-secondary)] font-medium">{selectedImportDept}</span></span>
+                    </div>
+                  </div>
+                  
+                  {(row.errors.length > 0 || row.warnings.length > 0) && (
+                    <div className="mt-3 p-3 rounded-xl bg-[rgba(248,81,73,0.05)] border border-[rgba(248,81,73,0.15)] text-xs text-[var(--color-danger)] space-y-1.5">
+                      {[...row.errors, ...row.warnings].map((err, idx) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <FiAlertCircle className="mt-0.5 shrink-0 text-[var(--color-danger)]" size={14} />
+                          <span className="leading-normal">{err}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
           {importError && (
             <div className="mb-6 p-4 rounded-xl border border-[rgba(248,81,73,0.25)] bg-[rgba(248,81,73,0.06)] text-[var(--color-danger)] text-sm font-medium flex gap-3">
               <FiAlertCircle className="mt-0.5 shrink-0" />
@@ -1659,10 +1749,10 @@ export default function ManageSchedulePage() {
             </div>
           )}
 
-          <div className="flex gap-3 justify-end">
-            <button id="schedule-back" onClick={() => setStep("upload")} className="px-6 py-[11px] rounded-[9px] border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95"><span className="inline-flex items-center gap-2"><FiArrowLeft /> Back</span></button>
-            {errorCount > 0 && <button id="schedule-fix-errors" onClick={() => setStep("fixing")} className="px-6 py-[11px] rounded-[9px] border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-sm font-semibold cursor-pointer hover:bg-[rgba(248,81,73,0.12)] transition-colors duration-200 active:scale-95">Fix {errorCount} error{errorCount > 1 ? "s" : ""}</button>}
-            <button id="schedule-import" disabled={errorCount > 0 || okCount === 0} onClick={finalizeImport} className="px-7 py-[11px] rounded-[9px] border-none bg-[var(--color-accent)] text-white text-sm font-semibold cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"><span className="inline-flex items-center gap-2">Apply {okCount} verified entries <FiArrowRight /></span></button>
+          <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end mt-6">
+            <button id="schedule-back" onClick={() => setStep("upload")} className="w-full sm:w-auto px-6 py-[11px] rounded-[9px] border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95"><span className="inline-flex items-center justify-center gap-2 w-full"><FiArrowLeft /> Back</span></button>
+            {errorCount > 0 && <button id="schedule-fix-errors" onClick={() => setStep("fixing")} className="w-full sm:w-auto px-6 py-[11px] rounded-[9px] border border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.08)] text-[var(--color-danger)] text-sm font-semibold cursor-pointer hover:bg-[rgba(248,81,73,0.12)] transition-colors duration-200 active:scale-95">Fix {errorCount} error{errorCount > 1 ? "s" : ""}</button>}
+            <button id="schedule-import" disabled={errorCount > 0 || okCount === 0} onClick={finalizeImport} className="w-full sm:w-auto px-7 py-[11px] rounded-[9px] border-none bg-[var(--color-accent)] text-white text-sm font-semibold cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"><span className="inline-flex items-center justify-center gap-2 w-full">Apply {okCount} verified entries <FiArrowRight /></span></button>
           </div>
         </div>
       )}
@@ -1704,9 +1794,9 @@ export default function ManageSchedulePage() {
             ))}
           </div>
 
-          <div className="flex gap-3 justify-end">
-            <button onClick={() => setStep("preview")} className="px-6 py-[11px] rounded-[9px] border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95"><span className="inline-flex items-center gap-2"><FiArrowLeft /> Back to Preview</span></button>
-            <button id="fixing-continue" onClick={finalizeImport} className="px-7 py-[11px] rounded-[9px] border-none bg-[var(--color-accent)] text-white text-sm font-semibold cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg transition-all duration-200 active:scale-95"><span className="inline-flex items-center gap-2">Continue <FiArrowRight /></span></button>
+          <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end mt-6">
+            <button onClick={() => setStep("preview")} className="w-full sm:w-auto px-6 py-[11px] rounded-[9px] border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-sm cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95"><span className="inline-flex items-center justify-center gap-2 w-full"><FiArrowLeft /> Back to Preview</span></button>
+            <button id="fixing-continue" onClick={finalizeImport} className="w-full sm:w-auto px-7 py-[11px] rounded-[9px] border-none bg-[var(--color-accent)] text-white text-sm font-semibold cursor-pointer hover:bg-[#5d95f7] hover:shadow-lg transition-all duration-200 active:scale-95"><span className="inline-flex items-center justify-center gap-2 w-full">Continue <FiArrowRight /></span></button>
           </div>
         </div>
       )}
@@ -1719,9 +1809,9 @@ export default function ManageSchedulePage() {
           </div>
           <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2.5">Schedule imported!</h2>
           <p className="text-base text-[var(--color-text-secondary)] mb-8">{appliedCount} schedule entries have been saved to the database.</p>
-          <div className="flex justify-center gap-3">
-            <button id="schedule-import-again" onClick={() => { setStep("upload"); setFileName(""); setImportRows([]); setImportError(""); }} className="px-7 py-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] text-base font-medium cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95">Import another file</button>
-            <button onClick={() => setStep("list")} className="px-7 py-3 rounded-[10px] bg-[var(--color-accent)] text-white text-base font-medium cursor-pointer hover:bg-[#5d95f7] transition-all duration-200 active:scale-95">View Schedule</button>
+          <div className="flex flex-col sm:flex-row justify-center gap-3 w-full sm:w-auto max-w-md mx-auto">
+            <button id="schedule-import-again" onClick={() => { setStep("upload"); setFileName(""); setImportRows([]); setImportError(""); }} className="w-full sm:w-auto px-7 py-3 rounded-[10px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] text-base font-medium cursor-pointer hover:bg-[var(--color-bg-surface)] transition-colors duration-200 active:scale-95">Import another file</button>
+            <button onClick={() => setStep("list")} className="w-full sm:w-auto px-7 py-3 rounded-[10px] bg-[var(--color-accent)] text-white text-base font-medium cursor-pointer hover:bg-[#5d95f7] transition-all duration-200 active:scale-95">View Schedule</button>
           </div>
         </div>
       )}
