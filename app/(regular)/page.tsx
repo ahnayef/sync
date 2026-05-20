@@ -88,9 +88,9 @@ const routineItems = [
 ];
 
 const insightCards = [
-  { label: "Today", value: "5 classes", hint: "2 gaps" },
-  { label: "Imported", value: "98%", hint: "validated" },
-  { label: "Changes", value: "Live", hint: "instant sync" },
+  { label: "Today", value: "5", unit: "classes", hint: "2 gaps" },
+  { label: "Imported", value: "98%", unit: "", hint: "validated" },
+  { label: "Changes", value: "Live", unit: "", hint: "instant sync" },
 ];
 
 export default function Home() {
@@ -233,42 +233,53 @@ export default function Home() {
                   <div className="grid gap-4 p-4 sm:p-5">
                     <div className="grid gap-3 sm:grid-cols-3">
                       {insightCards.map((card) => (
-                        <div key={card.label} className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.75)] p-4">
-                          <div className="text-xs uppercase tracking-[0.16em] text-[var(--color-text-muted)]">{card.label}</div>
-                          <div className="mt-2 text-xl sm:text-2xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">{card.value}</div>
-                          <div className="mt-1 text-sm text-[var(--color-text-secondary)]">{card.hint}</div>
+                        <div key={card.label} className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.75)] p-3 flex flex-col justify-between min-h-[84px]">
+                          <div>
+                            <div className="text-[10px] uppercase tracking-[0.16em] text-[var(--color-text-muted)] leading-none">{card.label}</div>
+                            <div className="mt-1.5 flex items-baseline gap-1 whitespace-nowrap">
+                              <span className="text-lg sm:text-xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">
+                                {card.value}
+                              </span>
+                              {card.unit && (
+                                <span className="text-[10px] font-semibold text-[var(--color-text-secondary)] lowercase">
+                                  {card.unit}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-1 text-[10px] text-[var(--color-text-secondary)]">{card.hint}</div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="rounded-[22px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-4 sm:p-5">
-                      <div className="mb-4 flex items-center justify-between gap-4">
+                    <div className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-3.5">
+                      <div className="mb-3.5 flex items-center justify-between gap-4">
                         <div>
-                          <p className="text-sm font-semibold text-[var(--color-text-primary)]">Routine preview</p>
-                          <p className="text-sm text-[var(--color-text-muted)]">A clean, scannable day view</p>
+                          <p className="text-xs font-semibold text-[var(--color-text-primary)]">Routine preview</p>
+                          <p className="text-[11px] text-[var(--color-text-muted)]">A clean, scannable day view</p>
                         </div>
-                        <span className="rounded-full border border-[#3fb95033] bg-[#3fb95014] px-3 py-1 text-xs font-semibold text-[#8ae39d]">
+                        <span className="rounded-full border border-[#3fb95033] bg-[#3fb95014] px-2 py-0.5 text-[10px] font-semibold text-[#8ae39d]">
                           Synced
                         </span>
                       </div>
 
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {routineItems.map((item) => (
                           <div
                             key={item.title}
-                            className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] p-4 transition-transform duration-200 hover:-translate-y-0.5"
-                            style={{ boxShadow: `inset 4px 0 0 ${item.accent}` }}
+                            className="rounded-[14px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] p-3 transition-transform duration-200 hover:-translate-y-0.5"
+                            style={{ boxShadow: `inset 3px 0 0 ${item.accent}` }}
                           >
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                               <div>
-                                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+                                <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
                                   {item.time}
                                 </div>
-                                <div className="mt-1 text-sm md:text-base font-semibold text-[var(--color-text-primary)]">{item.title}</div>
-                                <div className="mt-1 text-sm text-[var(--color-text-secondary)]">{item.meta}</div>
+                                <div className="mt-0.5 text-xs sm:text-sm font-semibold text-[var(--color-text-primary)]">{item.title}</div>
+                                <div className="mt-0.5 text-[11px] text-[var(--color-text-secondary)]">{item.meta}</div>
                               </div>
-                              <div className="flex items-center gap-2 self-start rounded-full border border-[var(--color-border)] bg-[rgba(21,28,37,0.8)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)] sm:self-center">
-                                <span className="h-2 w-2 rounded-full" style={{ background: item.accent }} />
+                              <div className="flex items-center gap-1.5 self-start rounded-full border border-[var(--color-border)] bg-[rgba(21,28,37,0.8)] px-2 py-1 text-[10px] text-[var(--color-text-secondary)] sm:self-center">
+                                <span className="h-1.5 w-1.5 rounded-full" style={{ background: item.accent }} />
                                 On track
                               </div>
                             </div>
