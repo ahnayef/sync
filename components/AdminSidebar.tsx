@@ -73,6 +73,7 @@ export default function AdminSidebar() {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -84,6 +85,21 @@ export default function AdminSidebar() {
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Persistent collapse state on desktop
+  useEffect(() => {
+    const saved = localStorage.getItem("admin-sidebar-collapsed");
+    if (saved === "true") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsCollapsed(true);
+    }
+  }, []);
+
+  const toggleCollapse = () => {
+    const next = !isCollapsed;
+    setIsCollapsed(next);
+    localStorage.setItem("admin-sidebar-collapsed", String(next));
+  };
 
   // Lock background scrolling on mobile when sidebar is open
   useEffect(() => {
@@ -148,17 +164,19 @@ export default function AdminSidebar() {
 
       {/* Sidebar Drawer */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-50 flex h-screen w-[260px] min-h-screen flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-6 transition-transform duration-300 ease-in-out md:transition-none md:translate-x-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        className={`fixed md:sticky top-0 left-0 z-50 flex h-screen min-h-screen flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-surface)] py-6 transition-all duration-300 ease-in-out md:translate-x-0 ${
+          isCollapsed ? "md:w-[78px] md:px-3" : "md:w-[260px] md:px-4"
+        } ${
+          isOpen ? "translate-x-0 w-[260px] px-4" : "-translate-x-full md:translate-x-0 w-[260px]"
         }`}
       >
-        {/* Sidebar Header with Logo and Close Button */}
+        {/* Sidebar Header with Logo and Close/Collapse Buttons */}
         <div className="mb-6 flex items-center justify-between px-1 py-2">
           <Link href="/" id="admin-sidebar-logo" className="flex items-center gap-2.5 no-underline">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-[var(--color-accent-muted)] shadow-[0_0_18px_rgba(79,142,247,0.18)]">
               <LogoIcon className="h-6 w-6" />
             </div>
-            <div>
+            <div className={`transition-all duration-200 ${isCollapsed ? "md:hidden" : "block"}`}>
               <span className="block text-[17px] font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">Loop</span>
               <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-accent)]">Admin</span>
             </div>
@@ -175,10 +193,28 @@ export default function AdminSidebar() {
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
+
+          {/* Desktop collapse button (hidden on mobile, hidden when collapsed) */}
+          {!isCollapsed && (
+            <button
+              onClick={toggleCollapse}
+              className="hidden md:flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] transition-all active:scale-95 cursor-pointer shadow-sm"
+              title="Collapse Sidebar"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Nav Items */}
-        <p className="mb-2 px-3 text-[8px] sm:text-[9px] font-semibold uppercase tracking-[0.1em] text-[var(--color-text-muted)]">Management</p>
+        <p className={`mb-2 px-3 text-[8px] sm:text-[9px] font-semibold uppercase tracking-[0.1em] text-[var(--color-text-muted)] transition-all duration-200 ${isCollapsed ? "md:hidden" : "block"}`}>
+          Management
+        </p>
+        {isCollapsed && <div className="hidden md:block my-2 border-t border-[var(--color-border)] mx-2" />}
+
         <nav className="flex flex-col gap-1">
           {adminNavItems.map((item) => {
             // Hide moderators tab if the user is just a moderator (only admins can manage mods)
@@ -195,22 +231,42 @@ export default function AdminSidebar() {
                 id={`admin-nav-${item.label.toLowerCase().replace(" ", "-")}`}
                 onClick={() => setIsOpen(false)}
                 title={item.label}
-                className={`flex items-center gap-2.5 rounded-lg border px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm font-medium no-underline transition-all duration-200 ${
+                className={`flex items-center gap-2.5 rounded-lg border py-2 sm:py-2.5 text-xs sm:text-sm font-medium no-underline transition-all duration-200 ${
+                  isCollapsed ? "md:justify-center md:px-0" : "px-2 sm:px-3"
+                } ${
                   isActive
                     ? "border-[rgba(79,142,247,0.2)] bg-[var(--color-accent-muted)] text-[var(--color-accent)]"
                     : "border-transparent text-[var(--color-text-secondary)] hover:border-[var(--color-border)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]"
                 }`}
               >
                 {item.icon}
-                <span className="inline ml-2">{item.label}</span>
+                <span className={`inline ml-2 transition-all duration-200 ${isCollapsed ? "md:hidden" : "block"}`}>
+                  {item.label}
+                </span>
               </Link>
             );
           })}
+
+          {/* Expand button (visible only on desktop when collapsed as the last item of nav list) */}
+          {isCollapsed && (
+            <button
+              onClick={toggleCollapse}
+              className="hidden md:flex h-9 w-full items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] transition-all active:scale-95 cursor-pointer shadow-sm mt-2 animate-fade-in"
+              title="Expand Sidebar"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+                <line x1="3" y1="12" x2="15" y2="12" />
+              </svg>
+            </button>
+          )}
         </nav>
 
-        <div className="flex flex-col gap-2 sm:gap-3 border-t border-[var(--color-border)] pt-4 sm:pt-6">
-          {/* Admin badge (visible on mobile and up) */}
-          <div className="flex items-center gap-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-3 py-2.5">
+        <div className="flex flex-col gap-2 sm:gap-3 border-t border-[var(--color-border)] pt-4 sm:pt-6 mt-auto">
+          {/* Admin badge */}
+          <div className={`flex items-center gap-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-subtle)] transition-all ${
+            isCollapsed ? "md:justify-center md:p-1.5" : "px-3 py-2.5"
+          }`}>
             {session?.user?.image ? (
               <img src={session.user.image} alt="Avatar" className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full object-cover" />
             ) : (
@@ -218,7 +274,7 @@ export default function AdminSidebar() {
                 {session?.user?.name?.[0]?.toUpperCase() || "A"}
               </div>
             )}
-            <div className="flex-1 min-w-0">
+            <div className={`flex-1 min-w-0 transition-all duration-200 ${isCollapsed ? "md:hidden" : "block"}`}>
               <p className="text-[11px] sm:text-[13px] font-semibold text-[var(--color-text-primary)] truncate">{session?.user?.name || "Admin"}</p>
               <p className="text-[9px] sm:text-[11px] text-[var(--color-text-muted)] truncate">{session?.user?.email || "admin@loop.edu"}</p>
             </div>
@@ -228,14 +284,17 @@ export default function AdminSidebar() {
             <Link
               href="/profile"
               id="admin-profile-link"
-              className="flex items-center justify-center sm:justify-start gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-[var(--color-text-primary)] no-underline transition-all duration-200 hover:bg-[var(--color-bg-surface)] hover:border-[rgba(79,142,247,0.3)] shadow-sm"
+              className={`flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-[var(--color-text-primary)] no-underline transition-all duration-200 hover:bg-[var(--color-bg-surface)] hover:border-[rgba(79,142,247,0.3)] shadow-sm ${
+                isCollapsed ? "md:justify-center md:px-0" : "px-2 sm:px-3 justify-center sm:justify-start"
+              }`}
               onClick={() => setIsOpen(false)}
+              title="Profile Settings"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-accent)]">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
-              <span className="inline ml-2">Profile Settings</span>
+              <span className={`inline ml-2 transition-all duration-200 ${isCollapsed ? "md:hidden" : "block"}`}>Profile Settings</span>
             </Link>
             <button
               id="admin-logout"
@@ -243,15 +302,20 @@ export default function AdminSidebar() {
                 setIsOpen(false);
                 signOut({ callbackUrl: "/" });
               }}
-              className="flex items-center justify-center sm:justify-start gap-2 rounded-lg border border-[rgba(248,81,73,0.2)] bg-transparent px-2 sm:px-3 py-2 sm:py-2.5 text-left text-xs sm:text-sm font-medium text-[var(--color-danger)] transition-all duration-200 hover:bg-[rgba(248,81,73,0.06)]"
+              className={`flex items-center gap-2 rounded-lg border border-[rgba(248,81,73,0.2)] bg-transparent py-2 sm:py-2.5 text-left text-xs sm:text-sm font-medium text-[var(--color-danger)] transition-all duration-200 hover:bg-[rgba(248,81,73,0.06)] cursor-pointer ${
+                isCollapsed ? "md:justify-center md:px-0" : "px-2 sm:px-3 justify-center sm:justify-start"
+              }`}
+              title="Log out"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                 <polyline points="16 17 21 12 16 7"/>
                 <line x1="21" y1="12" x2="9" y2="12"/>
               </svg>
-              <span className="inline ml-2">Log out</span>
+              <span className={`inline ml-2 transition-all duration-200 ${isCollapsed ? "md:hidden" : "block"}`}>Log out</span>
             </button>
+
+
           </div>
         </div>
       </aside>
