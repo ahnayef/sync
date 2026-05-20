@@ -75,58 +75,114 @@ export default function AdminSidebar() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setIsOpen(false);
+    };
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Lock background scrolling on mobile when sidebar is open
+  useEffect(() => {
+    if (isOpen && isMobile) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, isMobile]);
+
   return (
     <>
-      {/* Mobile hamburger button */}
-      <button
-        id="mobile-menu-toggle"
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-50 md:hidden flex items-center justify-center h-10 w-10 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
-        aria-label="Toggle menu"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
+      {/* Mobile Top Header Bar (Fixed) */}
+      <header className="fixed top-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-b border-[var(--color-border)] bg-[rgba(17,23,32,0.85)] px-4 backdrop-blur-md md:hidden">
+        {/* Hamburger toggle button */}
+        <button
+          id="mobile-menu-toggle"
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] transition-all active:scale-95 cursor-pointer"
+          aria-label="Toggle menu"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
 
-      {/* Mobile Overlay */}
+        {/* Center: Logo & Brand Name */}
+        <Link href="/" className="flex items-center gap-2.5 no-underline">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-[var(--color-accent-muted)] shadow-[0_0_18px_rgba(79,142,247,0.18)]">
+            <LogoIcon className="h-5.5 w-5.5" />
+          </div>
+          <div className="text-left">
+            <span className="block text-[15px] font-bold tracking-[-0.02em] text-[var(--color-text-primary)] leading-tight">Loop</span>
+            <span className="block text-[9px] font-semibold uppercase tracking-[0.08em] text-[var(--color-accent)] leading-none">Admin</span>
+          </div>
+        </Link>
+
+        {/* Right: Quick avatar */}
+        <div className="flex items-center gap-2">
+          {session?.user?.image ? (
+            <img src={session.user.image} alt="Avatar" className="h-8 w-8 rounded-full object-cover border border-[var(--color-border)]" />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-accent-muted)] text-[11px] font-bold text-[var(--color-accent)] border border-[var(--color-border)]">
+              {session?.user?.name?.[0]?.toUpperCase() || "A"}
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Mobile Drawer Overlay */}
       {isOpen && isMobile && (
         <div
-          className="fixed inset-0 z-30 bg-black/50"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar Drawer */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-40 flex h-screen w-[240px] min-h-screen flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-6 transition-transform md:transition-none md:translate-x-0 ${
+        className={`fixed md:sticky top-0 left-0 z-50 flex h-screen w-[260px] min-h-screen flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-surface)] px-4 py-6 transition-transform duration-300 ease-in-out md:transition-none md:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        {/* Logo */}
-        <Link href="/" id="admin-sidebar-logo" className="mb-6 flex items-center gap-2.5 px-3 py-2 no-underline">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-[var(--color-accent-muted)] shadow-[0_0_18px_rgba(79,142,247,0.18)]">
-            <LogoIcon className="h-6 w-6" />
-          </div>
-          <div>
-            <span className="block text-[17px] font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">Loop</span>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-accent)]">Admin</span>
-          </div>
-        </Link>
+        {/* Sidebar Header with Logo and Close Button */}
+        <div className="mb-6 flex items-center justify-between px-1 py-2">
+          <Link href="/" id="admin-sidebar-logo" className="flex items-center gap-2.5 no-underline">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-[var(--color-accent-muted)] shadow-[0_0_18px_rgba(79,142,247,0.18)]">
+              <LogoIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <span className="block text-[17px] font-bold tracking-[-0.02em] text-[var(--color-text-primary)]">Loop</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-accent)]">Admin</span>
+            </div>
+          </Link>
+
+          {/* Close button for mobile */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="md:hidden flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] transition-all active:scale-95 cursor-pointer"
+            aria-label="Close menu"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
 
         {/* Nav Items */}
         <p className="mb-2 px-3 text-[8px] sm:text-[9px] font-semibold uppercase tracking-[0.1em] text-[var(--color-text-muted)]">Management</p>
         <nav className="flex flex-col gap-1">
           {adminNavItems.map((item) => {
             // Hide moderators tab if the user is just a moderator (only admins can manage mods)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (item.href === "/dashboard/manage-moderators" && (session?.user as any)?.role !== "admin") {
               return null;
             }
