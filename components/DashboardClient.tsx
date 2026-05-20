@@ -56,8 +56,8 @@ const CircularProgress = ({ percent, color = "var(--color-accent)" }: { percent:
   const offset = circumference - (percent / 100) * circumference;
 
   return (
-    <div className="relative flex items-center justify-center h-10 sm:h-12 w-10 sm:w-12">
-      <svg className="w-full h-full transform -rotate-90">
+    <div className="relative flex items-center justify-center h-10 w-10 sm:h-11 sm:w-11">
+      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
         {/* Background Circle */}
         <circle
           className="text-[var(--color-border)]"
@@ -561,62 +561,79 @@ export default function DashboardClient() {
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               {
-                label: "Classroom Occupancy",
-                val: `${stats.totalRooms - stats.freeRoomsRightNow} / ${stats.totalRooms}`,
-                desc: "Active classroom blocks",
+                label: "Room Occupancy",
+                val: stats.totalRooms - stats.freeRoomsRightNow,
+                unit: `/ ${stats.totalRooms}`,
                 isGauge: true,
                 pct: classroomOccupancyPct,
-                color: "#6f93da"
+                color: "#6f93da",
+                bgClass: "from-[#111827] to-[#1f2937] border-blue-500/20 hover:border-blue-500/40 hover:shadow-[0_0_20px_rgba(59,130,246,0.1)]",
               },
               {
-                label: "Today's Schedule Routine",
-                val: `${stats.todaysClasses} classes`,
-                desc: "Scheduled for today",
+                label: "Today's Classes",
+                val: stats.todaysClasses,
+                unit: "classes",
                 isGauge: false,
                 icon: FiClock,
-                colorClass: "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                iconColor: "text-rose-500/10",
+                bgClass: "from-[#111827] to-[#1f2937] border-rose-500/20 hover:border-rose-500/40 hover:shadow-[0_0_20px_rgba(244,63,94,0.1)]",
               },
               {
-                label: "Faculty Workload Share",
-                val: `${stats.totalTeachers} teachers`,
-                desc: "Avg 3 routines / teacher",
+                label: "Faculty Workload",
+                val: stats.totalTeachers,
+                unit: "teachers",
                 isGauge: false,
                 icon: FiUser,
-                colorClass: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                iconColor: "text-indigo-500/10",
+                bgClass: "from-[#111827] to-[#1f2937] border-indigo-500/20 hover:border-indigo-500/40 hover:shadow-[0_0_20px_rgba(99,102,241,0.1)]",
               },
               {
-                label: "Routines Allocation Util",
-                val: `${stats.totalWeeklyClasses} slots`,
-                desc: "Weekly scheduled capacity",
+                label: "Weekly Allocation",
+                val: stats.totalWeeklyClasses,
+                unit: "slots",
                 isGauge: false,
                 icon: FiBookOpen,
-                colorClass: "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                iconColor: "text-amber-500/10",
+                bgClass: "from-[#111827] to-[#1f2937] border-amber-500/20 hover:border-amber-500/40 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)]",
               },
             ].map((card, idx) => {
               const Icon = card.icon as any;
               return (
                 <div
                   key={idx}
-                  className="glass relative overflow-hidden rounded-xl border border-[var(--color-border)] p-4 flex items-center justify-between gap-4 shadow-sm group hover:border-[rgba(111,147,218,0.2)] transition-all"
+                  className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br ${card.bgClass} p-4 sm:p-5 flex flex-col justify-center min-h-[96px] shadow-sm transition-all duration-300 group`}
                 >
-                  <div className="space-y-1 z-10">
-                    <span className="block text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">{card.label}</span>
-                    <span className="block text-xl font-extrabold text-[var(--color-text-primary)] font-sans leading-tight">
-                      {card.val}
+                  {/* Left-aligned Content */}
+                  <div className="z-10 flex flex-col justify-center pr-10">
+                    <span className="block text-[10px] sm:text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider leading-none mb-2">
+                      {card.label}
                     </span>
-                    <span className="block text-[10px] text-[var(--color-text-muted)] font-medium">
-                      {card.desc}
-                    </span>
+                    <div className="flex items-baseline gap-1 whitespace-nowrap">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-[var(--color-text-primary)] font-mono leading-none tracking-tight">
+                        {card.val}
+                      </span>
+                      {card.unit.startsWith("/") ? (
+                        <span className="text-[11px] sm:text-xs font-semibold text-[var(--color-text-muted)] font-mono ml-0.5">
+                          {card.unit}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] sm:text-xs font-semibold text-[var(--color-text-muted)] lowercase">
+                          {card.unit}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="z-10 flex-shrink-0">
-                    {card.isGauge ? (
+
+                  {/* Right-aligned Absolute Indicator */}
+                  {card.isGauge ? (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10 transition-transform duration-300 group-hover:scale-105">
                       <CircularProgress percent={card.pct!} color={card.color} />
-                    ) : (
-                      <div className={`h-11 w-11 rounded-lg flex items-center justify-center border ${card.colorClass}`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="absolute -right-3 -bottom-5 pointer-events-none select-none transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
+                      <Icon className={`w-20 h-20 ${card.iconColor}`} />
+                    </div>
+                  )}
                 </div>
               );
             })}
