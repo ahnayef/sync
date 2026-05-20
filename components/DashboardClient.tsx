@@ -1214,7 +1214,7 @@ export default function DashboardClient() {
                 { id: "action-add-routine", label: "Add Routine Block", href: "/dashboard/manage-schedule", icon: FiPlusCircle, color: "text-[var(--color-accent)]" },
                 { id: "action-add-teacher-sidebar", label: "Faculty Registration", href: "/dashboard/manage-teachers", icon: FiUser, color: "text-indigo-400" },
                 { id: "action-add-room-sidebar", label: "Classroom Provisioning", href: "/dashboard/manage-rooms", icon: FiHome, color: "text-purple-400" },
-                { id: "action-search-routine-sidebar", label: "Search Routines List", href: "/routine", icon: FiSearch, color: "text-emerald-400" },
+                { id: "action-manage-courses-sidebar", label: "Course Management", href: "/dashboard/manage-courses", icon: FiBookOpen, color: "text-emerald-400" },
               ].map((act) => {
                 const Icon = act.icon;
                 return (
