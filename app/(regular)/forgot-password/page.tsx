@@ -3,7 +3,7 @@ import ForgotPasswordClient from "./ForgotPasswordClient";
 
 export const metadata: Metadata = {
   title: "Forgot Password",
-  description: "Verify an OTP and set a new password for your Loop account.",
+  description: "Verify an OTP and set a new password for your Sync account.",
 };
 
 export default function ForgotPasswordPage() {

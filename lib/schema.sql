@@ -1,5 +1,5 @@
 -- ============================================================
---  Loop — Schedule Management App
+--  Sync — Schedule Management App
 --  Database Schema
 --  Engine: MySQL 8+  |  Charset: utf8mb4
 -- ============================================================

@@ -28,7 +28,7 @@ export const sendMail = async (options: MailOptions): Promise<{ success: boolean
     try {
         console.log('Sending email to:', options.receiver);
         const info = await transporter.sendMail({
-            from: `"Loop" <${process.env.GMAIL_USER}>`,
+            from: `"Sync" <${process.env.GMAIL_USER}>`,
             to: options.receiver,
             subject: options.subject,
             text: options.text,

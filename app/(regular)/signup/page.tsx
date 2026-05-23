@@ -5,7 +5,7 @@ import { LogoIcon } from "@/components/Icon";
 
 export const metadata: Metadata = {
   title: "Sign up",
-  description: "Create your Loop account with Google.",
+  description: "Create your Sync account with Google.",
 };
 
 export default function SignupPage() {
@@ -39,7 +39,7 @@ export default function SignupPage() {
           </div>
           <div className="leading-tight text-left">
             <span className="block text-lg font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">
-              Loop
+              Sync
             </span>
             <span className="block text-xs uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
               Smart scheduling
@@ -55,10 +55,10 @@ export default function SignupPage() {
             </div>
 
             <h1 className="text-[clamp(20px,5vw,34px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-[2rem]">
-            Sign up with Google
+              Sign up with Google
             </h1>
             <p className="mt-2 text-sm md:text-base leading-7 text-[var(--color-text-secondary)]">
-            Google is the only supported sign-up method for student accounts.
+              Google is the only supported sign-up method for student accounts.
             </p>
           </div>
 

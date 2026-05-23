@@ -305,7 +305,7 @@ async function fetchGoogleExport(url: string) {
     cache: "no-store",
     redirect: "follow",
     headers: {
-      "User-Agent": "Mozilla/5.0 LoopScheduleImporter/1.0",
+      "User-Agent": "Mozilla/5.0 SyncScheduleImporter/1.0",
       Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,*/*",
     },
   });
@@ -566,13 +566,13 @@ export async function syncDepartmentSchedule(departmentId: number, sheetLink: st
   try {
     // 1. Download sheet
     const sheet = await fetchGoogleSheetBuffer(sheetLink);
-    
+
     // 2. Parse workbook
     const rawRows = await parseWorkbook(sheet.buffer, sheet.fileName, sheet.gid);
-    
+
     // 3. Resolve rows for this department
     const rows = await resolveRows(rawRows, departmentId, null);
-    
+
     // 4. Check for errors
     const errorRows = rows.filter(r => r.status === "error");
     if (errorRows.length > 0) {
@@ -582,38 +582,38 @@ export async function syncDepartmentSchedule(departmentId: number, sheetLink: st
         .slice(0, 5) // limit to top 5 errors to avoid huge message logs
         .join(" | ");
       const totalErrors = errorRows.length;
-      
+
       const fullMsg = `Sync failed. Found ${totalErrors} validation errors. Top errors: ${errorMsg}`;
-      
+
       // Write error to sync logs
       await db.execute(
         "INSERT INTO sheet_sync_logs (department_id, status, message) VALUES (?, 'error', ?)",
         [departmentId, fullMsg]
       );
-      
+
       throw new Error(fullMsg);
     }
-    
+
     // 5. Apply rows (replaces old schedules for this department)
     const applied = await applyRows(rows);
-    
+
     // 6. Update last_sync_at
     await db.execute(
       "UPDATE departments SET last_sync_at = CURRENT_TIMESTAMP WHERE id = ?",
       [departmentId]
     );
-    
+
     // 7. Write success to sync logs
     const successMsg = `Successfully synced ${applied.inserted} schedule items.`;
     await db.execute(
       "INSERT INTO sheet_sync_logs (department_id, status, message) VALUES (?, 'success', ?)",
       [departmentId, successMsg]
     );
-    
+
     return { success: true, inserted: applied.inserted };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "An unknown error occurred during sync.";
-    
+
     // Write error to sync logs
     try {
       await db.execute(
@@ -623,7 +623,7 @@ export async function syncDepartmentSchedule(departmentId: number, sheetLink: st
     } catch (dbErr) {
       console.error("Failed to write error log to db:", dbErr);
     }
-    
+
     throw error;
   }
 }

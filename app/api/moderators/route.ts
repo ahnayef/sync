@@ -21,7 +21,7 @@ const getEmailTemplate = (email: string, pass: string, loginUrl: string) => `
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loop Moderator Invitation</title>
+<title>Sync Moderator Invitation</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b1120; color: #f8fafc; margin: 0; padding: 40px 20px; line-height: 1.6; }
   .wrapper { max-width: 600px; margin: 0 auto; }
@@ -47,9 +47,9 @@ const getEmailTemplate = (email: string, pass: string, loginUrl: string) => `
       <div class="logo">L</div>
     </div>
     <div class="container">
-      <h1>Welcome to Loop</h1>
+      <h1>Welcome to Sync</h1>
       <p>Hello there,</p>
-      <p>An administrator has invited you to join the Loop dashboard as a <strong>Moderator</strong>. You now have privileged access to manage the institution's core resources including departments, teachers, courses, rooms, and the schedule.</p>
+      <p>An administrator has invited you to join the Sync dashboard as a <strong>Moderator</strong>. You now have privileged access to manage the institution's core resources including departments, teachers, courses, rooms, and the schedule.</p>
       
       <div class="credentials-wrapper">
         <div class="credentials">
@@ -71,7 +71,7 @@ const getEmailTemplate = (email: string, pass: string, loginUrl: string) => `
       </div>
     </div>
     <div class="footer">
-      <p>&copy; ${new Date().getFullYear()} Loop University System. All rights reserved.</p>
+      <p>&copy; ${new Date().getFullYear()} Sync University System. All rights reserved.</p>
     </div>
   </div>
 </body>
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
 
     const mailSent = await sendMail({
       receiver: email,
-      subject: "Welcome to Loop - Moderator Invitation",
+      subject: "Welcome to Sync - Moderator Invitation",
       text: `You have been invited as a moderator. Email: ${email}, Password: ${tempPassword}. Login at ${loginUrl}`,
       html,
     });

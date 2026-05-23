@@ -33,7 +33,7 @@ export default function Navbar() {
           </div>
           <div className="leading-tight">
             <span className="block text-sm font-semibold tracking-[0.02em] text-white sm:text-base">
-              Loop
+              Sync
             </span>
             <span className="block text-[11px] text-white/45 transition-colors group-hover:text-white/55">
               Smart schedules

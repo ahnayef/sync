@@ -3,7 +3,7 @@ import { FiArrowRight, FiClock, FiMail, FiMapPin, FiMessageSquare } from "react-
 
 export const metadata: Metadata = {
   title: "Contact Us",
-  description: "Get in touch with the Loop team. We're here to help.",
+  description: "Get in touch with the Sync team. We're here to help.",
 };
 
 const contactItems = [
@@ -112,7 +112,7 @@ export default function ContactPage() {
           </section>
 
           <section className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5 sm:p-8">
+            <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5 sm:p-8">
               <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#4f8ef718] text-[#8fb5ff]">
                   <FiMessageSquare size={18} />

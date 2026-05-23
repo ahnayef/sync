@@ -14,9 +14,9 @@ import { LogoIcon } from "@/components/Icon";
 import HomeMockup from "@/components/HomeMockup";
 
 export const metadata: Metadata = {
-  title: "Loop — Smart Schedule Management",
+  title: "Sync — Smart Schedule Management",
   description:
-    "Loop is a modern schedule management app for students and administrators. View your routine, manage courses, and stay on track.",
+    "Sync is a modern schedule management app for students and administrators. View your routine, manage courses, and stay on track.",
 };
 
 const features = [
@@ -35,7 +35,7 @@ const features = [
   {
     icon: <FiZap />,
     title: "Smart Import",
-    desc: "Admins can upload Excel sheets and Loop intelligently parses and validates schedule data.",
+    desc: "Admins can upload Excel sheets and Sync intelligently parses and validates schedule data.",
     color: "#a371f7",
   },
   {
@@ -84,7 +84,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <LogoIcon className="h-9 w-9" />
               <div>
-                <p className="text-sm font-semibold text-[var(--color-text-primary)]">Loop</p>
+                <p className="text-sm font-semibold text-[var(--color-text-primary)]">Sync</p>
                 <p className="text-xs text-[var(--color-text-muted)]">Schedule management for campus teams</p>
               </div>
             </div>
@@ -107,7 +107,7 @@ export default function Home() {
               </h1>
 
               <p className="mt-6 max-w-[640px] text-base leading-8 text-[var(--color-text-secondary)] sm:text-lg">
-                Loop gives students a fast, readable routine view and gives admins the controls to
+                Sync gives students a fast, readable routine view and gives admins the controls to
                 import, validate, and manage schedules without turning the dashboard into a maze.
               </p>
 

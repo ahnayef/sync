@@ -6,7 +6,7 @@ import { FiArrowRight, FiShield, FiUsers, FiLayout } from "react-icons/fi";
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Learn about Loop — the schedule management app built for modern students and institutions.",
+    "Learn about Sync — the schedule management app built for modern students and institutions.",
 };
 
 const values = [
@@ -38,9 +38,9 @@ const heroHighlights = [
 
 const stats = [
   { value: "2,400+", label: "Students" },
-  { value: "180+",   label: "Courses" },
-  { value: "40+",    label: "Instructors" },
-  { value: "99.9%",  label: "Uptime" },
+  { value: "180+", label: "Courses" },
+  { value: "40+", label: "Instructors" },
+  { value: "99.9%", label: "Uptime" },
 ];
 
 export default function AboutPage() {
@@ -62,7 +62,7 @@ export default function AboutPage() {
             <div className="relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-12">
               <div>
                 <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/25 bg-blue-500/10 px-4 py-2 text-xs font-semibold tracking-[0.18em] text-[#8ab2ff]">
-                  ABOUT LOOP
+                  ABOUT Sync
                 </div>
 
                 <h1 className="max-w-3xl text-[clamp(26px,6vw,48px)] font-extrabold leading-[0.98] tracking-[-0.05em] text-[var(--color-text-primary)]">
@@ -70,7 +70,7 @@ export default function AboutPage() {
                 </h1>
 
                 <p className="mt-6 max-w-2xl text-sm md:text-[17px] leading-8 text-[var(--color-text-secondary)]">
-                  Loop was created to replace cluttered, outdated class scheduling systems with something calm, fast, and genuinely useful every day.
+                  Sync was created to replace cluttered, outdated class scheduling systems with something calm, fast, and genuinely useful every day.
                 </p>
               </div>
 
@@ -86,22 +86,22 @@ export default function AboutPage() {
           </section>
 
           <section className="mt-6 grid gap-5 lg:grid-cols-[0.95fr_1.05fr] lg:gap-6">
-              <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5 sm:p-8">
+            <div className="rounded-[28px] border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-5 sm:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Our mission</p>
               <h2 className="mt-3 text-[clamp(20px,3vw,30px)] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
                 Make the schedule obvious.
               </h2>
               <p className="mt-4 text-sm md:text-[15px] leading-7 text-[var(--color-text-secondary)]">
-                Every student should be able to see where they need to be without digging through dense portals, confusing tables, or stale information. Loop keeps that answer clear and current.
+                Every student should be able to see where they need to be without digging through dense portals, confusing tables, or stale information. Sync keeps that answer clear and current.
               </p>
               <p className="mt-4 text-sm md:text-[15px] leading-7 text-[var(--color-text-secondary)]">
-                That same clarity matters for admins too. Loop keeps the import, validation, and publishing flow straightforward so schedule updates stay accurate instead of fragile.
+                That same clarity matters for admins too. Sync keeps the import, validation, and publishing flow straightforward so schedule updates stay accurate instead of fragile.
               </p>
               <Link
                 href="/signup"
                 className="mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-4 py-2.5 sm:px-5 sm:py-3 text-sm font-semibold text-white no-underline shadow-[0_18px_40px_rgba(79,142,247,0.24)] transition-transform duration-200 hover:-translate-y-0.5"
               >
-                Start using Loop
+                Start using Sync
                 <FiArrowRight />
               </Link>
             </div>
@@ -117,35 +117,35 @@ export default function AboutPage() {
               </div>
 
               <div className="divide-y divide-[var(--color-border)] overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.45)]">
-              {values.map((val) => {
-                const Icon = val.icon;
-                return (
-                  <div
-                    key={val.title}
-                    className="group flex gap-4 p-4 sm:gap-5 sm:p-6 transition-colors duration-200 hover:bg-[rgba(21,28,37,0.7)]"
-                  >
+                {values.map((val) => {
+                  const Icon = val.icon;
+                  return (
                     <div
-                      className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-[16px] text-[22px] transition-transform duration-200 group-hover:scale-105"
-                      style={{
-                        background: `${val.color}18`,
-                        border: `1px solid ${val.color}2f`,
-                        color: val.color,
-                        filter: `drop-shadow(0 0 8px ${val.color}40)`,
-                      }}
+                      key={val.title}
+                      className="group flex gap-4 p-4 sm:gap-5 sm:p-6 transition-colors duration-200 hover:bg-[rgba(21,28,37,0.7)]"
                     >
-                      <Icon />
+                      <div
+                        className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-[16px] text-[22px] transition-transform duration-200 group-hover:scale-105"
+                        style={{
+                          background: `${val.color}18`,
+                          border: `1px solid ${val.color}2f`,
+                          color: val.color,
+                          filter: `drop-shadow(0 0 8px ${val.color}40)`,
+                        }}
+                      >
+                        <Icon />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-base sm:text-lg font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">
+                          {val.title}
+                        </h3>
+                        <p className="mt-1 max-w-[34rem] text-sm md:text-base leading-7 text-[var(--color-text-secondary)]">
+                          {val.desc}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="text-base sm:text-lg font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">
-                        {val.title}
-                      </h3>
-                      <p className="mt-1 max-w-[34rem] text-sm md:text-base leading-7 text-[var(--color-text-secondary)]">
-                        {val.desc}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
               </div>
             </div>
           </section>

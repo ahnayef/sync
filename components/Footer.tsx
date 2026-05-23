@@ -16,7 +16,7 @@ export default function Footer() {
                 <LogoIcon />
               </div>
               <span className="text-base font-semibold text-[var(--color-text-primary)]">
-                Loop
+                Sync
               </span>
             </Link>
             <p className="text-sm text-[var(--color-text-secondary)]">
@@ -74,7 +74,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
           <p className="text-xs text-[var(--color-text-muted)]">
-            © 2026 Loop. All rights reserved.
+            © 2026 Sync. All rights reserved.
           </p>
           <p className="text-xs text-[var(--color-text-muted)]">
             Made with care by{" "}

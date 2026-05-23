@@ -6,7 +6,7 @@ import { LogoIcon } from "@/components/Icon";
 
 export const metadata: Metadata = {
   title: "Log in",
-  description: "Log in to your Loop account with Google or admin email and password.",
+  description: "Log in to your Sync account with Google or admin email and password.",
 };
 
 export default function LoginPage() {
@@ -38,7 +38,7 @@ export default function LoginPage() {
           </div>
           <div className="leading-tight text-left">
             <span className="block text-lg font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">
-              Loop
+              Sync
             </span>
             <span className="block text-xs uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
               Smart scheduling

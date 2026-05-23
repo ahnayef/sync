@@ -535,8 +535,8 @@ export default function DashboardClient() {
                 id="dashboard-demo-toggle-btn"
                 onClick={() => setDemoMode(!demoMode)}
                 className={`inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold border transition-all duration-150 cursor-pointer ${demoMode
-                    ? "bg-[rgba(163,113,247,0.12)] border-[rgba(163,113,247,0.25)] text-[var(--color-lab)] hover:bg-[rgba(163,113,247,0.18)]"
-                    : "bg-[var(--color-bg-elevated)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                  ? "bg-[rgba(163,113,247,0.12)] border-[rgba(163,113,247,0.25)] text-[var(--color-lab)] hover:bg-[rgba(163,113,247,0.18)]"
+                  : "bg-[var(--color-bg-elevated)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                   }`}
                 title="Toggles mock active hours for test coverage"
               >
@@ -965,8 +965,8 @@ export default function DashboardClient() {
                   <button
                     onClick={() => setSelectedFacultyDept("All")}
                     className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all duration-200 ${selectedFacultyDept === "All"
-                        ? "bg-[var(--color-accent)] text-white shadow-sm"
-                        : "bg-[var(--color-border)]/40 text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/70 hover:text-[var(--color-text-primary)]"
+                      ? "bg-[var(--color-accent)] text-white shadow-sm"
+                      : "bg-[var(--color-border)]/40 text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/70 hover:text-[var(--color-text-primary)]"
                       }`}
                   >
                     All
@@ -976,8 +976,8 @@ export default function DashboardClient() {
                       key={dept}
                       onClick={() => setSelectedFacultyDept(dept)}
                       className={`px-2 py-0.5 rounded text-[9px] font-bold transition-all duration-200 ${selectedFacultyDept === dept
-                          ? "bg-[var(--color-accent)] text-white shadow-sm"
-                          : "bg-[var(--color-border)]/40 text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/70 hover:text-[var(--color-text-primary)]"
+                        ? "bg-[var(--color-accent)] text-white shadow-sm"
+                        : "bg-[var(--color-border)]/40 text-[var(--color-text-muted)] hover:bg-[var(--color-border)]/70 hover:text-[var(--color-text-primary)]"
                         }`}
                     >
                       {dept}
@@ -1164,10 +1164,10 @@ export default function DashboardClient() {
             <div className="flex items-center gap-3">
               {/* Profile Avatar Initial Circle */}
               {session?.user?.image ? (
-                <img 
-                  src={session.user.image} 
-                  alt="Avatar" 
-                  className="h-10 w-10 rounded-full object-cover shadow-md border border-white/10" 
+                <img
+                  src={session.user.image}
+                  alt="Avatar"
+                  className="h-10 w-10 rounded-full object-cover shadow-md border border-white/10"
                 />
               ) : (
                 <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[var(--color-accent)] to-[#a371f7] flex items-center justify-center font-extrabold text-white text-sm shadow-md border border-white/10">
@@ -1179,7 +1179,7 @@ export default function DashboardClient() {
                   {session?.user?.name || "Academic Admin"}
                 </span>
                 <span className="block text-[9px] uppercase tracking-wider text-[var(--color-text-muted)] font-extrabold">
-                  {(session?.user as any)?.role === "admin" ? "Loop Admin" : "Loop Registrar"}
+                  {(session?.user as any)?.role === "admin" ? "Sync Admin" : "Sync Registrar"}
                 </span>
               </div>
             </div>
@@ -1269,11 +1269,10 @@ export default function DashboardClient() {
                   <p className="text-[9px] text-[var(--color-text-muted)] mt-0.5">Toggle Demo Mode in header to load mock active routines.</p>
                 </div>
               ) : (
-                <div className={`space-y-2.5 transition-all duration-300 ${
-                  showAllClasses 
-                    ? "max-h-[620px] overflow-y-auto pr-1" 
+                <div className={`space-y-2.5 transition-all duration-300 ${showAllClasses
+                    ? "max-h-[620px] overflow-y-auto pr-1"
                     : ""
-                }`}>
+                  }`}>
                   {displayedClasses.map((s: any) => {
                     const isOngoing = s.status === "ongoing";
                     const isUpcoming = s.status === "upcoming";
@@ -1282,8 +1281,8 @@ export default function DashboardClient() {
                       <div
                         key={s.id}
                         className={`relative border rounded-lg p-2.5 transition-all duration-150 ${isOngoing
-                            ? "bg-[rgba(103,182,107,0.04)] border-[rgba(103,182,107,0.25)] shadow-[0_2px_8px_rgba(103,182,107,0.04)]"
-                            : "bg-[var(--color-bg-surface)]/60 border-[var(--color-border)]/60 hover:bg-[var(--color-bg-surface)]"
+                          ? "bg-[rgba(103,182,107,0.04)] border-[rgba(103,182,107,0.25)] shadow-[0_2px_8px_rgba(103,182,107,0.04)]"
+                          : "bg-[var(--color-bg-surface)]/60 border-[var(--color-border)]/60 hover:bg-[var(--color-bg-surface)]"
                           }`}
                       >
                         {/* Glow indicator line for ongoing */}
@@ -1382,10 +1381,10 @@ export default function DashboardClient() {
                     return (
                       <div key={idx} className="relative">
                         <div className={`absolute -left-[18px] top-1.5 h-1.5 w-1.5 rounded-full border ${log.type === 'schedule'
-                            ? "bg-rose-400 border-rose-400"
-                            : log.type === 'room'
-                              ? "bg-purple-400 border-purple-400"
-                              : "bg-indigo-400 border-indigo-400"
+                          ? "bg-rose-400 border-rose-400"
+                          : log.type === 'room'
+                            ? "bg-purple-400 border-purple-400"
+                            : "bg-indigo-400 border-indigo-400"
                           }`} />
                         <div className="space-y-0.5">
                           <p className="text-[10px] text-[var(--color-text-primary)] font-semibold leading-relaxed">

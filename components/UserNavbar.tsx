@@ -37,7 +37,7 @@ export default function UserNavbar() {
               <LogoIcon />
             </div>
             <div className="leading-tight">
-              <span className="block text-sm font-semibold tracking-[0.02em] text-white">Loop</span>
+              <span className="block text-sm font-semibold tracking-[0.02em] text-white">Sync</span>
               <span className="block text-[11px] text-white/45">Smart schedules</span>
             </div>
           </Link>
@@ -64,7 +64,7 @@ export default function UserNavbar() {
             </div>
             <div className="leading-tight">
               <span className="block text-sm font-semibold tracking-[0.02em] text-white sm:text-base">
-                Loop
+                Sync
               </span>
               <span className="block text-[11px] text-white/45">
                 Smart schedules

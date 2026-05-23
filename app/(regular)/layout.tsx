@@ -12,11 +12,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Loop — Schedule Management",
-    template: "%s | Loop",
+    default: "Sync — Schedule Management",
+    template: "%s | Sync",
   },
   description:
-    "Loop is a modern schedule management app for students and administrators.",
+    "Sync is a modern schedule management app for students and administrators.",
 };
 
 export default function RootLayout({
@@ -40,9 +40,9 @@ export default function RootLayout({
           minHeight: "100vh",
         }}
       >
-      <Navbar />
+        <Navbar />
         {children}
-        <Footer/>
+        <Footer />
       </body>
     </html>
   );
