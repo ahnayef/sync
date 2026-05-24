@@ -12,7 +12,7 @@ export default function ProfilePage() {
   const [role, setRole] = useState("student");
   const [studentId, setStudentId] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-  
+
   const [updateError, setUpdateError] = useState("");
   const [updateSuccess, setUpdateSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -60,7 +60,7 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to update profile");
-      
+
       setUpdateSuccess("Profile updated successfully!");
       setEditing(false);
       // We also update the NextAuth session so the UI catches the new name/email
@@ -74,14 +74,14 @@ export default function ProfilePage() {
 
   const handleDelete = async () => {
     if (!confirm("Are you absolutely sure? This action cannot be undone and will permanently delete your account.")) return;
-    
+
     try {
       const res = await fetch("/api/profile", { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to delete account");
       }
-      
+
       // Logout and redirect to home
       window.location.href = "/api/auth/signout?callbackUrl=/";
     } catch (err: any) {
@@ -190,11 +190,10 @@ export default function ProfilePage() {
               if (editing) handleSave();
               else setEditing(true);
             }}
-            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-sm font-medium flex items-center gap-2 transition-all ${
-              editing 
-                ? "border-[var(--color-border)] bg-[var(--color-accent-muted)] text-[var(--color-accent)]" 
-                : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-surface)]"
-            }`}
+            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-sm font-medium flex items-center gap-2 transition-all ${editing
+              ? "border-[var(--color-border)] bg-[var(--color-accent-muted)] text-[var(--color-accent)]"
+              : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-surface)]"
+              }`}
           >
             {editing ? <><FiCheck /> Save</> : <><FiEdit2 /> Edit</>}
           </button>
@@ -203,141 +202,138 @@ export default function ProfilePage() {
         {/* Personal Information + Change Password (responsive grid) */}
         <div className="grid gap-6 md:grid-cols-2 mb-6">
           <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6 sm:p-8">
-          <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-6">
-            Personal Information
-          </h3>
-          {updateError && <div className="mb-4 text-sm text-[var(--color-danger)] bg-[rgba(248,81,73,0.1)] p-3 rounded-md border border-[rgba(248,81,73,0.2)]">{updateError}</div>}
-          {updateSuccess && <div className="mb-4 text-sm text-[#3fb950] bg-[rgba(63,185,80,0.1)] p-3 rounded-md border border-[rgba(63,185,80,0.2)]">{updateSuccess}</div>}
-          
+            <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-6">
+              Personal Information
+            </h3>
+            {updateError && <div className="mb-4 text-sm text-[var(--color-danger)] bg-[rgba(248,81,73,0.1)] p-3 rounded-md border border-[rgba(248,81,73,0.2)]">{updateError}</div>}
+            {updateSuccess && <div className="mb-4 text-sm text-[#3fb950] bg-[rgba(63,185,80,0.1)] p-3 rounded-md border border-[rgba(63,185,80,0.2)]">{updateSuccess}</div>}
+
             <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label htmlFor="profile-name" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2 flex items-center gap-1.5">
-                  <FiUser size={14} /> Full Name
-                </label>
-                <input
-                  id="profile-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={!editing}
-                  className={`w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none transition-all ${
-                    !editing ? "bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] cursor-not-allowed" : "bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]"
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="profile-email" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2 flex items-center gap-1.5">
-                  <FiMail size={14} /> Email Address
-                </label>
-                <input
-                  id="profile-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={!editing}
-                  className={`w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none transition-all ${
-                    !editing ? "bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] cursor-not-allowed" : "bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]"
-                  }`}
-                />
-              </div>
-
-              {role === "student" && (
+              <div className="grid grid-cols-1 gap-5">
                 <div>
-                  <label htmlFor="profile-student-id" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2 flex items-center gap-1.5">
-                    <FiHash size={14} /> Student ID
+                  <label htmlFor="profile-name" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2 flex items-center gap-1.5">
+                    <FiUser size={14} /> Full Name
                   </label>
                   <input
-                    id="profile-student-id"
+                    id="profile-name"
                     type="text"
-                    value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     disabled={!editing}
-                    className={`w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none transition-all ${
-                      !editing ? "bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] cursor-not-allowed" : "bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]"
-                    }`}
+                    className={`w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none transition-all ${!editing ? "bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] cursor-not-allowed" : "bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]"
+                      }`}
                   />
                 </div>
+
+                <div>
+                  <label htmlFor="profile-email" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2 flex items-center gap-1.5">
+                    <FiMail size={14} /> Email Address
+                  </label>
+                  <input
+                    id="profile-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={!editing}
+                    className={`w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none transition-all ${!editing ? "bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] cursor-not-allowed" : "bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]"
+                      }`}
+                  />
+                </div>
+
+                {role === "student" && (
+                  <div>
+                    <label htmlFor="profile-student-id" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2 flex items-center gap-1.5">
+                      <FiHash size={14} /> Student ID
+                    </label>
+                    <input
+                      id="profile-student-id"
+                      type="text"
+                      value={studentId}
+                      onChange={(e) => setStudentId(e.target.value)}
+                      disabled={!editing}
+                      className={`w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] text-sm outline-none transition-all ${!editing ? "bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] cursor-not-allowed" : "bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]"
+                        }`}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {editing && (
+                <button
+                  id="profile-save"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="mt-2 w-full sm:w-max px-4 py-2 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? "Saving..." : "Save changes"}
+                </button>
               )}
             </div>
-            
-            {editing && (
-              <button
-                id="profile-save"
-                onClick={handleSave}
-                disabled={isSaving}
-                className="mt-2 w-full sm:w-max px-4 py-2 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                {isSaving ? "Saving..." : "Save changes"}
-              </button>
-            )}
-          </div>
           </div>
 
           {/* Change Password */}
           <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-6 sm:p-8">
-          <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-6">
-            Change Password
-          </h3>
-          <div className="flex flex-col gap-3 max-w-[400px]">
-            {passwordError && <div className="text-sm text-[var(--color-danger)] bg-[rgba(248,81,73,0.1)] p-3 rounded-md border border-[rgba(248,81,73,0.2)]">{passwordError}</div>}
-            {passwordSuccess && <div className="text-sm text-[#3fb950] bg-[rgba(63,185,80,0.1)] p-3 rounded-md border border-[rgba(63,185,80,0.2)]">{passwordSuccess}</div>}
-            
-            <div>
-              <label htmlFor="profile-current-password" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2">
-                Current Password
-              </label>
-              <input
-                id="profile-current-password"
-                type="password"
-                placeholder="••••••••"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
-              />
-              <p className="mt-1.5 text-[11px] text-[var(--color-text-muted)]">
-                Leave blank if you registered with Google and haven't set a password yet.
-              </p>
-            </div>
+            <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-6">
+              Change Password
+            </h3>
+            <div className="flex flex-col gap-3 max-w-[400px]">
+              {passwordError && <div className="text-sm text-[var(--color-danger)] bg-[rgba(248,81,73,0.1)] p-3 rounded-md border border-[rgba(248,81,73,0.2)]">{passwordError}</div>}
+              {passwordSuccess && <div className="text-sm text-[#3fb950] bg-[rgba(63,185,80,0.1)] p-3 rounded-md border border-[rgba(63,185,80,0.2)]">{passwordSuccess}</div>}
 
-            <div>
-              <label htmlFor="profile-new-password" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2">
-                New Password
-              </label>
-              <input
-                id="profile-new-password"
-                type="password"
-                placeholder="••••••••"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
-              />
-            </div>
+              <div>
+                <label htmlFor="profile-current-password" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2">
+                  Current Password
+                </label>
+                <input
+                  id="profile-current-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
+                />
+                <p className="mt-1.5 text-[11px] text-[var(--color-text-muted)]">
+                  Leave blank if you registered with Google and haven't set a password yet.
+                </p>
+              </div>
 
-            <div>
-              <label htmlFor="profile-confirm-password" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2">
-                Confirm New Password
-              </label>
-              <input
-                id="profile-confirm-password"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
-              />
-            </div>
+              <div>
+                <label htmlFor="profile-new-password" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2">
+                  New Password
+                </label>
+                <input
+                  id="profile-new-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
+                />
+              </div>
 
-            <button
-              id="profile-update-password"
-              onClick={handlePasswordChange}
-              disabled={passwordLoading}
-              className="mt-2 w-max px-6 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_16px_rgba(79,142,247,0.25)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {passwordLoading ? "Updating..." : "Update password"}
-            </button>
-          </div>
+              <div>
+                <label htmlFor="profile-confirm-password" className="block text-[13px] font-medium text-[var(--color-text-secondary)] mb-2">
+                  Confirm New Password
+                </label>
+                <input
+                  id="profile-confirm-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] text-sm outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] transition-all"
+                />
+              </div>
+
+              <button
+                id="profile-update-password"
+                onClick={handlePasswordChange}
+                disabled={passwordLoading}
+                className="mt-2 w-max px-6 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_16px_rgba(79,142,247,0.25)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {passwordLoading ? "Updating..." : "Update password"}
+              </button>
+            </div>
           </div>
         </div>
 
