@@ -79,11 +79,11 @@ export default function ManageTeachersPage() {
       const method = editingId ? "PUT" : "POST";
       const payload = editingId
         ? {
-            id: editingId,
-            name: newName,
-            short: newShort,
-            departmentId: newDeptId,
-          }
+          id: editingId,
+          name: newName,
+          short: newShort,
+          departmentId: newDeptId,
+        }
         : { name: newName, short: newShort, departmentId: newDeptId };
 
       const res = await fetch("/api/teachers", {
@@ -208,7 +208,7 @@ export default function ManageTeachersPage() {
                   <tr
                     key={t.id}
                     id={`teacher-row-${t.id}`}
-                    className={`border-b ${i < filtered.length - 1 ? "border-[var(--color-border)]" : ""} bg-[var(--color-bg-surface)]`}
+                    className={`border-b border-[var(--color-border)] bg-[var(--color-bg-surface)]`}
                   >
                     <td className="px-3 sm:px-4 py-2.5 sm:py-3">
                       <div className="flex items-center gap-2 sm:gap-3">
