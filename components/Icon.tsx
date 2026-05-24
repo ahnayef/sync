@@ -43,21 +43,21 @@ export function LogoIcon({ width = "100%", height = "100%", ...props }: SVGProps
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            width={123}
-            height={123}
+            width={width}
+            height={height}
             fill="none"
             {...props}
             viewBox="0 0 123 123"
         >
             <path
-                fill="url(#a)"
+                fill={`url(#${gradientId})`}
                 fillRule="evenodd"
                 d="m64.893 32.65-5.08 25.85-5.16-7.77c-11.11 4.46-17.35 11.81-18.27 23.13-9.13-16-3.59-30.25 8-38.63l-5.29-7.93zM61.442 0a61.46 61.46 0 1 1-43.44 18 61.2 61.2 0 0 1 43.44-18m36.12 25.32a51.08 51.08 0 1 0 15 36.12 51 51 0 0 0-15-36.12M56.643 91.8l5.08-25.8 5.16 7.77c11.12-4.51 17.35-11.86 18.27-23.18 9.13 16 3.59 30.25-8 38.63l5.26 7.93z"
                 clipRule="evenodd"
             />
             <defs>
                 <linearGradient
-                    id="a"
+                    id={gradientId}
                     x1={14.87}
                     x2={111.491}
                     y1={22.178}
