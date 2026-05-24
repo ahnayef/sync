@@ -149,9 +149,7 @@ export default function AdminSidebar() {
 
         {/* Center: Logo & Brand Name */}
         <Link href="/" className="flex items-center gap-2.5 no-underline">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-[var(--color-accent-muted)] shadow-[0_0_18px_rgba(79,142,247,0.18)]">
-            <LogoIcon className="h-5.5 w-5.5" />
-          </div>
+
           <div className="text-left">
             <span className="block text-[15px] font-bold tracking-[-0.02em] text-[var(--color-text-primary)] leading-tight">Sync</span>
             <span className="block text-[9px] font-semibold uppercase tracking-[0.08em] text-[var(--color-accent)] leading-none">Admin</span>

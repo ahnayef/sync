@@ -41,7 +41,6 @@ export default function UserNavbar() {
               <span className="block text-[11px] text-white/45">Smart schedules</span>
             </div>
           </Link>
-
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition-all hover:border-white/15 hover:bg-white/[0.08] hover:text-white active:scale-95"
