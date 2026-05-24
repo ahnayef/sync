@@ -58,16 +58,16 @@ export default function ManageDepartmentPage() {
     setSaving(true);
     try {
       const method = editingId ? "PUT" : "POST";
-      const payload = editingId 
+      const payload = editingId
         ? { id: editingId, name: newName, fullName: newFullName }
         : { name: newName, fullName: newFullName };
-        
+
       const res = await fetch("/api/departments", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
+
       if (!res.ok) {
         const error = await res.json();
         alert(error.error || "Failed to save department");
@@ -150,7 +150,7 @@ export default function ManageDepartmentPage() {
               </thead>
               <tbody>
                 {filtered.map((d, i) => (
-                  <tr key={d.id} id={`dept-row-${d.id}`} className={`border-b ${i < filtered.length - 1 ? "border-[var(--color-border)]" : ""} bg-[var(--color-bg-surface)] transition-colors hover:bg-[var(--color-bg-elevated)]/40`}>
+                  <tr key={d.id} id={`dept-row-${d.id}`} className={`border-b-1 border-[var(--color-border)] bg-[var(--color-bg-surface)] transition-colors hover:bg-[var(--color-bg-elevated)]/40`}>
                     <td className="px-3 sm:px-4 py-3">
                       <code className="text-xs font-bold px-2 py-0.5 rounded text-[var(--color-accent)] bg-[var(--color-accent-muted)]">{d.name}</code>
                     </td>
