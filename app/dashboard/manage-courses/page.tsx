@@ -87,16 +87,16 @@ export default function ManageCoursesPage() {
     setSaving(true);
     try {
       const method = editingId ? "PUT" : "POST";
-      const payload = editingId 
+      const payload = editingId
         ? { id: editingId, code: newCode, name: newName, isLab: newIsLab, departmentId: newDeptId }
         : { code: newCode, name: newName, isLab: newIsLab, departmentId: newDeptId };
-        
+
       const res = await fetch("/api/courses", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
+
       if (!res.ok) {
         const error = await res.json();
         alert(error.error || "Failed to save course");
@@ -241,7 +241,7 @@ export default function ManageCoursesPage() {
                         <tr
                           key={c.id}
                           id={`course-row-${c.id}`}
-                          className={`border-b ${i < filtered.length - 1 ? "border-[var(--color-border)]" : ""} bg-[var(--color-bg-surface)] transition-colors hover:bg-[var(--color-bg-elevated)]/40`}
+                          className={`border-b border-[var(--color-border)] bg-[var(--color-bg-surface)] transition-colors hover:bg-[var(--color-bg-elevated)]/40`}
                         >
                           <td className="px-3 sm:px-4 py-4 align-top">
                             <code
