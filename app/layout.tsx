@@ -10,12 +10,74 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "Sync — Schedule Management",
-    template: "%s | Sync",
+  title: "Sync",
+  description: "Sync - Smart Scheduling",
+  authors: [{ name: "AHNayef", url: "https://github.com/ahnayef" }],
+  keywords: [
+    "education",
+    "school",
+    "college",
+    "university",
+    "scheduling",
+    "management",
+  ],
+  metadataBase: new URL("https://neub-sync.vercel.app"),
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Sync",
+    startupImage: [
+      {
+        url: "/icons/512.png",
+        media:
+          "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)",
+      },
+    ],
   },
-  description:
-    "Sync is a modern schedule management app for students and administrators.",
+  formatDetection: {
+    telephone: false,
+  },
+  openGraph: {
+    url: "https://neub-sync.vercel.app",
+    siteName: "Sync",
+    images: [
+      {
+        url: "meta.png",
+        width: 177,
+        height: 112,
+        alt: "Meta Image",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  icons: {
+    icon: [
+      {
+        url: "/icons/192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/icons/512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+    apple: [
+      {
+        url: "/icons/192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/icons/128.png",
+        sizes: "128x128",
+        type: "image/png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
