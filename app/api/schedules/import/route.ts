@@ -8,17 +8,21 @@ import {
   applyRows,
   type RawScheduleRow
 } from "@/lib/schedule-parser";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const checkAuth = async () => {
   const session = await getServerSession(authOptions);
-  return !!session && ["admin", "moderator"].includes((session.user as { role?: string })?.role || "");
+  if (!session) return null;
+  const role = (session.user as { role?: string })?.role || "";
+  return ["admin", "moderator"].includes(role) ? session : null;
 };
 
 export async function POST(req: Request) {
-  if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await checkAuth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const formData = await req.formData();
@@ -64,6 +68,18 @@ export async function POST(req: Request) {
       }
 
       const applied = await applyRows(rows);
+      const posthog = getPostHogClient();
+      const distinctId = (session.user as { email?: string })?.email ?? "unknown";
+      posthog.capture({
+        distinctId,
+        event: "schedule_imported",
+        properties: {
+          total_rows: summary.total,
+          ok_rows: summary.ok,
+          warning_rows: summary.warnings,
+          department_name: departmentName,
+        },
+      });
       return NextResponse.json({ success: true, rows, summary, ...applied });
     }
 

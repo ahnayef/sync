@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { FiInbox, FiCheck, FiSave, FiSearch, FiUser, FiCalendar, FiSliders, FiX } from "react-icons/fi";
+import posthog from "posthog-js";
 
 interface CourseTeacher {
   courseId: number;
@@ -169,8 +170,10 @@ export default function CoursesPage() {
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
+      const adding = !next.has(id);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      posthog.capture("course_toggled", { course_id: id, action: adding ? "selected" : "deselected" });
       return next;
     });
     setSaved(false);
@@ -185,10 +188,12 @@ export default function CoursesPage() {
         body: JSON.stringify({ selections: Array.from(selected) }),
       });
       if (res.ok) {
+        posthog.capture("courses_saved", { selected_count: selected.size });
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       }
     } catch (err) {
+      posthog.captureException(err);
       console.error("Failed to save selections:", err);
     } finally {
       setSaving(false);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { FiInbox, FiStar } from "react-icons/fi";
+import posthog from "posthog-js";
 import UserNavbar from "@/components/UserNavbar";
 import { RoutineBox } from "@/components/RoutineBox";
 import { RoutineSchema } from "@/app/types/routine";
@@ -85,6 +86,7 @@ export default function RoutinePage() {
     setFocusMode((prev) => {
       const next = !prev;
       localStorage.setItem("focusMode", String(next));
+      posthog.capture("focus_mode_toggled", { enabled: next });
       return next;
     });
   }, []);
@@ -94,7 +96,9 @@ export default function RoutinePage() {
     if (today === "Sunday") return;
     setChangingDay(true);
     date.setDate(date.getDate() - 1);
-    setToday(date.toLocaleDateString("en-US", { weekday: "long" }));
+    const newDay = date.toLocaleDateString("en-US", { weekday: "long" });
+    setToday(newDay);
+    posthog.capture("routine_day_changed", { direction: "prev", day: newDay });
     setTimeout(() => setChangingDay(false), 280);
   }, [today, date]);
 
@@ -102,7 +106,9 @@ export default function RoutinePage() {
     if (today === "Thursday") return;
     setChangingDay(true);
     date.setDate(date.getDate() + 1);
-    setToday(date.toLocaleDateString("en-US", { weekday: "long" }));
+    const newDay = date.toLocaleDateString("en-US", { weekday: "long" });
+    setToday(newDay);
+    posthog.capture("routine_day_changed", { direction: "next", day: newDay });
     setTimeout(() => setChangingDay(false), 280);
   }, [today, date]);
 

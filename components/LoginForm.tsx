@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import posthog from "posthog-js";
 
 const inputCls =
   "w-full rounded-[9px] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3.5 py-[11px] text-sm text-[var(--color-text-primary)] outline-none transition-colors duration-200 focus:border-blue-400/50";
@@ -31,6 +32,8 @@ export default function LoginForm() {
     if (res?.error) {
       setError("Invalid email or password");
     } else {
+      posthog.identify(email, { email });
+      posthog.capture("user_signed_in", { method: "credentials", email });
       router.push("/dashboard");
     }
   };

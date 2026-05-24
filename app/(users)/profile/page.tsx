@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { FiEdit2, FiCamera, FiUser, FiMail, FiHash, FiShield, FiX, FiCheck } from "react-icons/fi";
 import { useSession } from "next-auth/react";
+import posthog from "posthog-js";
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
@@ -61,11 +62,13 @@ export default function ProfilePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to update profile");
 
+      posthog.capture("profile_updated");
       setUpdateSuccess("Profile updated successfully!");
       setEditing(false);
       // We also update the NextAuth session so the UI catches the new name/email
       update({ name, email });
     } catch (err: any) {
+      posthog.captureException(err);
       setUpdateError(err.message);
     } finally {
       setIsSaving(false);
@@ -75,6 +78,7 @@ export default function ProfilePage() {
   const handleDelete = async () => {
     if (!confirm("Are you absolutely sure? This action cannot be undone and will permanently delete your account.")) return;
 
+    posthog.capture("account_deleted");
     try {
       const res = await fetch("/api/profile", { method: "DELETE" });
       if (!res.ok) {
@@ -85,6 +89,7 @@ export default function ProfilePage() {
       // Logout and redirect to home
       window.location.href = "/api/auth/signout?callbackUrl=/";
     } catch (err: any) {
+      posthog.captureException(err);
       alert(err.message);
     }
   };
@@ -113,11 +118,13 @@ export default function ProfilePage() {
       if (!res.ok) {
         throw new Error(data.error || "Failed to update password");
       }
+      posthog.capture("password_changed");
       setPasswordSuccess("Password updated successfully!");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
+      posthog.captureException(err);
       setPasswordError(err.message);
     } finally {
       setPasswordLoading(false);

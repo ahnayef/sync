@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { FiArrowRight, FiMail } from "react-icons/fi";
 import { LogoIcon } from "@/components/Icon";
+import posthog from "posthog-js";
 
 export default function ForgotPasswordClient() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,7 @@ export default function ForgotPasswordClient() {
 
   const handleEmailSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    posthog.capture("password_reset_requested");
     setStep("otp");
   };
 
