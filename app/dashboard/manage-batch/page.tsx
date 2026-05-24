@@ -73,16 +73,16 @@ export default function ManageBatchPage() {
     setSaving(true);
     try {
       const method = editingId ? "PUT" : "POST";
-      const payload = editingId 
+      const payload = editingId
         ? { id: editingId, name: newName, session: newSession, departmentId: newDeptId }
         : { name: newName, session: newSession, departmentId: newDeptId };
-        
+
       const res = await fetch("/api/batches", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
+
       if (!res.ok) {
         const error = await res.json();
         alert(error.error || "Failed to save batch");
@@ -173,7 +173,7 @@ export default function ManageBatchPage() {
                   ))
                 ) : filtered.length > 0 ? (
                   filtered.map((b, i) => (
-                    <tr key={b.id} id={`batch-row-${b.id}`} className={`border-b ${i < filtered.length - 1 ? "border-[var(--color-border)]" : ""} bg-[var(--color-bg-surface)] transition-colors hover:bg-[var(--color-bg-elevated)]/40`}>
+                    <tr key={b.id} id={`batch-row-${b.id}`} className={`border-b border-[var(--color-border)] bg-[var(--color-bg-surface)] transition-colors hover:bg-[var(--color-bg-elevated)]/40`}>
                       <td className="px-3 sm:px-4 py-3">
                         <span className="text-xs sm:text-sm font-semibold text-[var(--color-text-primary)]">{b.name}</span>
                       </td>
