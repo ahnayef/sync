@@ -12,6 +12,7 @@ import {
 import type { Metadata } from "next";
 import { LogoIcon } from "@/components/Icon";
 import HomeMockup from "@/components/HomeMockup";
+import HomeRedirect from "@/components/HomeRedirect";
 
 export const metadata: Metadata = {
   title: "Sync — Smart Schedule Management",
@@ -69,6 +70,7 @@ const stats = [
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-bg-base)]">
+      <HomeRedirect />
       <section className="relative overflow-hidden px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8 lg:px-8">
         <div
           aria-hidden="true"

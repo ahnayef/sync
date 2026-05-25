@@ -1,4 +1,4 @@
-const CACHE_NAME = "sync-pwa-cache-v1";
+const CACHE_NAME = "sync-pwa-cache-v2";
 const STATIC_ASSETS = [
   "/",
   "/about",
@@ -48,44 +48,41 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
 
-  // Network-First for API requests (like /api/user/routine)
-  if (requestUrl.pathname.startsWith("/api/")) {
+  // Ignore non-http requests
+  if (!event.request.url.startsWith("http")) return;
+
+  // Network-First for Navigation requests (HTML pages) and API routes
+  if (event.request.mode === "navigate" || requestUrl.pathname.startsWith("/api/")) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          // If successful, clone response and save it to cache
           if (response.status === 200) {
             const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
           }
           return response;
         })
         .catch(() => {
-          // If network fails (offline), fall back to cache
-          console.log("[Service Worker] Offline: serving API from cache for:", requestUrl.pathname);
+          console.log("[Service Worker] Offline fallback for:", requestUrl.pathname);
           return caches.match(event.request);
         })
     );
     return;
   }
 
-  // Stale-While-Revalidate/Cache-First for static assets and page requests
+  // Stale-While-Revalidate for static assets
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)
         .then((networkResponse) => {
           if (networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
           }
           return networkResponse;
         })
         .catch(() => {
-          // Silent catch for offline static requests
+          // Silent catch for offline
         });
 
       return cachedResponse || fetchPromise;
