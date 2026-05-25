@@ -1,6 +1,8 @@
 const CACHE_NAME = "sync-pwa-cache-v1";
 const STATIC_ASSETS = [
   "/",
+  "/about",
+  "/contact",
   "/routine",
   "/courses",
   "/profile",
