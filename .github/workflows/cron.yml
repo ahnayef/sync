@@ -1,0 +1,16 @@
+name: Trigger Sync Schedule
+
+on:
+  schedule:
+    # Runs at 00:00 and 12:00 UTC every day
+    - cron: '0 0,12 * * *'
+  workflow_dispatch: # Gives you a button in GitHub to run it manually
+
+jobs:
+  ping-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Vercel API Route
+        run: |
+          curl -X GET "https://neubsync.vercel.app/api/cron/sync-schedule" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
