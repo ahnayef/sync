@@ -178,7 +178,7 @@ export default function AdminSidebar() {
 
       {/* Sidebar Drawer */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-50 flex h-screen min-h-screen flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-surface)] py-6 transition-all duration-300 ease-in-out md:translate-x-0 ${isCollapsed ? "md:w-[78px] md:px-3" : "md:w-[260px] md:px-4"
+        className={`fixed md:sticky top-0 left-0 z-50 flex h-[100dvh] flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-surface)] py-6 transition-all duration-300 ease-in-out md:translate-x-0 ${isCollapsed ? "md:w-[78px] md:px-3" : "md:w-[260px] md:px-4"
           } ${isOpen ? "translate-x-0 w-[260px] px-4" : "-translate-x-full md:translate-x-0 w-[260px]"
           }`}
       >
