@@ -82,11 +82,15 @@ export const authOptions: AuthOptions = {
         // If they just logged in, 'user' is present.
         token.id = user.id;
       }
-      
+
       // When update() is called from the client
       if (trigger === "update" && session) {
         if (session.name) token.name = session.name;
         if (session.email) token.email = session.email;
+        // Allow client to refresh hasSelectedCourses after saving courses
+        if (typeof session.hasSelectedCourses === "boolean") {
+          token.hasSelectedCourses = session.hasSelectedCourses;
+        }
       }
 
       if (token.email) {
@@ -100,6 +104,18 @@ export const authOptions: AuthOptions = {
             token.id = rows[0].id;
             token.name = rows[0].name;
             token.email = rows[0].email;
+
+            // Check if this student has any selected courses
+            if (rows[0].role === "student") {
+              const [courseRows] = await db.execute<RowDataPacket[]>(
+                "SELECT 1 FROM student_courses WHERE student_id = ? LIMIT 1",
+                [rows[0].id]
+              );
+              token.hasSelectedCourses = courseRows.length > 0;
+            } else {
+              // Admins/moderators don't need course selection
+              token.hasSelectedCourses = true;
+            }
           }
         } catch (error) {
           console.error("Error fetching user for jwt by email:", error);
@@ -115,6 +131,18 @@ export const authOptions: AuthOptions = {
             token.id = rows[0].id;
             token.name = rows[0].name;
             token.email = rows[0].email;
+
+            // Check if this student has any selected courses
+            if (rows[0].role === "student") {
+              const [courseRows] = await db.execute<RowDataPacket[]>(
+                "SELECT 1 FROM student_courses WHERE student_id = ? LIMIT 1",
+                [rows[0].id]
+              );
+              token.hasSelectedCourses = courseRows.length > 0;
+            } else {
+              // Admins/moderators don't need course selection
+              token.hasSelectedCourses = true;
+            }
           }
         } catch (error) {
           console.error("Error fetching user for jwt by id:", error);
@@ -126,6 +154,7 @@ export const authOptions: AuthOptions = {
       if (session.user) {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
+        (session.user as any).hasSelectedCourses = token.hasSelectedCourses;
         session.user.name = token.name;
         session.user.email = token.email;
       }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { FiInbox, FiCheck, FiSave, FiSearch, FiUser, FiCalendar, FiSliders, FiX } from "react-icons/fi";
 import posthog from "posthog-js";
 
@@ -33,6 +34,7 @@ function courseRowCls(selected: boolean) {
 }
 
 export default function CoursesPage() {
+  const { update: updateSession } = useSession();
   const [courses, setCourses] = useState<CourseTeacher[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
@@ -191,6 +193,11 @@ export default function CoursesPage() {
         posthog.capture("courses_saved", { selected_count: selected.size });
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
+        // Refresh the JWT token so the proxy sees hasSelectedCourses = true
+        // immediately without requiring the user to re-login
+        if (selected.size > 0) {
+          await updateSession({ hasSelectedCourses: true });
+        }
       }
     } catch (err) {
       posthog.captureException(err);
