@@ -11,7 +11,7 @@ const tabs = [
 
 export default function HomeMockup() {
   const [active, setActive] = useState<"routine" | "courses" | "manage">("routine");
-  const [saved, setSaved] = useState(["CSE 3101", "CSE 3103"]);
+  const [saved, setSaved] = useState(["CSE-06133211", "CSE-06133119"]);
 
   return (
     <div className="relative">
@@ -70,23 +70,6 @@ export default function HomeMockup() {
           {/* ── Right Content ── */}
           <div className="flex-1 min-w-0 p-4 space-y-3">
 
-            {/* Stat row */}
-            <div className="grid grid-cols-3 gap-2.5">
-              {(active === "routine"
-                ? [{ l: "Today", v: "4", u: "classes" }, { l: "Next", v: "10:00", u: "" }, { l: "Gap", v: "90", u: "min" }]
-                : active === "courses"
-                ? [{ l: "Saved", v: String(saved.length), u: "courses" }, { l: "Credits", v: String(saved.length * 3), u: "hrs" }, { l: "Conflicts", v: "0", u: "" }]
-                : [{ l: "Teachers", v: "12", u: "" }, { l: "Rooms", v: "11", u: "" }, { l: "Schedules", v: "84", u: "slots" }]
-              ).map((c) => (
-                <div key={c.l} className="rounded-[13px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.75)] px-3 py-2.5">
-                  <p className="text-[9px] uppercase tracking-[0.14em] text-[var(--color-text-muted)]">{c.l}</p>
-                  <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-[17px] font-bold tracking-tight text-[var(--color-text-primary)]">{c.v}</span>
-                    {c.u && <span className="text-[9px] text-[var(--color-text-secondary)]">{c.u}</span>}
-                  </div>
-                </div>
-              ))}
-            </div>
 
             {/* ── Routine ── */}
             {active === "routine" && (
@@ -97,9 +80,10 @@ export default function HomeMockup() {
                 </div>
                 <div className="space-y-2">
                   {[
-                    { code:"CSE 3101", name:"Data Structures",   teacher:"Dr. Rahman",  room:"402",   time:"08:30", status:"done"    as const },
-                    { code:"CSE 3103", name:"Algorithm Design",  teacher:"Prof. Karim", room:"201",   time:"10:00", status:"ongoing" as const, progress: 58 },
-                    { code:"CSE 3107", name:"Operating Systems", teacher:"Ms. Nahar",   room:"Lab 2", time:"13:00", status:"upcoming"as const, isLab: true },
+                    { code:"CSE-06133117", name:"Microprocessor & Interfacing", teacher:"Mr. Tanmoy Kumar Paul",            room:"312", time:"08:30", status:"done"    as const },
+                    { code:"CSE-06133211", name:"Intro to Computer Security",   teacher:"Muhammad Nadim",                  room:"311", time:"10:00", status:"ongoing" as const, progress: 62 },
+                    { code:"CSE-06133119", name:"Data Communication",           teacher:"Rana M Luthfur Rahman Pir",        room:"309", time:"11:30", status:"upcoming" as const, isLab: true },
+                    { code:"CSE-06133115", name:"Artificial Intelligence",      teacher:"Mr. Khadem M. Asif-uz-zaman",     room:"311", time:"13:00", status:"upcoming" as const },
                   ].map((item) => (
                     <div key={item.code}
                       className={`relative rounded-[11px] border p-2.5 transition-all ${
@@ -152,10 +136,12 @@ export default function HomeMockup() {
                 </div>
                 <div className="space-y-2">
                   {[
-                    { code:"CSE 3101", name:"Data Structures",  credits:"3 cr", accent:"#6f93da" },
-                    { code:"CSE 3103", name:"Algorithm Design",  credits:"3 cr", accent:"#3fb950" },
-                    { code:"CSE 3105", name:"Database Systems",  credits:"3 cr", accent:"#a371f7" },
-                    { code:"CSE 3107", name:"Operating Systems", credits:"3 cr", accent:"#c59d4a" },
+                    { code:"CSE-06133111", name:"Computer Networks",            accent:"#6f93da" },
+                    { code:"CSE-06133113", name:"Software Engineering",         accent:"#3fb950" },
+                    { code:"CSE-06133115", name:"Artificial Intelligence",      accent:"#a371f7" },
+                    { code:"CSE-06133117", name:"Microprocessor & Interfacing", accent:"#c59d4a" },
+                    { code:"CSE-06133211", name:"Intro to Computer Security",   accent:"#d96b64" },
+                    { code:"CSE-06133119", name:"Data Communication",           accent:"#9a7bd9" },
                   ].map((item) => {
                     const isSaved = saved.includes(item.code);
                     return (
@@ -167,13 +153,13 @@ export default function HomeMockup() {
                           borderColor:  isSaved ? `${item.accent}35` : "var(--color-border)",
                         }}>
                         <div className="flex items-center gap-2.5">
-                          <div className="h-8 w-8 rounded-[8px] flex items-center justify-center text-[10px] font-bold shrink-0"
+                          <div className="h-8 w-8 rounded-[8px] flex items-center justify-center text-sm font-extrabold shrink-0"
                             style={{ background:`${item.accent}18`, color:item.accent }}>
-                            {item.code.split(" ")[1]}
+                            {item.name[0]}
                           </div>
                           <div>
                             <p className="text-[11px] font-bold text-[var(--color-text-primary)]">{item.name}</p>
-                            <p className="text-[9px] text-[var(--color-text-muted)]">{item.code} · {item.credits}</p>
+                            <p className="text-[9px] text-[var(--color-text-muted)] font-mono">{item.code}</p>
                           </div>
                         </div>
                         <div className="h-6 w-6 rounded-full border flex items-center justify-center transition-all"
@@ -194,31 +180,46 @@ export default function HomeMockup() {
                   <p className="text-[11px] font-semibold text-[var(--color-text-primary)]">Admin Panel</p>
                   <span className="text-[9px] font-semibold rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[#ffe08a]">Admin Only</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+
+                {/* Stats grid */}
+                <div className="grid grid-cols-3 gap-2">
                   {[
-                    { label:"Departments", value:"6",       accent:"#6f93da" },
-                    { label:"Batches",     value:"8",       accent:"#9a7bd9" },
-                    { label:"Teachers",    value:"12",      accent:"#3fb950" },
-                    { label:"Courses",     value:"34",      accent:"#c59d4a" },
-                    { label:"Rooms",       value:"11",      accent:"#d96b64" },
-                    { label:"Schedules",   value:"84 slots",accent:"#6f93da" },
+                    { label:"Departments", value:"5",   accent:"#6f93da" },
+                    { label:"Batches",     value:"10",  accent:"#9a7bd9" },
+                    { label:"Teachers",    value:"22",  accent:"#3fb950" },
+                    { label:"Courses",     value:"75",  accent:"#c59d4a" },
+                    { label:"Rooms",       value:"17",  accent:"#d96b64" },
+                    { label:"Schedules",   value:"109", accent:"#6f93da" },
                   ].map((item) => (
                     <div key={item.label}
-                      className="flex items-center gap-2 rounded-[11px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.65)] px-2.5 py-2 hover:-translate-y-0.5 transition-all cursor-pointer">
-                      <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background:item.accent }} />
-                      <div>
-                        <p className="text-[12px] font-bold font-mono text-[var(--color-text-primary)]">{item.value}</p>
-                        <p className="text-[9px] text-[var(--color-text-muted)]">{item.label}</p>
-                      </div>
+                      className="rounded-[11px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.65)] px-2.5 py-2 hover:-translate-y-0.5 transition-all cursor-pointer">
+                      <p className="text-[13px] font-bold font-mono leading-none" style={{ color:item.accent }}>{item.value}</p>
+                      <p className="text-[9px] text-[var(--color-text-muted)] mt-0.5">{item.label}</p>
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center justify-between rounded-[11px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.65)] px-3 py-2">
-                  <span className="text-[10px] font-medium text-[var(--color-text-secondary)]">Conflict Resolver</span>
-                  <span className="text-[8px] font-bold rounded bg-[rgba(63,185,80,0.12)] text-[#3fb950] px-1.5 py-0.5 border border-[rgba(63,185,80,0.2)]">ON</span>
+
+                {/* Recent activity */}
+                <div className="rounded-[11px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.5)] p-2.5">
+                  <p className="text-[9px] font-extrabold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">Recent Activity</p>
+                  <div className="relative pl-3.5 border-l border-[var(--color-border)]/50 space-y-2.5">
+                    {[
+                      { dot:"#d96b64", text:"CSE-06133115 assigned to Room 311 · Batch CSE-33", time:"2m ago" },
+                      { dot:"#6f93da", text:"Muhammad Nadim registered · CSE dept", time:"18m ago" },
+                      { dot:"#9a7bd9", text:"Room 309 (Lab) provisioned · cap 60", time:"1h ago" },
+                      { dot:"#3fb950", text:"109 schedules synced from Google Sheet", time:"3h ago" },
+                    ].map((log, i) => (
+                      <div key={i} className="relative">
+                        <div className="absolute -left-[18px] top-1 h-1.5 w-1.5 rounded-full" style={{ background:log.dot }} />
+                        <p className="text-[9.5px] text-[var(--color-text-secondary)] leading-relaxed">{log.text}</p>
+                        <p className="text-[8px] text-[var(--color-text-muted)] font-mono mt-0.5">{log.time}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
+
 
           </div>
         </div>
