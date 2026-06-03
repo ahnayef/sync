@@ -1,192 +1,140 @@
 "use client";
 
 import { useState } from "react";
-import {
-  FiSliders,
-  FiBook,
-  FiUsers,
-  FiShield,
-  FiClock,
-  FiUploadCloud,
-  FiPlus,
-} from "react-icons/fi";
+import { FiClock, FiBook, FiGrid, FiMapPin, FiCheck, FiPlus } from "react-icons/fi";
 
 const tabs = [
-  { id: "Routine", label: "Routine", icon: FiSliders },
-  { id: "Courses", label: "Courses", icon: FiBook },
-  { id: "People", label: "People", icon: FiUsers },
-  { id: "Admin", label: "Admin", icon: FiShield },
+  { id: "routine", label: "Routine", icon: FiClock },
+  { id: "courses", label: "Courses", icon: FiBook },
+  { id: "manage",  label: "Manage",  icon: FiGrid  },
 ];
 
 export default function HomeMockup() {
-  const [activeTab, setActiveTab] = useState("Routine");
-
-  // Insight cards data based on active tab
-  const getInsightCards = () => {
-    switch (activeTab) {
-      case "Courses":
-        return [
-          { label: "Selected", value: "6", unit: "modules", hint: "18 credits" },
-          { label: "Dept", value: "CSE", unit: "", hint: "Computer Science" },
-          { label: "Semester", value: "3rd", unit: "Year", hint: "Spring 2026" },
-        ];
-      case "People":
-        return [
-          { label: "Faculty", value: "18", unit: "teachers", hint: "CSE Department" },
-          { label: "Students", value: "420", unit: "enrolled", hint: "Batch 2023-26" },
-          { label: "Directory", value: "Active", unit: "", hint: "Email synced" },
-        ];
-      case "Admin":
-        return [
-          { label: "Uploads", value: "14", unit: "CSV files", hint: "Routine schedules" },
-          { label: "Conflicts", value: "0", unit: "errors", hint: "All clean" },
-          { label: "System", value: "Healthy", unit: "", hint: "Auto-backup enabled" },
-        ];
-      case "Routine":
-      default:
-        return [
-          { label: "Today", value: "5", unit: "classes", hint: "2 gaps" },
-          { label: "Imported", value: "98%", unit: "", hint: "validated" },
-          { label: "Changes", value: "Live", unit: "", hint: "instant sync" },
-        ];
-    }
-  };
+  const [active, setActive] = useState<"routine" | "courses" | "manage">("routine");
+  const [saved, setSaved] = useState(["CSE 3101", "CSE 3103"]);
 
   return (
     <div className="relative">
-      <div className="absolute inset-0 rounded-[32px] bg-[radial-gradient(circle_at_top,rgba(79,142,247,0.15),transparent_48%)] blur-2xl" />
-      <div className="relative overflow-hidden rounded-[28px] border border-[var(--color-border)] bg-[rgba(13,17,23,0.9)] shadow-[0_30px_100px_rgba(0,0,0,0.45)]">
-        
-        {/* Browser Top Bar */}
-        <div className="flex items-center gap-2 border-b border-[var(--color-border)] bg-[rgba(21,28,37,0.85)] px-4 py-3">
-          {["#f85149", "#d29922", "#3fb950"].map((c) => (
-            <div key={c} className="h-2.5 w-2.5 rounded-full opacity-90" style={{ background: c }} />
+      <div className="absolute inset-0 rounded-[32px] bg-[radial-gradient(circle_at_top,rgba(79,142,247,0.15),transparent_50%)] blur-2xl" />
+      <div className="relative overflow-hidden rounded-[26px] border border-[var(--color-border)] bg-[rgba(13,17,23,0.92)] shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
+
+        {/* Browser bar */}
+        <div className="flex items-center gap-1.5 border-b border-[var(--color-border)] bg-[rgba(21,28,37,0.85)] px-4 py-2.5">
+          {["#f85149","#d29922","#3fb950"].map((c) => (
+            <div key={c} className="h-2.5 w-2.5 rounded-full" style={{ background: c }} />
           ))}
-          <div className="ml-2 flex flex-1 items-center gap-3 rounded-[10px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] px-3 py-2">
-            <div className="h-2.5 w-2.5 rounded-full bg-[#4f8ef7]" />
-            <div className="h-2 w-32 rounded-full bg-[var(--color-border)] sm:w-40" />
+          <div className="ml-2 flex flex-1 items-center gap-2.5 rounded-[8px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.65)] px-3 py-1.5">
+            <div className="h-2 w-2 rounded-full bg-[#4f8ef7]" />
+            <div className="h-1.5 w-28 rounded-full bg-[var(--color-border)]" />
           </div>
         </div>
 
-        {/* Dashboard Shell Layout */}
-        <div className="grid gap-0 lg:grid-cols-[180px_1fr]">
-          
-          {/* Mock Sidebar */}
-          <aside className="border-b border-[var(--color-border)] bg-[rgba(21,28,37,0.82)] p-4 lg:border-b-0 lg:border-r">
-            
-            {/* Sidebar "Today" Info Card */}
-            <div className="mb-4 rounded-[18px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.65)] p-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#4f8ef71a] text-[#8fb5ff]">
-                  <FiClock />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--color-text-primary)]">Today</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">5 classes, 2 gaps</p>
-                </div>
+        {/* App shell — always side by side */}
+        <div className="flex">
+
+          {/* ── Left Nav ── */}
+          <aside className="w-[150px] shrink-0 border-r border-[var(--color-border)] bg-[rgba(17,24,34,0.82)] p-3.5 flex flex-col gap-2">
+            {/* Today pill */}
+            <div className="flex items-center gap-2.5 rounded-[12px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.5)] p-2.5 mb-1">
+              <div className="h-8 w-8 rounded-[10px] bg-[rgba(79,142,247,0.1)] flex items-center justify-center text-[#8fb5ff] shrink-0">
+                <FiClock size={13} />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold text-[var(--color-text-primary)] leading-none">Today</p>
+                <p className="text-[9px] text-[var(--color-text-muted)] mt-0.5">4 classes · 1 gap</p>
               </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="space-y-2">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className="w-full flex items-center gap-3 rounded-[14px] border px-3 py-2.5 text-sm transition-all duration-200 text-left hover:scale-[1.02] cursor-pointer"
-                    style={{
-                      background: isActive
-                        ? "rgba(79,142,247,0.12)"
-                        : "rgba(11,16,21,0.4)",
-                      borderColor: isActive
-                        ? "rgba(79,142,247,0.25)"
-                        : "var(--color-border)",
-                    }}
-                  >
-                    <Icon
-                      className={isActive ? "text-[#8fb5ff]" : "text-[var(--color-text-muted)]"}
-                    />
-                    <span
-                      className={
-                        isActive
-                          ? "font-medium text-[var(--color-text-primary)]"
-                          : "text-[var(--color-text-secondary)]"
-                      }
-                    >
-                      {tab.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = active === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActive(tab.id as any)}
+                  className="flex items-center gap-2.5 rounded-[11px] border px-3 py-2 text-xs text-left transition-all duration-150 cursor-pointer hover:scale-[1.02]"
+                  style={{
+                    background:     isActive ? "rgba(79,142,247,0.1)"  : "rgba(11,16,21,0.35)",
+                    borderColor:    isActive ? "rgba(79,142,247,0.22)" : "var(--color-border)",
+                  }}
+                >
+                  <Icon size={13} className={isActive ? "text-[#8fb5ff]" : "text-[var(--color-text-muted)]"} />
+                  <span className={isActive ? "font-semibold text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)]"}>
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
           </aside>
 
-          {/* Main Content Area */}
-          <div className="grid gap-4 p-4 sm:p-5">
-            
-            {/* Stats Grid */}
-            <div className="grid gap-3 sm:grid-cols-3">
-              {getInsightCards().map((card) => (
-                <div
-                  key={card.label}
-                  className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.75)] p-3 flex flex-col justify-between min-h-[84px] transition-all duration-300 hover:border-white/10"
-                >
-                  <div>
-                    <div className="text-[10px] uppercase tracking-[0.16em] text-[var(--color-text-muted)] leading-none">{card.label}</div>
-                    <div className="mt-1.5 flex items-baseline gap-1 whitespace-nowrap">
-                      <span className="text-lg sm:text-xl font-bold tracking-[-0.04em] text-[var(--color-text-primary)]">
-                        {card.value}
-                      </span>
-                      {card.unit && (
-                        <span className="text-[10px] font-semibold text-[var(--color-text-secondary)] lowercase">
-                          {card.unit}
-                        </span>
-                      )}
-                    </div>
+          {/* ── Right Content ── */}
+          <div className="flex-1 min-w-0 p-4 space-y-3">
+
+            {/* Stat row */}
+            <div className="grid grid-cols-3 gap-2.5">
+              {(active === "routine"
+                ? [{ l: "Today", v: "4", u: "classes" }, { l: "Next", v: "10:00", u: "" }, { l: "Gap", v: "90", u: "min" }]
+                : active === "courses"
+                ? [{ l: "Saved", v: String(saved.length), u: "courses" }, { l: "Credits", v: String(saved.length * 3), u: "hrs" }, { l: "Conflicts", v: "0", u: "" }]
+                : [{ l: "Teachers", v: "12", u: "" }, { l: "Rooms", v: "11", u: "" }, { l: "Schedules", v: "84", u: "slots" }]
+              ).map((c) => (
+                <div key={c.l} className="rounded-[13px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.75)] px-3 py-2.5">
+                  <p className="text-[9px] uppercase tracking-[0.14em] text-[var(--color-text-muted)]">{c.l}</p>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-[17px] font-bold tracking-tight text-[var(--color-text-primary)]">{c.v}</span>
+                    {c.u && <span className="text-[9px] text-[var(--color-text-secondary)]">{c.u}</span>}
                   </div>
-                  <div className="mt-1 text-[10px] text-[var(--color-text-secondary)]">{card.hint}</div>
                 </div>
               ))}
             </div>
 
-            {/* Dynamic Tab Previews */}
-            {activeTab === "Routine" && (
-              <div className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-3.5">
-                <div className="mb-3.5 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold text-[var(--color-text-primary)]">Routine preview</p>
-                    <p className="text-[11px] text-[var(--color-text-muted)]">A clean, scannable day view</p>
-                  </div>
-                  <span className="rounded-full border border-[#3fb95033] bg-[#3fb95014] px-2 py-0.5 text-[10px] font-semibold text-[#8ae39d]">
-                    Synced
-                  </span>
+            {/* ── Routine ── */}
+            {active === "routine" && (
+              <div className="rounded-[15px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-3">
+                <div className="flex items-center justify-between mb-2.5">
+                  <p className="text-[11px] font-semibold text-[var(--color-text-primary)]">Wednesday Schedule</p>
+                  <span className="text-[9px] font-semibold rounded-full border border-[#3fb95030] bg-[#3fb95012] px-2 py-0.5 text-[#8ae39d]">Synced</span>
                 </div>
-
                 <div className="space-y-2">
                   {[
-                    { time: "08:30", title: "Discrete Mathematics", meta: "Room 402 · Prof. Karim", accent: "#4f8ef7" },
-                    { time: "10:00", title: "Database Systems", meta: "Lab 2 · Dr. Nahar", accent: "#3fb950" },
-                    { time: "01:15", title: "Software Engineering", meta: "Room 105 · Team project", accent: "#a371f7" },
+                    { code:"CSE 3101", name:"Data Structures",   teacher:"Dr. Rahman",  room:"402",   time:"08:30", status:"done"    as const },
+                    { code:"CSE 3103", name:"Algorithm Design",  teacher:"Prof. Karim", room:"201",   time:"10:00", status:"ongoing" as const, progress: 58 },
+                    { code:"CSE 3107", name:"Operating Systems", teacher:"Ms. Nahar",   room:"Lab 2", time:"13:00", status:"upcoming"as const, isLab: true },
                   ].map((item) => (
-                    <div
-                      key={item.title}
-                      className="rounded-[14px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] p-3 transition-transform duration-200 hover:-translate-y-0.5"
-                      style={{ boxShadow: `inset 3px 0 0 ${item.accent}` }}
-                    >
-                      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]">
-                            {item.time}
+                    <div key={item.code}
+                      className={`relative rounded-[11px] border p-2.5 transition-all ${
+                        item.status === "ongoing"
+                          ? "border-[rgba(63,185,80,0.28)] bg-[rgba(63,185,80,0.04)]"
+                          : "border-[var(--color-border)] bg-[rgba(11,16,21,0.65)] hover:-translate-y-0.5"
+                      }`}>
+                      {item.status === "ongoing" && (
+                        <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[11px] bg-[#3fb950]" />
+                      )}
+                      <div className="flex items-center justify-between gap-3 pl-1.5">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="text-[9px] font-mono font-bold text-[var(--color-text-muted)] border border-[var(--color-border)] rounded px-1 py-px bg-[rgba(11,16,21,0.5)]">{item.code}</span>
+                            {item.isLab && <span className="text-[7px] font-bold uppercase px-1.5 py-px rounded-full bg-[rgba(163,113,247,0.14)] text-[#b38eff]">LAB</span>}
+                            {item.status === "ongoing" && <span className="h-1.5 w-1.5 rounded-full bg-[#3fb950] animate-pulse" />}
                           </div>
-                          <div className="mt-0.5 text-xs sm:text-sm font-semibold text-[var(--color-text-primary)]">{item.title}</div>
-                          <div className="mt-0.5 text-[11px] text-[var(--color-text-secondary)]">{item.meta}</div>
+                          <p className="text-[12px] font-bold text-[var(--color-text-primary)] truncate">{item.name}</p>
+                          <p className="text-[10px] text-[var(--color-text-secondary)] mt-0.5">{item.teacher}</p>
                         </div>
-                        <div className="flex items-center gap-1.5 self-start rounded-full border border-[var(--color-border)] bg-[rgba(21,28,37,0.8)] px-2 py-1 text-[10px] text-[var(--color-text-secondary)] sm:self-center">
-                          <span className="h-1.5 w-1.5 rounded-full" style={{ background: item.accent }} />
-                          On track
+                        <div className="text-right shrink-0 space-y-1">
+                          <p className="text-[11px] font-mono font-bold text-[var(--color-text-primary)]">{item.time}</p>
+                          <div className="flex items-center justify-end gap-1 text-[9px] text-[var(--color-text-muted)]">
+                            <FiMapPin size={8} /><span>Room {item.room}</span>
+                          </div>
+                          {item.status === "ongoing" && item.progress != null && (
+                            <div className="w-14">
+                              <p className="text-[8px] font-bold text-[#3fb950] mb-0.5">{item.progress}% done</p>
+                              <div className="h-0.5 rounded-full bg-[var(--color-border)] overflow-hidden">
+                                <div className="h-full bg-[#3fb950] rounded-full" style={{ width: `${item.progress}%` }} />
+                              </div>
+                            </div>
+                          )}
+                          {item.status === "done"     && <p className="text-[8px] font-bold uppercase text-[var(--color-text-muted)]">Done</p>}
+                          {item.status === "upcoming" && <p className="text-[8px] font-bold uppercase text-[#8fb5ff]">Soon</p>}
                         </div>
                       </div>
                     </div>
@@ -195,115 +143,79 @@ export default function HomeMockup() {
               </div>
             )}
 
-            {activeTab === "Courses" && (
-              <div className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-3.5">
-                <div className="mb-3.5 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold text-[var(--color-text-primary)]">Course Catalog</p>
-                    <p className="text-[11px] text-[var(--color-text-muted)]">Selected academic modules</p>
-                  </div>
-                  <button className="flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[rgba(21,28,37,0.8)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)] cursor-pointer">
-                    <FiPlus className="text-xs" /> Add
-                  </button>
+            {/* ── Courses ── */}
+            {active === "courses" && (
+              <div className="rounded-[15px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-3">
+                <div className="flex items-center justify-between mb-2.5">
+                  <p className="text-[11px] font-semibold text-[var(--color-text-primary)]">Course Selection</p>
+                  <span className="text-[9px] text-[var(--color-text-muted)]">Routine updates on save</span>
                 </div>
-
                 <div className="space-y-2">
                   {[
-                    { code: "CSE 311", title: "Database Systems", credits: "3.0 Credits", accent: "#3fb950", status: "Core" },
-                    { code: "CSE 313", title: "Software Engineering", credits: "3.0 Credits", accent: "#a371f7", status: "Core" },
-                    { code: "CSE 315", title: "Discrete Mathematics", credits: "3.0 Credits", accent: "#4f8ef7", status: "Required" },
-                  ].map((item) => (
-                    <div
-                      key={item.code}
-                      className="rounded-[14px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] p-3 transition-transform duration-200 hover:-translate-y-0.5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-lg text-xs font-bold" style={{ backgroundColor: `${item.accent}15`, color: item.accent }}>
+                    { code:"CSE 3101", name:"Data Structures",  credits:"3 cr", accent:"#6f93da" },
+                    { code:"CSE 3103", name:"Algorithm Design",  credits:"3 cr", accent:"#3fb950" },
+                    { code:"CSE 3105", name:"Database Systems",  credits:"3 cr", accent:"#a371f7" },
+                    { code:"CSE 3107", name:"Operating Systems", credits:"3 cr", accent:"#c59d4a" },
+                  ].map((item) => {
+                    const isSaved = saved.includes(item.code);
+                    return (
+                      <button key={item.code}
+                        onClick={() => setSaved((p) => isSaved ? p.filter((c) => c !== item.code) : [...p, item.code])}
+                        className="w-full flex items-center justify-between rounded-[11px] border px-2.5 py-2 text-left transition-all duration-150 cursor-pointer hover:-translate-y-0.5"
+                        style={{
+                          background:   isSaved ? `${item.accent}0d` : "rgba(11,16,21,0.65)",
+                          borderColor:  isSaved ? `${item.accent}35` : "var(--color-border)",
+                        }}>
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-8 w-8 rounded-[8px] flex items-center justify-center text-[10px] font-bold shrink-0"
+                            style={{ background:`${item.accent}18`, color:item.accent }}>
                             {item.code.split(" ")[1]}
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-[var(--color-text-primary)]">{item.title}</div>
-                            <div className="text-[10px] text-[var(--color-text-muted)]">{item.code} · {item.credits}</div>
+                            <p className="text-[11px] font-bold text-[var(--color-text-primary)]">{item.name}</p>
+                            <p className="text-[9px] text-[var(--color-text-muted)]">{item.code} · {item.credits}</p>
                           </div>
                         </div>
-                        <span className="rounded-full bg-[rgba(255,255,255,0.05)] px-2 py-0.5 text-[9px] font-semibold text-[var(--color-text-secondary)]">
-                          {item.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                        <div className="h-6 w-6 rounded-full border flex items-center justify-center transition-all"
+                          style={{ borderColor: isSaved ? item.accent : "var(--color-border)", background: isSaved ? `${item.accent}20` : "transparent" }}>
+                          {isSaved ? <FiCheck size={10} style={{ color:item.accent }} /> : <FiPlus size={10} className="text-[var(--color-text-muted)]" />}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {activeTab === "People" && (
-              <div className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-3.5">
-                <div className="mb-3.5 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold text-[var(--color-text-primary)]">People Directory</p>
-                    <p className="text-[11px] text-[var(--color-text-muted)]">Teachers and academic roles</p>
-                  </div>
-                  <span className="rounded-full border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold text-[#b38eff]">
-                    Synced
-                  </span>
+            {/* ── Manage ── */}
+            {active === "manage" && (
+              <div className="rounded-[15px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-semibold text-[var(--color-text-primary)]">Admin Panel</p>
+                  <span className="text-[9px] font-semibold rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[#ffe08a]">Admin Only</span>
                 </div>
-
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
                   {[
-                    { name: "Dr. Nahar", role: "Associate Professor", email: "nahar@campus.edu", initial: "N", accent: "#a371f7" },
-                    { name: "Prof. Karim", role: "Professor", email: "karim@campus.edu", initial: "K", accent: "#4f8ef7" },
-                    { name: "Ms. Rahman", role: "Lecturer", email: "rahman@campus.edu", initial: "R", accent: "#3fb950" },
+                    { label:"Departments", value:"6",       accent:"#6f93da" },
+                    { label:"Batches",     value:"8",       accent:"#9a7bd9" },
+                    { label:"Teachers",    value:"12",      accent:"#3fb950" },
+                    { label:"Courses",     value:"34",      accent:"#c59d4a" },
+                    { label:"Rooms",       value:"11",      accent:"#d96b64" },
+                    { label:"Schedules",   value:"84 slots",accent:"#6f93da" },
                   ].map((item) => (
-                    <div
-                      key={item.name}
-                      className="rounded-[14px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] p-3 transition-transform duration-200 hover:-translate-y-0.5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: item.accent }}>
-                            {item.initial}
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-[var(--color-text-primary)]">{item.name}</div>
-                            <div className="text-[10px] text-[var(--color-text-muted)]">{item.role} · {item.email}</div>
-                          </div>
-                        </div>
-                        <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-semibold text-emerald-400">
-                          Active
-                        </span>
+                    <div key={item.label}
+                      className="flex items-center gap-2 rounded-[11px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.65)] px-2.5 py-2 hover:-translate-y-0.5 transition-all cursor-pointer">
+                      <div className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background:item.accent }} />
+                      <div>
+                        <p className="text-[12px] font-bold font-mono text-[var(--color-text-primary)]">{item.value}</p>
+                        <p className="text-[9px] text-[var(--color-text-muted)]">{item.label}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {activeTab === "Admin" && (
-              <div className="rounded-[18px] border border-[var(--color-border)] bg-[rgba(17,23,32,0.8)] p-3.5">
-                <div className="mb-3.5 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold text-[var(--color-text-primary)]">Admin Controller</p>
-                    <p className="text-[11px] text-[var(--color-text-muted)]">Schedules, uploads & conflicts</p>
-                  </div>
-                  <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-[#ffe08a]">
-                    Secured
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="rounded-[14px] border border-dashed border-[var(--color-border)] bg-[rgba(11,16,21,0.3)] p-4 text-center hover:border-amber-500/30 transition-colors cursor-pointer">
-                    <FiUploadCloud className="mx-auto text-xl text-amber-500/60 mb-1.5" />
-                    <p className="text-[11px] font-bold text-[var(--color-text-primary)]">Import routine CSV</p>
-                    <p className="text-[9px] text-[var(--color-text-muted)]">Drag and drop or click to upload</p>
-                  </div>
-
-                  <div className="rounded-[14px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.72)] p-2.5 flex items-center justify-between text-xs">
-                    <span className="text-[var(--color-text-secondary)] font-medium">Automatic Conflict Resolver</span>
-                    <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold text-emerald-400">
-                      ON
-                    </span>
-                  </div>
+                <div className="flex items-center justify-between rounded-[11px] border border-[var(--color-border)] bg-[rgba(11,16,21,0.65)] px-3 py-2">
+                  <span className="text-[10px] font-medium text-[var(--color-text-secondary)]">Conflict Resolver</span>
+                  <span className="text-[8px] font-bold rounded bg-[rgba(63,185,80,0.12)] text-[#3fb950] px-1.5 py-0.5 border border-[rgba(63,185,80,0.2)]">ON</span>
                 </div>
               </div>
             )}
