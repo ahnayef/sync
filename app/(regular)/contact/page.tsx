@@ -10,19 +10,19 @@ export const metadata: Metadata = {
 const contactItems = [
   {
     label: "Email",
-    value: "hello@loop.edu",
+    value: "ahnayef.me@gmail.com",
     color: "#4f8ef7",
     icon: FiMail,
   },
   {
-    label: "Address",
-    value: "123 Campus Lane, Edu City",
+    label: "Location",
+    value: "Earth, Milky Way galaxy",
     color: "#a371f7",
     icon: FiMapPin,
   },
   {
     label: "Support Hours",
-    value: "Mon-Fri, 9 AM - 6 PM",
+    value: "Whenever you need help!",
     color: "#3fb950",
     icon: FiClock,
   },
@@ -33,7 +33,7 @@ export default function ContactPage() {
     <div className="flex min-h-screen flex-col bg-[var(--color-bg-base)]">
       <main className="flex-1 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-[1100px]">
-          
+
           {/* Main cohesive card wrapper */}
           <section className="relative overflow-hidden rounded-[32px] border border-[var(--color-border)] bg-[linear-gradient(135deg,rgba(17,23,32,0.95),rgba(21,28,37,0.92))] p-6 sm:p-10 lg:p-14 shadow-[0_30px_100px_rgba(0,0,0,0.3)]">
             <div
@@ -46,7 +46,7 @@ export default function ContactPage() {
             />
 
             <div className="relative grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
-              
+
               {/* Left Column: Heading & Contact Info */}
               <div className="flex flex-col justify-between py-2">
                 <div>
