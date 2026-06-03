@@ -2,10 +2,10 @@ import posthog from "posthog-js";
 
 if (typeof window !== "undefined") {
   const isDev = process.env.NODE_ENV === "development";
-  const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
+  const token = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 
   if (isDev) {
-    posthog.init(token || "dev-placeholder", {
+    posthog.init(token ?? "dev-placeholder", {
       api_host: "/ingest",
       ui_host: "https://us.posthog.com",
       defaults: "2026-01-30",
