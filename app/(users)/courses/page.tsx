@@ -1,9 +1,12 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { FiInbox, FiCheck, FiSave, FiSearch, FiUser, FiCalendar, FiSliders, FiX } from "react-icons/fi";
 import posthog from "posthog-js";
+
+const CoursesTour = dynamic(() => import("@/components/CoursesTour"), { ssr: false });
 
 interface CourseTeacher {
   courseId: number;
@@ -223,6 +226,7 @@ export default function CoursesPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
+      <CoursesTour filtersButtonId="courses-filters-toggle" />
       <main className="mx-auto max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -324,6 +328,7 @@ export default function CoursesPage() {
 
             {/* Premium collapsible filter toggle */}
             <button
+              id="courses-filters-toggle"
               type="button"
               onClick={() => setShowFilters(!showFilters)}
               className={[
