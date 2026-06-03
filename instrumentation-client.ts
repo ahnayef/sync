@@ -6,7 +6,7 @@ if (typeof window !== "undefined") {
 
   if (isDev) {
     posthog.init(token ?? "dev-placeholder", {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
+      api_host: "/ingest",
       ui_host: "https://us.posthog.com",
       defaults: "2026-01-30",
       capture_exceptions: false,
@@ -16,7 +16,7 @@ if (typeof window !== "undefined") {
     });
   } else if (token) {
     posthog.init(token, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
+      api_host: "/ingest",
       ui_host: "https://us.posthog.com",
       defaults: "2026-01-30",
       capture_exceptions: true,
