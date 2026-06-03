@@ -12,6 +12,7 @@ export default function UserNavbar() {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const role = (session?.user as any)?.role;
+  const isRoutinePage = pathname === "/routine";
 
   const navItems = [
     ...(role === "admin" || role === "moderator" ? [{ href: "/dashboard", label: "Dashboard" }] : []),
@@ -26,32 +27,63 @@ export default function UserNavbar() {
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[rgba(8,12,16,0.72)] backdrop-blur-2xl supports-[backdrop-filter]:bg-[rgba(8,12,16,0.62)]">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
 
-        {/* Mobile Header Row (Visible only on mobile) */}
-        <div className="flex h-14 items-center justify-between sm:hidden">
-          <Link
-            href="/"
-            id="user-nav-logo"
-            className="flex shrink-0 items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 no-underline transition-colors hover:border-white/15 hover:bg-white/[0.05]"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(79,142,247,0.22),rgba(163,113,247,0.2))] text-base font-bold text-white shadow-[0_10px_30px_rgba(79,142,247,0.14)]">
+        {/* ── Mobile: compact pill (routine page only) ── */}
+        {isRoutinePage ? (
+          <div className="flex h-10 items-center justify-between sm:hidden">
+            {/* Logo icon - compact */}
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(79,142,247,0.22),rgba(163,113,247,0.2))] shadow-[0_0_10px_rgba(79,142,247,0.14)]">
               <LogoIcon />
             </div>
-            <div className="leading-tight">
-              <span className="block text-sm font-semibold tracking-[0.02em] text-white">Sync</span>
-              <span className="block text-[11px] text-white/45">Smart schedules</span>
-            </div>
-          </Link>
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition-all hover:border-white/15 hover:bg-white/[0.08] hover:text-white active:scale-95"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <FiX size={18} /> : <FiMenu size={18} />}
-          </button>
-        </div>
 
-        {/* Desktop Header Row (Hidden on mobile) */}
-        {/* 3-column grid keeps nav links perfectly centred on larger screens */}
+            {/* Avatar → opens drawer */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Open menu"
+              className="flex cursor-pointer items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] pl-1.5 pr-2.5 py-1 transition-all hover:border-white/15 hover:bg-white/[0.07] active:scale-95"
+            >
+              {session?.user?.image ? (
+                <img
+                  src={session.user.image}
+                  alt="Avatar"
+                  className="h-6 w-6 rounded-full object-cover ring-1 ring-white/10"
+                />
+              ) : (
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#a371f7] text-[10px] font-bold text-white">
+                  {session?.user?.name?.[0]?.toUpperCase() || "U"}
+                </div>
+              )}
+              {isOpen
+                ? <FiX size={11} className="text-white/50" />
+                : <FiMenu size={11} className="text-white/50" />}
+            </button>
+          </div>
+        ) : (
+          /* ── Mobile: full header (all other pages) ── */
+          <div className="flex h-14 items-center justify-between sm:hidden">
+            <Link
+              href="/"
+              id="user-nav-logo"
+              className="flex shrink-0 items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 no-underline transition-colors hover:border-white/15 hover:bg-white/[0.05]"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(79,142,247,0.22),rgba(163,113,247,0.2))] text-base font-bold text-white shadow-[0_10px_30px_rgba(79,142,247,0.14)]">
+                <LogoIcon />
+              </div>
+              <div className="leading-tight">
+                <span className="block text-sm font-semibold tracking-[0.02em] text-white">Sync</span>
+                <span className="block text-[11px] text-white/45">Smart schedules</span>
+              </div>
+            </Link>
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition-all hover:border-white/15 hover:bg-white/[0.08] hover:text-white active:scale-95"
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <FiX size={18} /> : <FiMenu size={18} />}
+            </button>
+          </div>
+        )}
+
+        {/* ── Desktop header (unchanged) ── */}
         <div className="hidden h-16 grid-cols-[1fr_auto_1fr] items-center sm:grid">
           <Link
             href="/"
@@ -101,7 +133,6 @@ export default function UserNavbar() {
                   {session?.user?.name?.[0]?.toUpperCase() || "U"}
                 </div>
               )}
-
               <div className="leading-tight">
                 <p className="m-0 text-[13px] font-semibold text-white">{session?.user?.name || "User"}</p>
                 <p className="m-0 text-[11px] text-white/40">{role || "student"}</p>
@@ -120,12 +151,12 @@ export default function UserNavbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer Overlay */}
+      {/* ── Drawer (mobile — both modes) ── */}
       {isOpen && (
         <div className="border-t border-white/10 bg-[rgba(8,12,16,0.96)] shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-2xl sm:hidden animate-in slide-in-from-top duration-300 ease-out">
           <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-4 py-5 sm:px-6">
 
-            {/* Mobile Nav Links */}
+            {/* Nav links */}
             <div className="rounded-[20px] border border-white/10 bg-white/[0.03] p-2">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
@@ -150,7 +181,7 @@ export default function UserNavbar() {
 
             <div className="h-px bg-white/10" />
 
-            {/* Mobile User Profile Section */}
+            {/* User profile + logout */}
             <div className="flex flex-col gap-3 rounded-[20px] border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 {session?.user?.image ? (
@@ -160,7 +191,6 @@ export default function UserNavbar() {
                     {session?.user?.name?.[0]?.toUpperCase() || "U"}
                   </div>
                 )}
-
                 <div className="leading-tight">
                   <p className="m-0 text-sm font-semibold text-white">{session?.user?.name || "User"}</p>
                   <p className="m-0 text-xs text-white/40">{role || "student"}</p>

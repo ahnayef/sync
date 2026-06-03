@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { FiInbox, FiStar } from "react-icons/fi";
 import posthog from "posthog-js";
-import UserNavbar from "@/components/UserNavbar";
 import { RoutineBox } from "@/components/RoutineBox";
 import { RoutineSchema } from "@/app/types/routine";
 
@@ -135,7 +134,7 @@ export default function RoutinePage() {
   });
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-base)]">
+    <div className="flex h-[calc(100vh-40px)] sm:h-[calc(100vh-64px)] flex-col overflow-hidden bg-[var(--color-bg-base)]">
 
       {/* Focus mode FAB */}
       <button
@@ -158,10 +157,13 @@ export default function RoutinePage() {
         )}
       </button>
 
-      <main className="mx-auto max-w-[580px] px-4 pt-6 pb-16 sm:px-5 sm:pt-11 sm:pb-20">
-        {/* Day header — hidden in focus mode */}
-        {!focusMode && (
-          <div className="mb-6 flex flex-col items-center gap-2 sm:mb-9">
+      {/* ── Day strip — flex-none so it locks at the top of the flex column.
+          main below gets flex-1 + overflow-y-auto and scrolls independently,
+          so routine boxes can never reach behind this strip. ── */}
+      {!focusMode && (
+        <div className="flex-none border-b border-white/[0.06] bg-[rgba(8,12,16,0.88)] backdrop-blur-xl">
+          <div className="mx-auto flex max-w-[580px] flex-col items-center gap-0.5 px-4 py-2.5 sm:gap-1.5 sm:px-5 sm:py-4">
+
             <div className="flex items-center gap-3 sm:gap-[18px]">
               {/* Prev */}
               <button
@@ -176,7 +178,7 @@ export default function RoutinePage() {
                 </svg>
               </button>
 
-              <h1 className="m-0 min-w-[120px] text-center text-[clamp(24px,6vw,42px)] font-extrabold tracking-[-0.03em] text-[var(--color-text-primary)] sm:min-w-[190px]">
+              <h1 className="m-0 min-w-[120px] text-center text-[clamp(22px,5.5vw,38px)] font-extrabold tracking-[-0.03em] text-[var(--color-text-primary)] sm:min-w-[190px]">
                 {today}
               </h1>
 
@@ -194,13 +196,16 @@ export default function RoutinePage() {
               </button>
             </div>
 
-            <p className="m-0 text-xs font-medium text-[var(--color-text-secondary)] sm:text-sm">
+            <p className="m-0 text-[11px] font-medium text-[var(--color-text-muted)] sm:text-xs">
               {formattedDate}
             </p>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Schedule content */}
+      {/* ── Independently scrolling content ── */}
+      <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-20 pt-4 sm:px-5 sm:pb-24 sm:pt-5">
+        <div className="mx-auto max-w-[580px]">
         {isWeekend ? (
           !focusMode && (
             <div className="mt-6 flex flex-col items-center gap-2.5 text-sm font-semibold text-success sm:mt-8 sm:text-[17px]">
@@ -230,6 +235,7 @@ export default function RoutinePage() {
             })}
           </div>
         )}
+        </div>
       </main>
     </div>
   );
