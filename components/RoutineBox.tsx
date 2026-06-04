@@ -55,6 +55,10 @@ export function RoutineBox({
     currentMinutes >= start &&
     currentMinutes < end;
 
+  const progress = isActive
+    ? Math.min(100, Math.round(((currentMinutes - start) / (end - start)) * 100))
+    : 0;
+
   return (
     <div className="w-full">
       <div
@@ -66,7 +70,7 @@ export function RoutineBox({
         tabIndex={0}
         role="article"
         aria-labelledby={`routine-title-${schedule.id}`}
-        className={`group relative w-full rounded-[18px] border px-4 py-4 sm:px-5 sm:py-5 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/25 ${
+        className={`group relative w-full rounded-xl border px-4 py-4 sm:px-5 sm:py-5 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/25 overflow-hidden ${
           hovered
             ? "border-blue-400/30 bg-blue-500/[0.03] shadow-[0_10px_30px_rgba(79,142,247,0.06)] -translate-y-0.5"
             : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)]"
@@ -75,7 +79,7 @@ export function RoutineBox({
         {isActive && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-[18px] border border-blue-400/70 shadow-[0_0_28px_rgba(79,142,247,0.28)] animate-pulse"
+            className="pointer-events-none absolute inset-0 rounded-xl border border-blue-400/70 shadow-[0_0_28px_rgba(79,142,247,0.28)] animate-pulse"
           />
         )}
 
@@ -161,6 +165,26 @@ export function RoutineBox({
             <span className="text-xs font-semibold text-[var(--color-text-primary)] sm:text-sm">Room {schedule.room_number}</span>
           </div>
         </div>
+
+        {/* Minimal Progress — integrated at bottom edge */}
+        {isActive && (
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--color-border)]/20">
+            <div
+              className="relative h-full transition-[width] duration-[30000ms] ease-linear"
+              style={{
+                width: `${progress}%`,
+                backgroundImage: "linear-gradient(90deg, #4f8ef7, #a371f7, #4f8ef7)",
+                backgroundSize: "200% 100%",
+                animation: "shimmer 2s linear infinite",
+              }}
+            >
+              {/* Minimal White Tip */}
+              <div className="absolute right-0 top-0 bottom-0 w-[15px] pointer-events-none">
+                <div className="w-full h-full bg-gradient-to-r from-transparent to-white opacity-80 animate-pulse rounded-r-full" />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Gap to next class */}
