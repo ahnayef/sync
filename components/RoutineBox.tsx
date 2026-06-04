@@ -70,11 +70,10 @@ export function RoutineBox({
         tabIndex={0}
         role="article"
         aria-labelledby={`routine-title-${schedule.id}`}
-        className={`group relative w-full rounded-xl border px-4 py-4 sm:px-5 sm:py-5 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/25 overflow-hidden ${
-          hovered
-            ? "border-blue-400/30 bg-blue-500/[0.03] shadow-[0_10px_30px_rgba(79,142,247,0.06)] -translate-y-0.5"
-            : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)]"
-        }`}
+        className={`group relative w-full rounded-xl border px-4 py-4 sm:px-5 sm:py-5 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/25 overflow-hidden ${hovered
+          ? "border-blue-400/30 bg-blue-500/[0.03] shadow-[0_10px_30px_rgba(79,142,247,0.06)] -translate-y-0.5"
+          : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)]"
+          }`}
       >
         {isActive && (
           <div
@@ -94,16 +93,16 @@ export function RoutineBox({
           <div className="flex items-center gap-1.5 flex-shrink-0 sm:gap-3">
             {/* Section */}
             {schedule.section && schedule.section !== "none" && (
-                <span className="rounded-full bg-[#7c3aed] px-2 py-0.5 text-[9.5px] font-bold text-white sm:px-3 sm:py-1 sm:text-[11px]">
-                  Sec {schedule.section}
-                </span>
+              <span className="rounded-full bg-[#7c3aed] px-2 py-0.5 text-[9.5px] font-bold text-white sm:px-3 sm:py-1 sm:text-[11px]">
+                Sec {schedule.section}
+              </span>
             )}
 
             {/* Lab */}
             {schedule.is_lab && (
-                <span className="rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-2.5 py-0.5 text-[9.5px] font-bold text-white sm:px-3.5 sm:py-1 sm:text-[11px]">
-                  LAB
-                </span>
+              <span className="rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-2.5 py-0.5 text-[9.5px] font-bold text-white sm:px-3.5 sm:py-1 sm:text-[11px]">
+                LAB
+              </span>
             )}
 
             {/* Countdown / live dot */}
@@ -168,7 +167,7 @@ export function RoutineBox({
 
         {/* Minimal Progress — integrated at bottom edge */}
         {isActive && (
-          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--color-border)]/20">
+          <div className="absolute bottom-0 left-0 right-0 h-[1.3px] bg-[var(--color-border)]/20">
             <div
               className="relative h-full transition-[width] duration-[30000ms] ease-linear"
               style={{
