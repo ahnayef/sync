@@ -85,17 +85,26 @@ export default function CoursesPage() {
     return Array.from(depts).sort();
   }, [courses]);
 
-  // Extract unique batch sessions dynamically (sorted descending so latest sessions appear first!)
-  const sessions = useMemo(() => {
-    const sessSet = new Set<string>();
+  // Extract unique batch sessions and associate a department label for display
+  const sessionOptions = useMemo(() => {
+    const map = new Map<string, Set<string>>();
     courses.forEach((c) => {
       if (c.batchSessions) {
         c.batchSessions.split(", ").forEach((s) => {
-          if (s.trim()) sessSet.add(s.trim());
+          const sess = s.trim();
+          if (!sess) return;
+          const dept = c.deptName ? c.deptName.toUpperCase() : "";
+          if (!map.has(sess)) map.set(sess, new Set());
+          if (dept) map.get(sess)!.add(dept);
         });
       }
     });
-    return Array.from(sessSet).sort((a, b) => b.localeCompare(a));
+    const arr = Array.from(map.entries()).map(([sess, deptsSet]) => {
+      const depts = Array.from(deptsSet).sort();
+      const deptLabel = depts.length === 0 ? "General" : depts.length === 1 ? depts[0] : "Multiple";
+      return { sess, deptLabel };
+    });
+    return arr.sort((a, b) => b.sess.localeCompare(a.sess));
   }, [courses]);
 
   // Count active filters (to show in a badge)
@@ -380,9 +389,9 @@ export default function CoursesPage() {
                     className={selectCls}
                   >
                     <option value="all">All Sessions</option>
-                    {sessions.map((sess) => (
+                    {sessionOptions.map(({ sess, deptLabel }) => (
                       <option key={sess} value={sess}>
-                        Session {sess}
+                        {sess} - {deptLabel}
                       </option>
                     ))}
                   </select>
