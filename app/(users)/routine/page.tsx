@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { FiInbox, FiStar } from "react-icons/fi";
+import { FiInbox, FiStar, FiCalendar } from "react-icons/fi";
 import posthog from "posthog-js";
 import { RoutineBox } from "@/components/RoutineBox";
 import { RoutineSchema } from "@/app/types/routine";
@@ -207,11 +207,24 @@ export default function RoutinePage() {
       <main className="flex-1 min-h-0 overflow-y-auto px-4 pb-20 pt-4 sm:px-5 sm:pb-24 sm:pt-5">
         <div className="mx-auto max-w-[580px]">
         {isWeekend ? (
-          !focusMode && (
-            <div className="mt-6 flex flex-col items-center gap-2.5 text-sm font-semibold text-success sm:mt-8 sm:text-[17px]">
-              No classes today <FiStar className="ml-2 text-lg sm:text-2xl text-[var(--color-accent)]" />
+            <div className="mt-6 sm:mt-8">
+              <div className="mx-auto max-w-[460px] rounded-[18px] border border-[var(--color-border)] bg-gradient-to-br from-[rgba(15,23,36,0.65)] to-[var(--color-bg-surface)] px-6 py-8 text-center shadow-[0_8px_30px_rgba(2,6,23,0.6)]">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] text-white shadow-[0_6px_24px_rgba(79,142,247,0.18)]">
+                  <FiCalendar className="text-2xl sm:text-3xl" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold text-[var(--color-text-primary)]">No classes today</h3>
+                <p className="mb-4 text-sm text-[var(--color-text-secondary)]">Enjoy your day off. Nothing scheduled for this day.</p>
+                <div className="mt-4 flex items-center justify-center">
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(255,255,255,0.03)] px-3 py-1 text-sm font-medium text-[var(--color-text-muted)]">
+                      Relax
+                    </span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(255,255,255,0.03)] px-3 py-1 text-sm font-medium text-[var(--color-text-muted)]">Review notes</span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(255,255,255,0.03)] px-3 py-1 text-sm font-medium text-[var(--color-text-muted)]">Plan ahead</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          )
         ) : (loading || changingDay) ? (
           <Skeleton />
         ) : filteredRoutines.length === 0 ? (
