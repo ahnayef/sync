@@ -12,22 +12,98 @@ export default function ForgotPasswordClient() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [step, setStep] = useState<"email" | "otp" | "password" | "done">("email");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleEmailSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    posthog.capture("password_reset_requested");
-    setStep("otp");
+  const resetError = () => setError("");
+
+  const readErrorMessage = async (response: Response) => {
+    try {
+      const payload = await response.json();
+      return payload?.error || "Something went wrong. Please try again.";
+    } catch {
+      return "Something went wrong. Please try again.";
+    }
   };
 
-  const handleOtpSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleEmailSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setStep("password");
+    if (!email) return;
+
+    setLoading(true);
+    resetError();
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response));
+      }
+
+      posthog.capture("password_reset_requested");
+      setStep("otp");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send OTP.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handlePasswordSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleOtpSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (newPassword === confirmPassword) {
+    if (!email || !otp) return;
+
+    setLoading(true);
+    resetError();
+    try {
+      const response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: otp }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response));
+      }
+
+      posthog.capture("password_reset_otp_verified");
+      setStep("password");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid OTP.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!email || !otp || !newPassword || newPassword !== confirmPassword) return;
+
+    setLoading(true);
+    resetError();
+    try {
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: otp, newPassword }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response));
+      }
+
+      posthog.capture("password_reset_completed");
       setStep("done");
+      setNewPassword("");
+      setConfirmPassword("");
+      setOtp("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to reset password.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,6 +155,12 @@ export default function ForgotPasswordClient() {
             </p>
           </div>
 
+          {error && (
+            <div className="mb-4 rounded-[14px] border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              {error}
+            </div>
+          )}
+
           {step === "email" && (
             <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
               <div>
@@ -104,9 +186,10 @@ export default function ForgotPasswordClient() {
 
               <button
                 type="submit"
+                disabled={loading}
                 className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-6 py-3 text-[15px] font-semibold text-white shadow-[0_0_24px_rgba(79,142,247,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_32px_rgba(79,142,247,0.45)]"
               >
-                Send OTP
+                {loading ? "Sending..." : "Send OTP"}
                 <FiArrowRight />
               </button>
             </form>
@@ -136,9 +219,10 @@ export default function ForgotPasswordClient() {
 
               <button
                 type="submit"
+                disabled={loading}
                 className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-6 py-3 text-[15px] font-semibold text-white shadow-[0_0_24px_rgba(79,142,247,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_32px_rgba(79,142,247,0.45)]"
               >
-                Verify OTP
+                {loading ? "Verifying..." : "Verify OTP"}
                 <FiArrowRight />
               </button>
             </form>
@@ -188,10 +272,10 @@ export default function ForgotPasswordClient() {
 
               <button
                 type="submit"
-                disabled={newPassword !== confirmPassword || !newPassword || !confirmPassword}
+                disabled={loading || newPassword !== confirmPassword || !newPassword || !confirmPassword}
                 className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-6 py-3 text-[15px] font-semibold text-white shadow-[0_0_24px_rgba(79,142,247,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_0_32px_rgba(79,142,247,0.45)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:-translate-y-0"
               >
-                Set new password
+                {loading ? "Updating..." : "Set new password"}
                 <FiArrowRight />
               </button>
             </form>

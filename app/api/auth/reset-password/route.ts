@@ -14,23 +14,20 @@ export async function POST(req: Request) {
     if (!users || users.length === 0) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     const userId = users[0].id;
 
+    const codeHash = crypto.createHash("sha256").update(String(code)).digest("hex");
+
     const [rows] = await db.execute<RowDataPacket[]>(
-      "SELECT id, code_hash, expires_at, used FROM password_resets WHERE user_id = ? AND used = 0 ORDER BY created_at DESC LIMIT 1",
-      [userId]
+      "SELECT id FROM password_resets WHERE user_id = ? AND code_hash = ? AND used = 0 AND expires_at > UTC_TIMESTAMP() ORDER BY created_at DESC LIMIT 1",
+      [userId, codeHash]
     );
 
     if (!rows || rows.length === 0) return NextResponse.json({ error: "Invalid or expired code" }, { status: 400 });
-    const reset = rows[0];
-    if (new Date(reset.expires_at) < new Date()) return NextResponse.json({ error: "Expired code" }, { status: 400 });
-
-    const codeHash = crypto.createHash("sha256").update(String(code)).digest("hex");
-    if (codeHash !== reset.code_hash) return NextResponse.json({ error: "Invalid code" }, { status: 400 });
 
     const hashed = await bcrypt.hash(newPassword, 10);
     await db.execute("UPDATE users SET password_hash = ? WHERE id = ?", [hashed, userId]);
 
     // Mark reset as used
-    await db.execute("UPDATE password_resets SET used = 1 WHERE id = ?", [reset.id]);
+    await db.execute("UPDATE password_resets SET used = 1 WHERE user_id = ? AND code_hash = ?", [userId, codeHash]);
 
     return NextResponse.json({ success: true });
   } catch (err) {
