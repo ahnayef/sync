@@ -175,3 +175,15 @@ CREATE TABLE IF NOT EXISTS `sheet_sync_logs` (
   `created_at`    timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`) ON DELETE CASCADE
 );
+
+-- ─── 12. PASSWORD RESETS ───────────────────────────────────
+-- Stores one-time codes for password reset (hashed) and expiry.
+CREATE TABLE IF NOT EXISTS `password_resets` (
+  `id`          int          PRIMARY KEY AUTO_INCREMENT,
+  `user_id`     int          NOT NULL,
+  `code_hash`   varchar(255) NOT NULL,
+  `expires_at`  timestamp    NOT NULL,
+  `used`        boolean      NOT NULL DEFAULT false,
+  `created_at`  timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
