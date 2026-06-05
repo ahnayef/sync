@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { FiInbox, FiCheck, FiSave, FiSearch, FiUser, FiCalendar, FiSliders, FiX } from "react-icons/fi";
 import posthog from "posthog-js";
 import { truncateText } from "@/lib/truncateText";
@@ -39,6 +40,7 @@ function courseRowCls(selected: boolean) {
 
 export default function CoursesPage() {
   const { update: updateSession } = useSession();
+  const router = useRouter();
   const [courses, setCourses] = useState<CourseTeacher[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
@@ -205,12 +207,14 @@ export default function CoursesPage() {
       if (res.ok) {
         posthog.capture("courses_saved", { selected_count: selected.size });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
         // Refresh the JWT token so the proxy sees hasSelectedCourses = true
         // immediately without requiring the user to re-login
         if (selected.size > 0) {
           await updateSession({ hasSelectedCourses: true });
         }
+        // Navigate to routine page after successful save
+        router.push("/routine");
+        return;
       }
     } catch (err) {
       posthog.captureException(err);
