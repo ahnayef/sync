@@ -14,7 +14,7 @@ export default function HomeMockup() {
   const [saved, setSaved] = useState(["CSE-06133211", "CSE-06133119"]);
 
   return (
-    <div className="relative">
+    <div className="relative hidden lg:block">
       <div className="absolute inset-0 rounded-[32px] bg-[radial-gradient(circle_at_top,rgba(79,142,247,0.15),transparent_50%)] blur-2xl" />
       <div className="relative overflow-hidden rounded-[26px] border border-[var(--color-border)] bg-[rgba(13,17,23,0.92)] shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
 
