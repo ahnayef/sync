@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { FiInbox, FiCheck, FiSave, FiSearch, FiUser, FiCalendar, FiSliders, FiX } from "react-icons/fi";
 import posthog from "posthog-js";
+import { truncateText } from "@/lib/truncateText";
 
 const CoursesTour = dynamic(() => import("@/components/CoursesTour"), { ssr: false });
 
@@ -574,19 +575,18 @@ export default function CoursesPage() {
 
                     {/* Bottom Row: Dynamic Batch Session Pill & Cohort Label */}
                     <div className="flex flex-col sm:flex-row sm:items-center items-start justify-between gap-2 w-full mt-2 pt-2 border-t border-white/[0.04]">
-                      {course.batchSessions ? (
-                        <span className="flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-400/20 px-2 py-0.5 text-[9px] font-semibold text-blue-300 truncate max-w-full sm:max-w-[160px]">
-                          <FiCalendar size={9} className="shrink-0 text-blue-400" />
-                          Session: {course.batchSessions}
-                        </span>
-                      ) : (
-                        <div />
-                      )}
-                      {course.batchNames && (
-                        <span className="text-[9.5px] text-white/30 truncate max-w-full sm:max-w-[120px]" title={course.batchNames}>
-                          {course.batchNames}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2 w-full">
+                        {course.batchSessions ? (
+                          <span className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[rgba(79,142,247,0.06)] to-[rgba(111,107,247,0.04)] px-3 py-1 text-[11px] font-semibold text-[var(--color-text-primary)] max-w-full sm:max-w-[220px]">
+                            <FiCalendar size={14} className="shrink-0 text-blue-400" />
+                            <span className="truncate text-wrap">{truncateText(course.batchSessions, 20)}</span>
+                          </span>
+                        ) : null}
+
+                        {course.deptName ? (
+                          <span className="ml-auto rounded-md bg-[rgba(255,255,255,0.02)] px-2 py-0.5 text-[10px] font-semibold text-white/60 uppercase">{course.deptName}</span>
+                        ) : null}
+                      </div>
                     </div>
                   </button>
                 </li>
