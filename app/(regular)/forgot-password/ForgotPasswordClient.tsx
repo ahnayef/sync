@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { FiArrowRight, FiMail } from "react-icons/fi";
 import { LogoIcon } from "@/components/Icon";
 import posthog from "posthog-js";
@@ -14,6 +14,9 @@ export default function ForgotPasswordClient() {
   const [step, setStep] = useState<"email" | "otp" | "password" | "done">("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendCount, setResendCount] = useState(0);
+  const [resending, setResending] = useState(false);
 
   const resetError = () => setError("");
 
@@ -23,6 +26,39 @@ export default function ForgotPasswordClient() {
       return payload?.error || "Something went wrong. Please try again.";
     } catch {
       return "Something went wrong. Please try again.";
+    }
+  };
+
+  // Cooldown timer for resend
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const id = setInterval(() => {
+      setResendCooldown((s) => Math.max(0, s - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [resendCooldown]);
+
+  const handleResend = async () => {
+    if (!email) return setError("Enter your email first.");
+    if (resendCount >= 5) return setError("You've reached the resend limit. Try again later.");
+    if (resendCooldown > 0) return;
+
+    setResending(true);
+    resetError();
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!response.ok) throw new Error(await readErrorMessage(response));
+      setResendCount((c) => c + 1);
+      setResendCooldown(30); // 30s cooldown
+      posthog.capture("password_reset_resent");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resend OTP.");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -225,6 +261,17 @@ export default function ForgotPasswordClient() {
                 {loading ? "Verifying..." : "Verify OTP"}
                 <FiArrowRight />
               </button>
+              <div className="mt-2 flex items-center justify-center gap-3 text-sm text-[var(--color-text-secondary)]">
+                <span>Didn't receive a code?</span>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendCooldown > 0 || resending || resendCount >= 5}
+                  className={`text-[var(--color-accent)] ${resendCooldown > 0 || resending || resendCount >= 5 ? "opacity-50 cursor-not-allowed" : "underline"}`}
+                >
+                  {resending ? "Resending..." : resendCooldown > 0 ? `Resend (${resendCooldown}s)` : `Resend code${resendCount > 0 ? ` (${resendCount})` : ""}`}
+                </button>
+              </div>
             </form>
           )}
 
