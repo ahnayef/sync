@@ -4,6 +4,30 @@ import { syncDepartmentSchedule } from "@/lib/schedule-parser";
 
 export const dynamic = "force-dynamic";
 
+async function sendTelegramReport(message: string) {
+  try {
+    const botToken = process.env.BOT_TOKEN;
+    const chatId = process.env.CHAT_ID;
+    if (!botToken || !chatId) {
+      console.warn("Telegram BOT_TOKEN or CHAT_ID not configured; skipping report");
+      return;
+    }
+
+    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    await fetch(telegramUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "HTML" }),
+    });
+  } catch (err) {
+    console.error("Failed to send telegram report:", err);
+  }
+}
+
+function escapeHtml(input: string) {
+  return input.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 export async function GET(req: Request) {
   // Allow authorization header validation if Vercel Cron secret is set
   const authHeader = req.headers.get("authorization");
@@ -34,6 +58,21 @@ export async function GET(req: Request) {
           status: "error",
           error: err instanceof Error ? err.message : "Sync failed"
         });
+          // Send human-readable error report to Telegram
+          try {
+            const time = new Date().toISOString();
+            const errMsg = err instanceof Error ? (err.stack || err.message) : String(err);
+            const message = `
+<b>Sync Cron — Department Error</b>
+<b>Department:</b> ${escapeHtml(String(dept.name))} (${dept.id})
+<b>Time:</b> ${time}
+<b>Error:</b>
+<pre>${escapeHtml(errMsg)}</pre>
+`;
+            await sendTelegramReport(message);
+          } catch (notifyErr) {
+            console.error("Failed to notify telegram about department error:", notifyErr);
+          }
       }
     }
 
@@ -44,6 +83,21 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     console.error("Cron schedule sync fatal error:", error);
+    // Send fatal error report to Telegram
+    try {
+      const time = new Date().toISOString();
+      const errMsg = error instanceof Error ? (error.stack || error.message) : String(error);
+      const message = `
+<b>Sync Cron — Fatal Error</b>
+<b>Time:</b> ${time}
+<b>Error:</b>
+<pre>${escapeHtml(errMsg)}</pre>
+`;
+      await sendTelegramReport(message);
+    } catch (notifyErr) {
+      console.error("Failed to notify telegram about fatal error:", notifyErr);
+    }
+
     return NextResponse.json({
       error: error instanceof Error ? error.message : "Fatal error during cron sync execution"
     }, { status: 500 });
