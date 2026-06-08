@@ -243,6 +243,18 @@ function formatTimeRange(startTime: string, endTime: string) {
   return `${formatDisplayTime(startTime)} - ${formatDisplayTime(endTime)}`;
 }
 
+function getAppBaseUrl() {
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || process.env.SITE_URL || "";
+  if (!envUrl) return "";
+  if (/^https?:\/\//i.test(envUrl)) return envUrl.replace(/\/$/, "");
+  return `https://${envUrl.replace(/\/$/, "")}`;
+}
+
+function getDashboardUrl(path: string) {
+  const baseUrl = getAppBaseUrl();
+  return baseUrl ? `${baseUrl}${path}` : path;
+}
+
 function formatScheduleSummary(
   row: Pick<ResolvedScheduleRow, "course_code" | "teacher_short_name" | "batch" | "day" | "start_time" | "end_time">,
   departmentName: string | null
@@ -263,6 +275,11 @@ function buildValidationMessage(rows: ResolvedScheduleRow[], departmentName: str
   const rowBySourceRow = new Map(rows.map((row) => [row.sourceRow, row]));
   const pairMessages = new Set<string>();
   const fallbackMessages: string[] = [];
+
+  const formatMissingEntityMessage = (row: ResolvedScheduleRow, entity: string, value: string, solutionPath: string) => {
+    const safeValue = value.trim() || "(blank)";
+    return `Row ${row.sourceRow}: ${entity} '${safeValue}' does not exist. Possible solution: add or update it from ${getDashboardUrl(solutionPath)}.`;
+  };
 
   for (const row of rows) {
     if (row.errors.length === 0) continue;
@@ -286,6 +303,38 @@ function buildValidationMessage(rows: ResolvedScheduleRow[], departmentName: str
       if (existingMatch) {
         fallbackMessages.push(
           `Row ${row.sourceRow}: ${formatScheduleSummary(row, departmentName)} conflicts with an existing ${existingMatch[1]} schedule in room ${existingMatch[2]}. Possible solutions: update, change, swap, or remove the course.`
+        );
+        continue;
+      }
+
+      const courseMatch = error.match(/^Course (.+) was not found\.$/);
+      if (courseMatch) {
+        fallbackMessages.push(formatMissingEntityMessage(row, "The course", courseMatch[1], "/dashboard/manage-courses"));
+        continue;
+      }
+
+      const teacherMatch = error.match(/^Teacher (.+) was not found\.$/);
+      if (teacherMatch) {
+        fallbackMessages.push(formatMissingEntityMessage(row, "The teacher", teacherMatch[1], "/dashboard/manage-teachers"));
+        continue;
+      }
+
+      const batchMatch = error.match(/^Batch (.+) was not found in (.+)\.$/);
+      if (batchMatch) {
+        fallbackMessages.push(formatMissingEntityMessage(row, "The batch", batchMatch[1], "/dashboard/manage-batch"));
+        continue;
+      }
+
+      const roomMatch = error.match(/^Room (.+) was not found\.$/);
+      if (roomMatch) {
+        fallbackMessages.push(formatMissingEntityMessage(row, "The room", roomMatch[1], "/dashboard/manage-rooms"));
+        continue;
+      }
+
+      const departmentMatch = error.match(/^Department was not found\.$/);
+      if (departmentMatch) {
+        fallbackMessages.push(
+          `Row ${row.sourceRow}: The department for this upload does not exist. Possible solution: add or verify the department from ${getDashboardUrl("/dashboard/manage-department")}.`
         );
         continue;
       }
