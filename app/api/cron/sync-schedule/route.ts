@@ -28,6 +28,27 @@ function escapeHtml(input: string) {
   return input.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+function formatTelegramErrorList(errorText: string) {
+  const normalized = errorText
+    .replace(/^Sync failed\.\s*/i, "")
+    .replace(/^Found \d+ validation errors\. Top errors:\s*/i, "")
+    .trim();
+
+  const items = normalized
+    .split(/\s*\|\s*/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 5);
+
+  if (items.length === 0) {
+    return `<i>No validation details were available.</i>`;
+  }
+
+  return items
+    .map((item, index) => `<b>${index + 1}.</b>\n<pre>${escapeHtml(item)}</pre>`)
+    .join("\n\n");
+}
+
 export async function GET(req: Request) {
   // Allow authorization header validation if Vercel Cron secret is set
   const authHeader = req.headers.get("authorization");
@@ -62,13 +83,8 @@ export async function GET(req: Request) {
           try {
             const time = new Date().toISOString();
             const errMsg = err instanceof Error ? err.message : String(err);
-            const message = `
-<b>Sync Cron — Department Error</b>
-<b>Department:</b> ${escapeHtml(String(dept.name))} (${dept.id})
-<b>Time:</b> ${time}
-<b>Error:</b>
-<pre>${escapeHtml(errMsg)}</pre>
-`;
+            const readableError = formatTelegramErrorList(errMsg);
+            const message = `<b>Sync Cron — Department Error</b>\n<b>Department:</b> ${escapeHtml(String(dept.name))} (${dept.id})\n<b>Time:</b> ${time}\n<b>Validation issues:</b>\n${readableError}`;
             await sendTelegramReport(message);
           } catch (notifyErr) {
             console.error("Failed to notify telegram about department error:", notifyErr);
@@ -87,12 +103,8 @@ export async function GET(req: Request) {
     try {
       const time = new Date().toISOString();
       const errMsg = error instanceof Error ? error.message : String(error);
-      const message = `
-<b>Sync Cron — Fatal Error</b>
-<b>Time:</b> ${time}
-<b>Error:</b>
-<pre>${escapeHtml(errMsg)}</pre>
-`;
+      const readableError = formatTelegramErrorList(errMsg);
+      const message = `<b>Sync Cron — Fatal Error</b>\n<b>Time:</b> ${time}\n<b>Details:</b>\n${readableError}`;
       await sendTelegramReport(message);
     } catch (notifyErr) {
       console.error("Failed to notify telegram about fatal error:", notifyErr);

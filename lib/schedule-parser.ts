@@ -281,6 +281,14 @@ function buildValidationMessage(rows: ResolvedScheduleRow[], departmentName: str
     return `Row ${row.sourceRow}: ${entity} '${safeValue}' does not exist. Possible solution: add or update it from ${getDashboardUrl(solutionPath)}.`;
   };
 
+  function formatUploadedRowText(r: ResolvedScheduleRow, deptName: string | null) {
+    return `Row ${r.sourceRow}:\n${r.course_code}\nTeacher: ${r.teacher_short_name || r.teacher_name || "(unknown)"}\n${formatDay(r.day)}, ${formatTimeRange(r.start_time, r.end_time)}\nBatch: ${r.batch}\nDept: ${deptName || "Unknown"}`;
+  }
+
+  function formatExistingRowText(r: ScheduleConflictRow) {
+    return `${r.course_code || "Unknown course"}\nTeacher: ${r.teacher_short || r.teacher_name || "(unknown)"}\n${formatDay(r.day)}, ${formatTimeRange(r.start_time, r.end_time)}\nBatch: ${r.batch_name || "Unknown"}\nDept: ${r.department_name || "Unknown"}`;
+  }
+
   for (const row of rows) {
     if (row.errors.length === 0) continue;
 
@@ -292,18 +300,18 @@ function buildValidationMessage(rows: ResolvedScheduleRow[], departmentName: str
         if (otherRow) {
           const left = row.sourceRow < otherRow.sourceRow ? row : otherRow;
           const right = row.sourceRow < otherRow.sourceRow ? otherRow : row;
-          pairMessages.add(
-            `Row ${left.sourceRow}: ${formatScheduleSummary(left, departmentName)} conflicts with row ${right.sourceRow}: ${formatScheduleSummary(right, departmentName)}. Possible solutions: update, change, swap, or remove one of the courses.`
-          );
+          const leftText = formatUploadedRowText(left, departmentName);
+          const rightText = formatUploadedRowText(right, departmentName);
+          pairMessages.add(`${leftText}\n\nconflicts with\n\n${rightText}\n\nPossible solutions: remove one of the courses.`);
           continue;
         }
       }
 
       const existingMatch = error.match(/^Teacher conflict with an existing (.+) schedule in room (.+)\.$/);
       if (existingMatch) {
-        fallbackMessages.push(
-          `Row ${row.sourceRow}: ${formatScheduleSummary(row, departmentName)} conflicts with an existing ${existingMatch[1]} schedule in room ${existingMatch[2]}. Possible solutions: update, change, swap, or remove the course.`
-        );
+        // we don't have the full existing schedule object here; include the uploaded row details and the generic existing message
+        const rowText = formatUploadedRowText(row, departmentName);
+        fallbackMessages.push(`${rowText}\n\nconflicts with an existing ${existingMatch[1]} schedule in room ${existingMatch[2]}. Possible solutions: update, change, swap, or remove the course.`);
         continue;
       }
 
