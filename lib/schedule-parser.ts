@@ -80,6 +80,12 @@ type ScheduleConflictRow = RowDataPacket & {
   start_time: string;
   end_time: string;
   room_number: number | null;
+  course_code: string | null;
+  course_name: string | null;
+  teacher_short: string | null;
+  teacher_name: string | null;
+  batch_name: string | null;
+  department_name: string | null;
 };
 
 type XlsxLoader = (
@@ -216,6 +222,79 @@ function detectSection(batchCell: string) {
   if (batchCell.includes("[Sec-B]")) return "B";
   if (batchCell.includes("[Sec-A]")) return "A";
   return "none";
+}
+
+function formatDay(day: DayName) {
+  return day.charAt(0).toUpperCase() + day.slice(1);
+}
+
+function formatDisplayTime(timeText: string) {
+  const minutes = toMinutes(timeText);
+  if (minutes === null) return timeText;
+
+  const hour24 = Math.floor(minutes / 60);
+  const minute = (minutes % 60).toString().padStart(2, "0");
+  const suffix = hour24 >= 12 ? "PM" : "AM";
+  const hour12 = ((hour24 + 11) % 12) + 1;
+  return `${hour12}:${minute} ${suffix}`;
+}
+
+function formatTimeRange(startTime: string, endTime: string) {
+  return `${formatDisplayTime(startTime)} - ${formatDisplayTime(endTime)}`;
+}
+
+function formatScheduleSummary(
+  row: Pick<ResolvedScheduleRow, "course_code" | "teacher_short_name" | "batch" | "day" | "start_time" | "end_time">,
+  departmentName: string | null
+) {
+  return `${row.course_code}${row.teacher_short_name ? ` (Teacher: ${row.teacher_short_name})` : ""} at ${formatDay(row.day)}, ${formatTimeRange(row.start_time, row.end_time)}, Batch: ${row.batch}, Dept: ${departmentName || "Unknown"}`;
+}
+
+function formatExistingScheduleSummary(
+  row: Pick<ScheduleConflictRow, "course_code" | "teacher_short" | "batch_name" | "department_name" | "day" | "start_time" | "end_time" | "room_number">
+) {
+  const roomPart = row.room_number ? `, Room: ${row.room_number}` : "";
+  const batchPart = row.batch_name || "Unknown";
+  const deptPart = row.department_name || "Unknown";
+  return `${row.course_code || "Unknown course"}${row.teacher_short ? ` (Teacher: ${row.teacher_short})` : ""} at ${formatDay(row.day)}, ${formatTimeRange(row.start_time, row.end_time)}, Batch: ${batchPart}, Dept: ${deptPart}${roomPart}`;
+}
+
+function buildValidationMessage(rows: ResolvedScheduleRow[], departmentName: string | null) {
+  const rowBySourceRow = new Map(rows.map((row) => [row.sourceRow, row]));
+  const pairMessages = new Set<string>();
+  const fallbackMessages: string[] = [];
+
+  for (const row of rows) {
+    if (row.errors.length === 0) continue;
+
+    for (const error of row.errors) {
+      const uploadedMatch = error.match(/^Teacher conflict with uploaded row (\d+)\.$/);
+      if (uploadedMatch) {
+        const otherRowNumber = Number(uploadedMatch[1]);
+        const otherRow = rowBySourceRow.get(otherRowNumber);
+        if (otherRow) {
+          const left = row.sourceRow < otherRow.sourceRow ? row : otherRow;
+          const right = row.sourceRow < otherRow.sourceRow ? otherRow : row;
+          pairMessages.add(
+            `Row ${left.sourceRow}: ${formatScheduleSummary(left, departmentName)} conflicts with row ${right.sourceRow}: ${formatScheduleSummary(right, departmentName)}. Possible solutions: update, change, swap, or remove one of the courses.`
+          );
+          continue;
+        }
+      }
+
+      const existingMatch = error.match(/^Teacher conflict with an existing (.+) schedule in room (.+)\.$/);
+      if (existingMatch) {
+        fallbackMessages.push(
+          `Row ${row.sourceRow}: ${formatScheduleSummary(row, departmentName)} conflicts with an existing ${existingMatch[1]} schedule in room ${existingMatch[2]}. Possible solutions: update, change, swap, or remove the course.`
+        );
+        continue;
+      }
+
+      fallbackMessages.push(`Row ${row.sourceRow}: ${formatScheduleSummary(row, departmentName)}. ${error}`);
+    }
+  }
+
+  return [...pairMessages, ...fallbackMessages].slice(0, 5).join(" | ");
 }
 
 export function parseWorksheet(sheet: ExcelJS.Worksheet) {
@@ -463,8 +542,18 @@ async function applyConflictChecks(rows: ResolvedScheduleRow[]) {
         SELECT s.id, s.teacher_id, s.room_id, s.day,
           TIME_FORMAT(s.start_time, '%H:%i:%s') as start_time,
           TIME_FORMAT(s.end_time, '%H:%i:%s') as end_time,
-          r.number as room_number
+          r.number as room_number,
+          c.code as course_code,
+          c.name as course_name,
+          t.short as teacher_short,
+          t.name as teacher_name,
+          b.name as batch_name,
+          d.name as department_name
         FROM schedules s
+        LEFT JOIN courses c ON s.course_id = c.id
+        LEFT JOIN teachers t ON s.teacher_id = t.id
+        LEFT JOIN batches b ON s.batch_id = b.id
+        LEFT JOIN departments d ON s.department_id = d.id
         LEFT JOIN rooms r ON s.room_id = r.id
         WHERE s.teacher_id IN (${teacherPlaceholders})
         ${departmentFilter}
@@ -484,7 +573,7 @@ async function applyConflictChecks(rows: ResolvedScheduleRow[]) {
 
       if (conflict) {
         row.errors.push(
-          `Teacher conflict with an existing ${row.day} schedule in room ${conflict.room_number ?? "unknown"}.`
+          `Teacher conflict with existing schedule: ${formatExistingScheduleSummary(conflict)}.`
         );
       }
     }
@@ -564,6 +653,9 @@ export async function syncDepartmentSchedule(departmentId: number, sheetLink: st
   }
 
   try {
+    const [departmentRows] = await db.execute<DepartmentRow[]>("SELECT id, name FROM departments WHERE id = ? LIMIT 1", [departmentId]);
+    const departmentName = departmentRows[0]?.name || null;
+
     // 1. Download sheet
     const sheet = await fetchGoogleSheetBuffer(sheetLink);
 
@@ -576,12 +668,8 @@ export async function syncDepartmentSchedule(departmentId: number, sheetLink: st
     // 4. Check for errors
     const errorRows = rows.filter(r => r.status === "error");
     if (errorRows.length > 0) {
-      // Gather unique errors
-      const errorMsg = errorRows
-        .map(r => `Row ${r.sourceRow}: ${r.errors.join(", ")}`)
-        .slice(0, 5) // limit to top 5 errors to avoid huge message logs
-        .join(" | ");
       const totalErrors = errorRows.length;
+      const errorMsg = buildValidationMessage(errorRows, departmentName) || "Validation errors were found.";
 
       const fullMsg = `Sync failed. Found ${totalErrors} validation errors. Top errors: ${errorMsg}`;
 

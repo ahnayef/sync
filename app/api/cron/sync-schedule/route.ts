@@ -61,7 +61,7 @@ export async function GET(req: Request) {
           // Send human-readable error report to Telegram
           try {
             const time = new Date().toISOString();
-            const errMsg = err instanceof Error ? (err.stack || err.message) : String(err);
+            const errMsg = err instanceof Error ? err.message : String(err);
             const message = `
 <b>Sync Cron — Department Error</b>
 <b>Department:</b> ${escapeHtml(String(dept.name))} (${dept.id})
@@ -86,7 +86,7 @@ export async function GET(req: Request) {
     // Send fatal error report to Telegram
     try {
       const time = new Date().toISOString();
-      const errMsg = error instanceof Error ? (error.stack || error.message) : String(error);
+      const errMsg = error instanceof Error ? error.message : String(error);
       const message = `
 <b>Sync Cron — Fatal Error</b>
 <b>Time:</b> ${time}
