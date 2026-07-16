@@ -370,48 +370,92 @@ function buildValidationMessage(rows: ResolvedScheduleRow[], departmentName: str
   return finalMarkdown;
 }
 
+function getDayName(text: string): DayName | null {
+  const t = text.toLowerCase().trim();
+  if (t.startsWith("sun")) return "sunday";
+  if (t.startsWith("mon")) return "monday";
+  if (t.startsWith("tue")) return "tuesday";
+  if (t.startsWith("wed")) return "wednesday";
+  if (t.startsWith("thu")) return "thursday";
+  if (t.startsWith("fri")) return "friday";
+  if (t.startsWith("sat")) return "saturday";
+  return null;
+}
+
 export function parseWorksheet(sheet: ExcelJS.Worksheet) {
   const result: RawScheduleRow[] = [];
   const timeSlots = detectTimeSlots(sheet) || fallbackTimeSlots;
+  
+  let currentDay: DayName | null = null;
 
-  for (const day of dayRanges) {
-    for (let row = day.start; row <= day.end; row++) {
-      const batchCell = getCellText(sheet.getCell(`B${row}`));
-      if (!batchCell || batchCell.toLowerCase().includes("other")) continue;
+  for (let row = 3; row <= sheet.rowCount; row++) {
+    // 1. Resolve Day Name from Column A
+    const dayCell = sheet.getCell(`A${row}`);
+    const effectiveDayCell = dayCell.isMerged ? dayCell.master : dayCell;
+    const parsedDay = getDayName(getCellText(effectiveDayCell));
+    if (parsedDay) {
+      currentDay = parsedDay;
+    }
 
-      for (let col = 3; col <= 8; col++) {
-        const cell = sheet.getRow(row).getCell(col);
-        if (!cell.value) continue;
-        if (cell.isMerged && cell.master.address !== cell.address) continue;
+    if (!currentDay) continue;
 
-        const mergeRange = cell.isMerged ? findMergeRange(sheet, row, col) : null;
-        const startCol = mergeRange?.left || col;
-        const endCol = mergeRange?.right || col;
-        const timeStart = timeSlots[startCol]?.start;
-        const timeEnd = timeSlots[endCol]?.end;
-        if (!timeStart || !timeEnd) continue;
+    // 2. Validate Batch Cell (Column B)
+    const batchCell = sheet.getCell(`B${row}`);
+    const batchText = getCellText(batchCell);
+    
+    // Ignore explicit "Other Dept" text
+    if (batchText.toLowerCase().includes("other")) continue;
+    
+    // Ignore empty batch cells (we need a batch name!)
+    if (!batchText) continue;
 
-        const rawText = getCellText(cell);
-        const parts = rawText.split(",").map((value) => value.trim());
-        if (parts.length < 3) continue;
-
-        const roomNumber = Number(parts[2].replace(/[^\d]/g, ""));
-        result.push({
-          clientId: `${day.name}-${row}-${col}`,
-          sourceRow: row,
-          sourceColumn: col,
-          start_time: timeStart,
-          end_time: timeEnd,
-          day: day.name,
-          section: detectSection(batchCell),
-          course_code: parts[0],
-          teacher_short_name: parts[1],
-          batch: cleanBatchName(batchCell),
-          room_number: Number.isNaN(roomNumber) ? null : roomNumber,
-        });
-
-        col = endCol;
+    // Ignore Grayed Out Rows
+    let isGray = false;
+    if (batchCell.fill && batchCell.fill.type === "pattern" && batchCell.fill.pattern === "solid") {
+      const argb = batchCell.fill.fgColor?.argb?.toUpperCase();
+      if (argb && argb !== "FFFFFFFF" && argb !== "00000000") {
+        isGray = true;
+      } else if (batchCell.fill.fgColor?.theme !== undefined) {
+        // If it's using a theme color that typically indicates a highlight (like Google Sheets often exports)
+        isGray = true;
       }
+    }
+    
+    if (isGray) continue;
+
+    // 3. Process Schedule Slots (Columns C-H)
+    for (let col = 3; col <= 8; col++) {
+      const cell = sheet.getRow(row).getCell(col);
+      if (!cell.value) continue;
+      if (cell.isMerged && cell.master.address !== cell.address) continue;
+
+      const mergeRange = cell.isMerged ? findMergeRange(sheet, row, col) : null;
+      const startCol = mergeRange?.left || col;
+      const endCol = mergeRange?.right || col;
+      const timeStart = timeSlots[startCol]?.start;
+      const timeEnd = timeSlots[endCol]?.end;
+      if (!timeStart || !timeEnd) continue;
+
+      const rawText = getCellText(cell);
+      const parts = rawText.split(",").map((value) => value.trim());
+      if (parts.length < 3) continue;
+
+      const roomNumber = Number(parts[2].replace(/[^\d]/g, ""));
+      result.push({
+        clientId: `${currentDay}-${row}-${col}`,
+        sourceRow: row,
+        sourceColumn: col,
+        start_time: timeStart,
+        end_time: timeEnd,
+        day: currentDay,
+        section: detectSection(batchText),
+        course_code: parts[0],
+        teacher_short_name: parts[1],
+        batch: cleanBatchName(batchText),
+        room_number: Number.isNaN(roomNumber) ? null : roomNumber,
+      });
+
+      col = endCol;
     }
   }
 
