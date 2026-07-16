@@ -8,7 +8,7 @@ export default function ManageRoomsPage() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  
+
   const [newNumber, setNewNumber] = useState("");
   const [newBuilding, setNewBuilding] = useState("");
   const [newFloor, setNewFloor] = useState("");
@@ -35,8 +35,8 @@ export default function ManageRoomsPage() {
   }, []);
 
   const filtered = rooms.filter(
-    (r) => 
-      r.number.toString().includes(search) || 
+    (r) =>
+      r.number.toString().includes(search) ||
       r.buildingName.toLowerCase().includes(search.toLowerCase()) ||
       (r.title && r.title.toLowerCase().includes(search.toLowerCase()))
   );
@@ -77,23 +77,23 @@ export default function ManageRoomsPage() {
         roomType: newType,
         capacity: parseInt(newCapacity),
       };
-        
+
       const res = await fetch("/api/rooms", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
+
       if (!res.ok) {
         const error = await res.json();
-        alert(error.error || "Failed to save room");
+        toast.error(error.error || "Failed to save room");
       } else {
         await fetchData();
         setShowModal(false);
       }
     } catch (err) {
       console.error(err);
-      alert("An error occurred");
+      toast.error("An error occurred");
     } finally {
       setSaving(false);
     }
@@ -105,7 +105,7 @@ export default function ManageRoomsPage() {
       const res = await fetch(`/api/rooms?id=${id}`, { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Failed to delete");
+        toast.error(err.error || "Failed to delete");
       } else {
         await fetchData();
       }
@@ -331,7 +331,7 @@ export default function ManageRoomsPage() {
                   <input type="number" value={newCapacity} onChange={(e) => setNewCapacity(e.target.value)} placeholder="e.g. 60" className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-2.5 px-3 text-xs sm:text-sm text-[var(--color-text-primary)] outline-none" />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] mb-1.5 sm:mb-2">Building Name</label>
@@ -356,12 +356,12 @@ export default function ManageRoomsPage() {
                   <option value="seminar">Seminar</option>
                 </select>
               </div>
-              
+
               <div className="flex gap-2 sm:gap-3 mt-2 sm:mt-4">
                 <button id="modal-room-cancel" onClick={() => setShowModal(false)} className="flex-1 px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-lg border border-[var(--color-border)] bg-transparent text-xs sm:text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]">Cancel</button>
-                <button 
-                  id="modal-room-save" 
-                  onClick={saveRoom} 
+                <button
+                  id="modal-room-save"
+                  onClick={saveRoom}
                   disabled={saving || !newNumber || !newBuilding || !newFloor || !newCapacity}
                   className="flex-1 px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-lg bg-[var(--color-accent)] text-xs sm:text-sm text-white font-semibold shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
                 >

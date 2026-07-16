@@ -410,13 +410,13 @@ export default function ManageSchedulePage() {
       const data = await res.json();
       setSyncDepts(data.departments || []);
       setSyncLogs(data.logs || []);
-      
+
       const links: Record<number, string> = {};
       data.departments.forEach((d: any) => {
         links[d.id] = d.sheet_link || "";
       });
       setEditingSyncLinks(links);
-      
+
       // Flash success confirmation
       setJustRefreshed(true);
       setTimeout(() => setJustRefreshed(false), 1500);
@@ -445,16 +445,16 @@ export default function ManageSchedulePage() {
           sheetLink: editingSyncLinks[deptId] || null
         })
       });
-      
+
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.error || "Failed to update sync setting");
       }
-      
+
       setSyncDepts(prev => prev.map(d => d.id === deptId ? { ...d, sync_enabled: newEnabled } : d));
       await fetchSyncData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to toggle sync.");
+      toast.error(err instanceof Error ? err.message : "Failed to toggle sync.");
     }
   };
 
@@ -471,16 +471,16 @@ export default function ManageSchedulePage() {
           sheetLink: link === "" ? null : link
         })
       });
-      
+
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.error || "Failed to save link");
       }
-      
-      alert("Google Sheet link saved successfully!");
+
+      toast.error("Google Sheet link saved successfully!");
       await fetchSyncData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save link.");
+      toast.error(err instanceof Error ? err.message : "Failed to save link.");
     } finally {
       setSavingDeptId(null);
     }
@@ -491,10 +491,10 @@ export default function ManageSchedulePage() {
     try {
       const link = editingSyncLinks[deptId] || "";
       if (!link) {
-        alert("Please enter and save a valid Google Sheet link first.");
+        toast.error("Please enter and save a valid Google Sheet link first.");
         return;
       }
-      
+
       const res = await fetch("/api/schedules/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -504,7 +504,7 @@ export default function ManageSchedulePage() {
           triggerNow: true
         })
       });
-      
+
       const text = await res.text();
       console.log("Raw response from /api/schedules/sync:", res.status, text);
       let data: any = {};
@@ -513,7 +513,7 @@ export default function ManageSchedulePage() {
       } catch (e) {
         console.error("Failed to parse JSON", e);
       }
-      
+
       if (!res.ok) {
         console.error("Sync error response data:", data);
         const errMsg = (data && data.error) ? String(data.error) : "Sync failed.";
@@ -632,7 +632,7 @@ export default function ManageSchedulePage() {
           if (Array.isArray(data) && data.length) {
             const normalized = data.map((t: any) => ({
               id: t.id,
-              short: t.short || t.short_name || t.code || t.initials || (t.name ? t.name.split(" ").map((p:string)=>p[0]).join('.') : ""),
+              short: t.short || t.short_name || t.code || t.initials || (t.name ? t.name.split(" ").map((p: string) => p[0]).join('.') : ""),
               name: t.name || t.full_name || t.teacher_name || t.display_name || ""
             }));
             setTeachersList(normalized);
@@ -780,7 +780,7 @@ export default function ManageSchedulePage() {
       const teacher = (teachersList.length > 0 ? teachersList : TEACHERS).find((t: any) => t.short === editData.teacher);
       const batch = (batchesList.length > 0 ? batchesList : BATCHES).find((b: any) => b.name === editData.batch);
       const dept = departments.find((d) => d.name === editData.dept);
-      
+
       // Find room from roomsData (full objects with ID)
       const room = (roomsData.length > 0 ? roomsData : []).find((r: any) => {
         const roomNumber = String(r.room_number ?? r.number ?? "");
@@ -817,7 +817,7 @@ export default function ManageSchedulePage() {
       };
 
       if (!payload.course_id) {
-        alert("Please select a course");
+        toast.error("Please select a course");
         return;
       }
 
@@ -851,7 +851,7 @@ export default function ManageSchedulePage() {
       setEditingId(null);
     } catch (error) {
       console.error("Save schedule error:", error);
-      alert(error instanceof Error ? error.message : "Failed to save schedule");
+      toast.error(error instanceof Error ? error.message : "Failed to save schedule");
     }
   };
 
@@ -889,10 +889,10 @@ export default function ManageSchedulePage() {
   };
 
   const handleLoadGoogleSheet = async () => {
-    if (!googleUrl.trim()) return alert("Enter a Google Sheet link or ID");
+    if (!googleUrl.trim()) return toast.error("Enter a Google Sheet link or ID");
     const idMatch = googleUrl.match(/[A-Za-z0-9-_]{44,}/) || googleUrl.match(/[A-Za-z0-9-_]{20,}/);
     const sheetId = idMatch ? idMatch[0] : null;
-    if (!sheetId) return alert("Couldn't find a valid Google Sheet ID in that input.");
+    if (!sheetId) return toast.error("Couldn't find a valid Google Sheet ID in that input.");
 
     setLoadingSheet(true);
     setFileName(`Google Sheet • ${sheetId}`);
@@ -1115,73 +1115,73 @@ export default function ManageSchedulePage() {
                 </tbody>
               </table>
             </div>
-            </div>
+          </div>
 
-            {/* Mobile Card List */}
-            <div className="sm:hidden mt-4 space-y-3.5">
-              {filteredSchedules.map((row) => (
-                <div key={row.id} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-4 shadow-sm hover:shadow-md transition-shadow animate-in fade-in duration-200">
-                  <div className="flex items-center justify-between gap-2 mb-2.5">
-                    <div className="flex items-center gap-2 min-w-0">
-                      {(() => {
-                        const isLab = (courses.find(c => c.code === row.courseCode) || COURSES.find(c => c.code === row.courseCode))?.isLab || row.isLab;
-                        return (
-                          <code className={`text-[10px] font-bold px-2 py-0.5 rounded ${isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
-                            {row.courseCode}
-                          </code>
-                        );
-                      })()}
-                      <span className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">{row.day}</span>
-                    </div>
-                    <div className="text-[11px] font-semibold text-[var(--color-text-primary)] bg-[var(--color-bg-surface)] px-2.5 py-1 rounded-lg border border-[var(--color-border)]">
-                      Room {row.room}
-                    </div>
+          {/* Mobile Card List */}
+          <div className="sm:hidden mt-4 space-y-3.5">
+            {filteredSchedules.map((row) => (
+              <div key={row.id} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-4 shadow-sm hover:shadow-md transition-shadow animate-in fade-in duration-200">
+                <div className="flex items-center justify-between gap-2 mb-2.5">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {(() => {
+                      const isLab = (courses.find(c => c.code === row.courseCode) || COURSES.find(c => c.code === row.courseCode))?.isLab || row.isLab;
+                      return (
+                        <code className={`text-[10px] font-bold px-2 py-0.5 rounded ${isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
+                          {row.courseCode}
+                        </code>
+                      );
+                    })()}
+                    <span className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">{row.day}</span>
                   </div>
-
-                  <h3 className="text-sm font-bold text-[var(--color-text-primary)] leading-snug mb-1.5">
-                    {row.courseTitle}
-                  </h3>
-
-                  <div className="space-y-1 mb-3.5">
-                    <div className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1.5">
-                      <span className="font-medium text-[var(--color-text-primary)]">{row.teacher || "No Teacher"}</span>
-                      <span className="text-[var(--color-text-muted)]">•</span>
-                      <span>{formatBatchSec(row)}</span>
-                    </div>
-                    <div className="text-xs text-[var(--color-text-muted)] flex items-center gap-1">
-                      <FiClock size={12} className="shrink-0" />
-                      <span>{row.startTime} - {row.endTime}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-3 border-t border-[var(--color-border)]/50">
-                    <button 
-                      onClick={() => openEditModal(row)} 
-                      className="flex-1 py-2 text-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] text-xs font-semibold transition-colors hover:bg-[var(--color-bg-elevated)]"
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      onClick={async () => { 
-                        if (confirm("Are you sure you want to delete this class?")) {
-                          await fetch(`/api/schedules?id=${row.id}`, { method: "DELETE" }); 
-                          setSchedules(schedules.filter(s => s.id !== row.id)); 
-                        }
-                      }} 
-                      className="flex-1 py-2 text-center rounded-xl border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs font-semibold transition-colors hover:bg-[rgba(248,81,73,0.06)]"
-                    >
-                      Delete
-                    </button>
+                  <div className="text-[11px] font-semibold text-[var(--color-text-primary)] bg-[var(--color-bg-surface)] px-2.5 py-1 rounded-lg border border-[var(--color-border)]">
+                    Room {row.room}
                   </div>
                 </div>
-              ))}
 
-              {filteredSchedules.length === 0 && (
-                <div className="text-center py-12 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] text-sm">
-                  No schedules found.
+                <h3 className="text-sm font-bold text-[var(--color-text-primary)] leading-snug mb-1.5">
+                  {row.courseTitle}
+                </h3>
+
+                <div className="space-y-1 mb-3.5">
+                  <div className="text-xs text-[var(--color-text-secondary)] flex items-center gap-1.5">
+                    <span className="font-medium text-[var(--color-text-primary)]">{row.teacher || "No Teacher"}</span>
+                    <span className="text-[var(--color-text-muted)]">•</span>
+                    <span>{formatBatchSec(row)}</span>
+                  </div>
+                  <div className="text-xs text-[var(--color-text-muted)] flex items-center gap-1">
+                    <FiClock size={12} className="shrink-0" />
+                    <span>{row.startTime} - {row.endTime}</span>
+                  </div>
                 </div>
-              )}
-            </div>
+
+                <div className="flex gap-2 pt-3 border-t border-[var(--color-border)]/50">
+                  <button
+                    onClick={() => openEditModal(row)}
+                    className="flex-1 py-2 text-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] text-xs font-semibold transition-colors hover:bg-[var(--color-bg-elevated)]"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (confirm("Are you sure you want to delete this class?")) {
+                        await fetch(`/api/schedules?id=${row.id}`, { method: "DELETE" });
+                        setSchedules(schedules.filter(s => s.id !== row.id));
+                      }
+                    }}
+                    className="flex-1 py-2 text-center rounded-xl border border-[rgba(248,81,73,0.2)] bg-transparent text-[var(--color-danger)] text-xs font-semibold transition-colors hover:bg-[rgba(248,81,73,0.06)]"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {filteredSchedules.length === 0 && (
+              <div className="text-center py-12 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] text-sm">
+                No schedules found.
+              </div>
+            )}
+          </div>
 
           {showEditModal && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center sm:items-center z-[60] p-3 sm:p-6 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}>
@@ -1373,8 +1373,8 @@ export default function ManageSchedulePage() {
           {/* Header */}
           <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--color-border)] pb-4 sm:pb-6">
             <div className="flex items-center gap-2 sm:gap-4">
-              <button 
-                onClick={() => setStep("list")} 
+              <button
+                onClick={() => setStep("list")}
                 className="p-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors flex-shrink-0"
                 title="Back to Schedules"
               >
@@ -1390,14 +1390,13 @@ export default function ManageSchedulePage() {
               </div>
             </div>
 
-            <button 
-              onClick={fetchSyncData} 
+            <button
+              onClick={fetchSyncData}
               disabled={syncConfigLoading || justRefreshed}
-              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 ${
-                justRefreshed 
-                  ? "border-[#3fb950]/40 bg-[rgba(63,185,80,0.06)] text-[#3fb950]" 
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 ${justRefreshed
+                  ? "border-[#3fb950]/40 bg-[rgba(63,185,80,0.06)] text-[#3fb950]"
                   : "border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
-              }`}
+                }`}
             >
               {justRefreshed ? (
                 <>
@@ -1424,10 +1423,10 @@ export default function ManageSchedulePage() {
                   const isSyncing = syncingDeptId === dept.id;
                   const isSaving = savingDeptId === dept.id;
                   const currentLink = editingSyncLinks[dept.id] || "";
-                  
+
                   return (
-                    <div 
-                      key={dept.id} 
+                    <div
+                      key={dept.id}
                       className="glass rounded-3xl border border-[var(--color-border)] p-6 shadow-lg hover:shadow-xl transition-all duration-200"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--color-border)] pb-4 mb-5">
@@ -1538,23 +1537,22 @@ export default function ManageSchedulePage() {
                     syncLogs.map((log) => {
                       const isSuccess = log.status === "success";
                       return (
-                        <div 
-                          key={log.id} 
-                          className={`p-3.5 rounded-2xl border text-xs leading-relaxed space-y-1.5 transition-all ${
-                            isSuccess 
-                              ? "bg-[rgba(63,185,80,0.03)] border-[rgba(63,185,80,0.15)] text-[var(--color-text-primary)]" 
+                        <div
+                          key={log.id}
+                          className={`p-3.5 rounded-2xl border text-xs leading-relaxed space-y-1.5 transition-all ${isSuccess
+                              ? "bg-[rgba(63,185,80,0.03)] border-[rgba(63,185,80,0.15)] text-[var(--color-text-primary)]"
                               : "bg-[rgba(248,81,73,0.03)] border-[rgba(248,81,73,0.15)] text-[var(--color-text-primary)]"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className="font-bold text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)]">
                               {log.department_name}
                             </span>
-                            <span 
-                              style={{ 
+                            <span
+                              style={{
                                 color: isSuccess ? "var(--color-success)" : "var(--color-danger)",
                                 background: isSuccess ? "rgba(63,185,80,0.1)" : "rgba(248,81,73,0.1)"
-                              }} 
+                              }}
                               className="text-[9px] font-bold px-1.5 py-0.5 rounded border border-transparent whitespace-nowrap"
                             >
                               {isSuccess ? "Success" : "Failed"}
@@ -1714,11 +1712,11 @@ export default function ManageSchedulePage() {
                     <span style={{ color: sc.color, background: sc.bg, borderColor: sc.border }} className="text-[10px] font-bold px-2 py-0.5 border rounded-lg uppercase tracking-wider">{sc.label}</span>
                     <span className="text-[11px] font-semibold text-[var(--color-text-muted)] font-mono">{displayDay(row.day)} · {displayTime(row.start_time)} - {displayTime(row.end_time)}</span>
                   </div>
-                  
+
                   <h3 className="text-sm font-bold text-[var(--color-text-primary)] leading-snug mb-2">
                     {row.course_name || "Unresolved course"}
                   </h3>
-                  
+
                   <div className="space-y-1 text-xs text-[var(--color-text-secondary)]">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <code className={`text-[10px] font-bold px-1.5 py-[2px] rounded ${row.is_lab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
@@ -1729,7 +1727,7 @@ export default function ManageSchedulePage() {
                         {row.teacher_short_name || "Missing Teacher"}
                       </span>
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-2 text-[var(--color-text-muted)] mt-1">
                       <span>Batch: <span className="text-[var(--color-text-secondary)] font-medium">{row.batch} ({row.section === "none" ? "—" : row.section})</span></span>
                       <span>•</span>
@@ -1738,7 +1736,7 @@ export default function ManageSchedulePage() {
                       <span>Dept: <span className="text-[var(--color-text-secondary)] font-medium">{selectedImportDept}</span></span>
                     </div>
                   </div>
-                  
+
                   {(row.errors.length > 0 || row.warnings.length > 0) && (
                     <div className="mt-3 p-3 rounded-xl bg-[rgba(248,81,73,0.05)] border border-[rgba(248,81,73,0.15)] text-xs text-[var(--color-danger)] space-y-1.5">
                       {[...row.errors, ...row.warnings].map((err, idx) => (

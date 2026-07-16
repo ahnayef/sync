@@ -90,7 +90,7 @@ export default function ProfilePage() {
       window.location.href = "/api/auth/signout?callbackUrl=/";
     } catch (err: any) {
       posthog.captureException(err);
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 

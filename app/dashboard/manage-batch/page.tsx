@@ -85,14 +85,14 @@ export default function ManageBatchPage() {
 
       if (!res.ok) {
         const error = await res.json();
-        alert(error.error || "Failed to save batch");
+        toast.error(error.error || "Failed to save batch");
       } else {
         await fetchData();
         setShowModal(false);
       }
     } catch (err) {
       console.error(err);
-      alert("An error occurred");
+      toast.error("An error occurred");
     } finally {
       setSaving(false);
     }
@@ -104,7 +104,7 @@ export default function ManageBatchPage() {
       const res = await fetch(`/api/batches?id=${id}`, { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Failed to delete");
+        toast.error(err.error || "Failed to delete");
       } else {
         await fetchData();
       }

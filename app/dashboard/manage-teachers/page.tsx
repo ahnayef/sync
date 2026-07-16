@@ -94,14 +94,14 @@ export default function ManageTeachersPage() {
 
       if (!res.ok) {
         const error = await res.json();
-        alert(error.error || "Failed to save teacher");
+        toast.error(error.error || "Failed to save teacher");
       } else {
         await fetchData();
         setShowModal(false);
       }
     } catch (err) {
       console.error(err);
-      alert("An error occurred");
+      toast.error("An error occurred");
     } finally {
       setSaving(false);
     }
@@ -113,7 +113,7 @@ export default function ManageTeachersPage() {
       const res = await fetch(`/api/teachers?id=${id}`, { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Failed to delete");
+        toast.error(err.error || "Failed to delete");
       } else {
         await fetchData();
       }

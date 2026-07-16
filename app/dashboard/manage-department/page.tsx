@@ -2,10 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
-import { useToast } from "@/components/Toast";
 
 export default function ManageDepartmentPage() {
-  const toast = useToast();
   const [departments, setDepartments] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);

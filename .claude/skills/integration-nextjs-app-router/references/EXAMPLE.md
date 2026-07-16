@@ -480,7 +480,7 @@ export default function ProfilePage() {
     } catch (err) {
       posthog.captureException(err);
       console.error('Captured error:', err);
-      alert('Error captured and sent to PostHog!');
+      toast.error('Error captured and sent to PostHog!');
     }
   };
 

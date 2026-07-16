@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { FiCheckCircle, FiInfo, FiAlertTriangle, FiXCircle, FiX } from "react-icons/fi";
 
 export type ToastType = "success" | "info" | "warning" | "error";
@@ -67,6 +67,18 @@ export function ToastProvider({
   const info = useCallback((msg: string, dur?: number) => addToast(msg, "info", dur), [addToast]);
   const warning = useCallback((msg: string, dur?: number) => addToast(msg, "warning", dur), [addToast]);
   const error = useCallback((msg: string, dur?: number) => addToast(msg, "error", dur), [addToast]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.toast = {
+        toast: addToast,
+        success,
+        info,
+        warning,
+        error,
+      };
+    }
+  }, [addToast, success, info, warning, error]);
 
   const value = {
     toast: addToast,
