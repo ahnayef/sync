@@ -251,10 +251,11 @@ function formatTimeRange(startTime: string, endTime: string) {
 }
 
 function getAppBaseUrl() {
-  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || process.env.SITE_URL || "";
-  if (!envUrl) return "";
-  if (/^https?:\/\//i.test(envUrl)) return envUrl.replace(/\/$/, "");
-  return `https://${envUrl.replace(/\/$/, "")}`;
+  // const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || process.env.SITE_URL || "";
+  // if (!envUrl) return "";
+  // if (/^https?:\/\//i.test(envUrl)) return envUrl.replace(/\/$/, "");
+  // return `https://${envUrl.replace(/\/$/, "")}`;
+  return "";
 }
 
 function getDashboardUrl(path: string) {
