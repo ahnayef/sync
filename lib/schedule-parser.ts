@@ -285,15 +285,15 @@ function buildValidationMessage(rows: ResolvedScheduleRow[], departmentName: str
 
   const formatMissingEntityMessage = (row: ResolvedScheduleRow, entity: string, value: string, solutionPath: string) => {
     const safeValue = value.trim() || "(blank)";
-    return `Row ${row.sourceRow}: ${entity} '${safeValue}' does not exist. Possible solution: add or update it from ${getDashboardUrl(solutionPath)}.`;
+    return `| ${row.sourceRow} | ${entity} **${safeValue}** does not exist. | [Resolve](${getDashboardUrl(solutionPath)}) |`;
   };
 
   function formatUploadedRowText(r: ResolvedScheduleRow, deptName: string | null) {
-    return `Row ${r.sourceRow}:\n${r.course_code}\nTeacher: ${r.teacher_short_name || r.teacher_name || "(unknown)"}\n${formatDay(r.day)}, ${formatTimeRange(r.start_time, r.end_time)}\nBatch: ${r.batch}\nDept: ${deptName || "Unknown"}`;
+    return `**${r.course_code}**<br/>Teacher: ${r.teacher_short_name || r.teacher_name || "N/A"}<br/>${formatDay(r.day)}, ${formatTimeRange(r.start_time, r.end_time)}<br/>Batch: ${r.batch}`;
   }
 
   function formatExistingRowText(r: ScheduleConflictRow) {
-    return `${r.course_code || "Unknown course"}\nTeacher: ${r.teacher_short || r.teacher_name || "(unknown)"}\n${formatDay(r.day)}, ${formatTimeRange(r.start_time, r.end_time)}\nBatch: ${r.batch_name || "Unknown"}\nDept: ${r.department_name || "Unknown"}`;
+    return `**${r.course_code || "Unknown"}**<br/>Teacher: ${r.teacher_short || r.teacher_name || "N/A"}<br/>${formatDay(r.day)}, ${formatTimeRange(r.start_time, r.end_time)}<br/>Batch: ${r.batch_name || "Unknown"}`;
   }
 
   for (const row of rows) {
@@ -307,58 +307,67 @@ function buildValidationMessage(rows: ResolvedScheduleRow[], departmentName: str
         if (otherRow) {
           const left = row.sourceRow < otherRow.sourceRow ? row : otherRow;
           const right = row.sourceRow < otherRow.sourceRow ? otherRow : row;
-          const leftText = formatUploadedRowText(left, departmentName);
-          const rightText = formatUploadedRowText(right, departmentName);
-          pairMessages.add(`${leftText}\n\nconflicts with\n\n${rightText}\n\nPossible solutions: remove one of the courses.`);
+          const leftText = `Row ${left.sourceRow}:<br/>` + formatUploadedRowText(left, departmentName);
+          const rightText = `Row ${right.sourceRow}:<br/>` + formatUploadedRowText(right, departmentName);
+          pairMessages.add(`| ${left.sourceRow}, ${right.sourceRow} | ${leftText} <br/><br/>**conflicts with**<br/><br/> ${rightText} | Remove one |`);
           continue;
         }
       }
 
       const existingMatch = error.match(/^Teacher conflict with an existing (.+) schedule in room (.+)\.$/);
       if (existingMatch) {
-        // we don't have the full existing schedule object here; include the uploaded row details and the generic existing message
         const rowText = formatUploadedRowText(row, departmentName);
-        fallbackMessages.push(`${rowText}\n\nconflicts with an existing ${existingMatch[1]} schedule in room ${existingMatch[2]}. Possible solutions: update, change, swap, or remove the course.`);
+        fallbackMessages.push(`| ${row.sourceRow} | ${rowText} <br/><br/>**conflicts with existing ${existingMatch[1]} schedule in ${existingMatch[2]}** | Update / Remove |`);
         continue;
       }
 
       const courseMatch = error.match(/^Course (.+) was not found\.$/);
       if (courseMatch) {
-        fallbackMessages.push(formatMissingEntityMessage(row, "The course", courseMatch[1], "/dashboard/manage-courses"));
+        fallbackMessages.push(formatMissingEntityMessage(row, "Course", courseMatch[1], "/dashboard/manage-courses"));
         continue;
       }
 
       const teacherMatch = error.match(/^Teacher (.+) was not found\.$/);
       if (teacherMatch) {
-        fallbackMessages.push(formatMissingEntityMessage(row, "The teacher", teacherMatch[1], "/dashboard/manage-teachers"));
+        fallbackMessages.push(formatMissingEntityMessage(row, "Teacher", teacherMatch[1], "/dashboard/manage-teachers"));
         continue;
       }
 
       const batchMatch = error.match(/^Batch (.+) was not found in (.+)\.$/);
       if (batchMatch) {
-        fallbackMessages.push(formatMissingEntityMessage(row, "The batch", batchMatch[1], "/dashboard/manage-batch"));
+        fallbackMessages.push(formatMissingEntityMessage(row, "Batch", batchMatch[1], "/dashboard/manage-batch"));
         continue;
       }
 
       const roomMatch = error.match(/^Room (.+) was not found\.$/);
       if (roomMatch) {
-        fallbackMessages.push(formatMissingEntityMessage(row, "The room", roomMatch[1], "/dashboard/manage-rooms"));
+        fallbackMessages.push(formatMissingEntityMessage(row, "Room", roomMatch[1], "/dashboard/manage-rooms"));
         continue;
       }
 
       const departmentMatch = error.match(/^Department was not found\.$/);
       if (departmentMatch) {
         fallbackMessages.push(
-          `Row ${row.sourceRow}: The department for this upload does not exist. Possible solution: add or verify the department from ${getDashboardUrl("/dashboard/manage-department")}.`
+          `| ${row.sourceRow} | Department does not exist. | [Resolve](${getDashboardUrl("/dashboard/manage-department")}) |`
         );
         continue;
       }
 
-      fallbackMessages.push(`Row ${row.sourceRow}: ${formatScheduleSummary(row, departmentName)}. ${error}`);
+      fallbackMessages.push(`| ${row.sourceRow} | ${formatScheduleSummary(row, departmentName)}<br/>${error} | Review |`);
     }
   }
 
-  return [...pairMessages, ...fallbackMessages].slice(0, 5).join(" | ");
+  let finalMarkdown = "";
+  const allMessages = [...pairMessages, ...fallbackMessages];
+  if (allMessages.length > 0) {
+    finalMarkdown += "\n| Row | Issue | Solution |\n|---|---|---|\n";
+    finalMarkdown += allMessages.slice(0, 10).join("\n");
+    if (allMessages.length > 10) {
+      finalMarkdown += `\n| ... | *...and ${allMessages.length - 10} more errors* | |`;
+    }
+  }
+
+  return finalMarkdown;
 }
 
 export function parseWorksheet(sheet: ExcelJS.Worksheet) {
@@ -734,10 +743,8 @@ export async function syncDepartmentSchedule(departmentId: number, sheetLink: st
     if (errorRows.length > 0) {
       const totalErrors = errorRows.length;
       const errorMsg = buildValidationMessage(errorRows, departmentName) || "Validation errors were found.";
+      const fullMsg = `**Sync failed.** Found **${totalErrors}** validation errors.\n\n${errorMsg}`;
 
-      const fullMsg = `Sync failed. Found ${totalErrors} validation errors. Top errors: ${errorMsg}`;
-
-      // Write error to sync logs
       await db.execute(
         "INSERT INTO sheet_sync_logs (department_id, status, message) VALUES (?, 'error', ?)",
         [departmentId, fullMsg]

@@ -18,6 +18,9 @@ import {
   FiRefreshCw,
   FiClock,
 } from "react-icons/fi";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 
 type ViewMode = "list" | "upload" | "preview" | "fixing" | "done" | "sync";
 
@@ -516,12 +519,9 @@ export default function ManageSchedulePage() {
         const errMsg = (data && data.error) ? String(data.error) : "Sync failed.";
         throw new Error(errMsg);
       }
-      
-      alert(data.message || "Schedules synced successfully!");
       await Promise.all([loadSchedules(), fetchSyncData()]);
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : "Sync failed.");
       await fetchSyncData();
     } finally {
       setSyncingDeptId(null);
@@ -933,7 +933,7 @@ export default function ManageSchedulePage() {
   };
 
   return (
-    <div className="p-4 sm:p-8 max-w-[1200px] mx-auto">
+    <div className="p-4 sm:p-8 w-full max-w-[1800px] mx-auto">
 
       {/* ─── LIST VIEW ──────────────────────────────────────────────────────── */}
       {step === "list" && (
@@ -1518,7 +1518,7 @@ export default function ManageSchedulePage() {
             </div>
 
             {/* Right Column: Sync Logs Console */}
-            <div className="w-full lg:w-80 shrink-0 space-y-4">
+            <div className="w-full lg:w-[500px] xl:w-[650px] shrink-0 space-y-4">
               <div className="glass rounded-3xl border border-[var(--color-border)] p-5 shadow-lg max-h-[600px] flex flex-col">
                 <div className="border-b border-[var(--color-border)] pb-3 mb-4 flex items-center justify-between">
                   <h3 className="font-bold text-[var(--color-text-primary)] flex items-center gap-2 text-base">
@@ -1561,9 +1561,11 @@ export default function ManageSchedulePage() {
                             </span>
                           </div>
 
-                          <p className="text-[11px] text-[var(--color-text-secondary)] break-words">
-                            {log.message}
-                          </p>
+                          <div className="text-[11px] text-[var(--color-text-secondary)] break-words w-full overflow-x-auto [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-[var(--color-border)] [&_th]:p-1.5 [&_th]:bg-[var(--color-bg-subtle)] [&_th]:text-left [&_td]:border [&_td]:border-[var(--color-border)] [&_td]:p-1.5 [&_p]:mb-2 last:[&_p]:mb-0 [&_a]:text-[var(--color-accent)] hover:[&_a]:underline [&_br]:block [&_br]:mb-1">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                              {log.message}
+                            </ReactMarkdown>
+                          </div>
 
                           <div className="text-[9px] text-[var(--color-text-muted)] flex items-center justify-end gap-1 font-mono pt-1 border-t border-[var(--color-border)]/20">
                             <FiClock size={10} />
