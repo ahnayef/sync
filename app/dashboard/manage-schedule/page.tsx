@@ -502,9 +502,19 @@ export default function ManageSchedulePage() {
         })
       });
       
-      const data = await res.json();
+      const text = await res.text();
+      console.log("Raw response from /api/schedules/sync:", res.status, text);
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        console.error("Failed to parse JSON", e);
+      }
+      
       if (!res.ok) {
-        throw new Error(data.error || "Sync failed.");
+        console.error("Sync error response data:", data);
+        const errMsg = (data && data.error) ? String(data.error) : "Sync failed.";
+        throw new Error(errMsg);
       }
       
       alert(data.message || "Schedules synced successfully!");

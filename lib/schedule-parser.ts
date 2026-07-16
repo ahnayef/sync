@@ -149,7 +149,14 @@ function getCellText(cell: ExcelJS.Cell) {
       return value.richText.map((part) => part.text).join("").trim();
     }
   }
-  return (cell.text || value || "").toString().trim();
+  let text = "";
+  try {
+    text = cell.text;
+  } catch (e) {
+    // Ignore ExcelJS internal errors like "Cannot read properties of null (reading 'toString')"
+    // on merged cells that have no text
+  }
+  return (text || value || "").toString().trim();
 }
 
 function detectTimeSlots(sheet: ExcelJS.Worksheet) {

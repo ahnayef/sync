@@ -73,10 +73,15 @@ export async function POST(req: Request) {
 
       return NextResponse.json({ success: true, message: "Configuration saved successfully." });
     }
-  } catch (error) {
-    console.error("Failed to update or run sync:", error);
+  } catch (error: any) {
+    console.error("Failed to update or run sync. Exact error:", error);
+    if (error && typeof error === 'object') {
+      console.error("Error keys:", Object.keys(error));
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
     return NextResponse.json({
-      error: error instanceof Error ? error.message : "Sync failed due to an internal error."
+      error: error instanceof Error ? error.message : (error?.message || "Sync failed due to an internal error.")
     }, { status: 500 });
   }
 }
