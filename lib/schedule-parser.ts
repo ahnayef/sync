@@ -3,7 +3,7 @@ import { Readable } from "stream";
 import type { RowDataPacket } from "mysql2";
 import db from "@/lib/db";
 
-export type DayName = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday";
+export type DayName = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";
 
 export type RawScheduleRow = {
   clientId: string;
@@ -99,13 +99,13 @@ type DownloadedSheet = {
   gid: string | null;
 };
 
-const dayRanges: Array<{ name: DayName; start: number; end: number }> = [
-  { name: "sunday", start: 3, end: 13 },
-  { name: "monday", start: 14, end: 24 },
-  { name: "tuesday", start: 25, end: 35 },
-  { name: "wednesday", start: 36, end: 46 },
-  { name: "thursday", start: 47, end: 57 },
-];
+// const dayRanges: Array<{ name: DayName; start: number; end: number }> = [
+//   { name: "sunday", start: 3, end: 13 },
+//   { name: "monday", start: 14, end: 24 },
+//   { name: "tuesday", start: 25, end: 35 },
+//   { name: "wednesday", start: 36, end: 46 },
+//   { name: "thursday", start: 47, end: 57 },
+// ];
 
 const fallbackTimeSlots: Record<number, { start: string; end: string }> = {
   3: { start: "08:30:00", end: "09:55:00" },
@@ -385,7 +385,7 @@ function getDayName(text: string): DayName | null {
 export function parseWorksheet(sheet: ExcelJS.Worksheet) {
   const result: RawScheduleRow[] = [];
   const timeSlots = detectTimeSlots(sheet) || fallbackTimeSlots;
-  
+
   let currentDay: DayName | null = null;
 
   for (let row = 3; row <= sheet.rowCount; row++) {
@@ -402,10 +402,10 @@ export function parseWorksheet(sheet: ExcelJS.Worksheet) {
     // 2. Validate Batch Cell (Column B)
     const batchCell = sheet.getCell(`B${row}`);
     const batchText = getCellText(batchCell);
-    
+
     // Ignore explicit "Other Dept" text
     if (batchText.toLowerCase().includes("other")) continue;
-    
+
     // Ignore empty batch cells (we need a batch name!)
     if (!batchText) continue;
 
@@ -420,7 +420,7 @@ export function parseWorksheet(sheet: ExcelJS.Worksheet) {
         isGray = true;
       }
     }
-    
+
     if (isGray) continue;
 
     // 3. Process Schedule Slots (Columns C-H)
