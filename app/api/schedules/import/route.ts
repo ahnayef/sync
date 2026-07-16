@@ -27,10 +27,10 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const action = String(formData.get("action") || "preview");
-    const departmentIdValue = formData.get("departmentId");
-    const departmentNameValue = formData.get("departmentName");
-    const departmentId = departmentIdValue ? Number(departmentIdValue) : null;
-    const departmentName = departmentNameValue ? String(departmentNameValue) : null;
+    const programIdValue = formData.get("programId");
+    const programNameValue = formData.get("programName");
+    const programId = programIdValue ? Number(programIdValue) : null;
+    const programName = programNameValue ? String(programNameValue) : null;
     let rawRows: RawScheduleRow[] = [];
 
     if (action === "apply") {
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const rows = await resolveRows(rawRows, Number.isNaN(departmentId) ? null : departmentId, departmentName);
+    const rows = await resolveRows(rawRows, Number.isNaN(programId) ? null : programId, programName);
     const summary = {
       total: rows.length,
       ok: rows.filter((row) => row.status === "ok").length,
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
           total_rows: summary.total,
           ok_rows: summary.ok,
           warning_rows: summary.warnings,
-          department_name: departmentName,
+          program_name: programName,
         },
       });
       return NextResponse.json({ success: true, rows, summary, ...applied });

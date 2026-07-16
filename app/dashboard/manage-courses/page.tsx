@@ -5,34 +5,34 @@ import { FiSearch, FiX } from "react-icons/fi";
 
 export default function ManageCoursesPage() {
   const [courses, setCourses] = useState<any[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newCode, setNewCode] = useState("");
   const [newName, setNewName] = useState("");
   const [newIsLab, setNewIsLab] = useState(false);
-  const [newDeptId, setNewDeptId] = useState<string>("");
+  const [newProgramId, setNewProgramId] = useState<string>("");
   const [filterLab, setFilterLab] = useState<"all" | "lab" | "theory">("all");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const departmentById = useMemo(
-    () => new Map(departments.map((department) => [department.id, department])),
-    [departments]
+  const programById = useMemo(
+    () => new Map(programs.map((program) => [program.id, program])),
+    [programs]
   );
 
   const fetchData = async () => {
     try {
-      const [courseRes, deptRes] = await Promise.all([
+      const [courseRes, progRes] = await Promise.all([
         fetch("/api/courses"),
-        fetch("/api/departments")
+        fetch("/api/programs")
       ]);
-      const [courseData, deptData] = await Promise.all([
+      const [courseData, progData] = await Promise.all([
         courseRes.json(),
-        deptRes.json()
+        progRes.json()
       ]);
       if (courseRes.ok) setCourses(courseData);
-      if (deptRes.ok) setDepartments(deptData);
+      if (progRes.ok) setPrograms(progData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -45,10 +45,12 @@ export default function ManageCoursesPage() {
   }, []);
 
   const filtered = courses.filter((c) => {
-    const departmentName = departmentById.get(c.department_id)?.name || c.dept || "";
+    const programName = programById.get(c.program_id)?.name || c.program_name || "";
+    const departmentName = programById.get(c.program_id)?.department_name || c.dept || "";
     const matchSearch =
       c.code.toLowerCase().includes(search.toLowerCase()) ||
       c.name.toLowerCase().includes(search.toLowerCase()) ||
+      programName.toLowerCase().includes(search.toLowerCase()) ||
       departmentName.toLowerCase().includes(search.toLowerCase());
     const matchFilter =
       filterLab === "all" ? true : filterLab === "lab" ? c.isLab : !c.isLab;
@@ -69,7 +71,7 @@ export default function ManageCoursesPage() {
     setNewCode("");
     setNewName("");
     setNewIsLab(false);
-    setNewDeptId(departments[0]?.id || "");
+    setNewProgramId(programs[0]?.id || "");
     setShowModal(true);
   };
 
@@ -78,18 +80,18 @@ export default function ManageCoursesPage() {
     setNewCode(course.code);
     setNewName(course.name || "");
     setNewIsLab(course.isLab);
-    setNewDeptId(course.department_id);
+    setNewProgramId(course.program_id);
     setShowModal(true);
   };
 
   const saveCourse = async () => {
-    if (!newCode || !newDeptId) return;
+    if (!newCode || !newProgramId) return;
     setSaving(true);
     try {
       const method = editingId ? "PUT" : "POST";
       const payload = editingId
-        ? { id: editingId, code: newCode, name: newName, isLab: newIsLab, departmentId: newDeptId }
-        : { code: newCode, name: newName, isLab: newIsLab, departmentId: newDeptId };
+        ? { id: editingId, code: newCode, name: newName, isLab: newIsLab, programId: newProgramId }
+        : { code: newCode, name: newName, isLab: newIsLab, programId: newProgramId };
 
       const res = await fetch("/api/courses", {
         method,
@@ -136,12 +138,12 @@ export default function ManageCoursesPage() {
           <div className="relative flex flex-col gap-4 sm:gap-6">
             <div className="space-y-1 sm:space-y-2">
               <h1 className="text-xl sm:text-2xl md:text-[24px] lg:text-[26px] font-bold text-[var(--color-text-primary)]">Course Management</h1>
-              <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">Manage course codes, names, and department assignments.</p>
+              <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">Manage course codes, names, and program assignments.</p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="hidden sm:block rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 sm:px-4 py-2 text-xs sm:text-xs text-[var(--color-text-secondary)]">
-                {courses.length} courses • {departments.length} departments
+                {courses.length} courses • {programs.length} programs
               </div>
               <button
                 id="add-course-btn"
@@ -202,7 +204,7 @@ export default function ManageCoursesPage() {
               {filtered.length} visible
             </span>
             <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-1">
-              {departments.length} departments linked
+              {programs.length} programs linked
             </span>
           </div>
         </section>
@@ -213,7 +215,7 @@ export default function ManageCoursesPage() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]/90">
-                    {["Code", "Name", "Type", "Department", "Actions"].map((h) => (
+                    {["Code", "Name", "Type", "Program", "Actions"].map((h) => (
                       <th
                         key={h}
                         className="px-3 sm:px-4 py-4 text-left text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]"
@@ -236,7 +238,8 @@ export default function ManageCoursesPage() {
                     ))
                   ) : filtered.length > 0 ? (
                     filtered.map((c, i) => {
-                      const departmentName = departmentById.get(c.department_id)?.name || c.dept || "—";
+                      const prog = programById.get(c.program_id);
+                      const programName = prog ? `${prog.department_name} - ${prog.name}` : c.program_name || c.dept || "—";
                       return (
                         <tr
                           key={c.id}
@@ -268,7 +271,7 @@ export default function ManageCoursesPage() {
                             </span>
                           </td>
                           <td className="px-3 sm:px-4 py-4 align-top">
-                            <div className="text-sm text-[var(--color-text-primary)]">{departmentName}</div>
+                            <div className="text-sm text-[var(--color-text-primary)]">{programName}</div>
                           </td>
                           <td className="px-3 sm:px-4 py-4 align-top">
                             <div className="flex gap-2">
@@ -328,7 +331,8 @@ export default function ManageCoursesPage() {
             ) : (
               <div className="grid grid-cols-1 gap-3">
                 {filtered.map((c) => {
-                  const departmentName = departmentById.get(c.department_id)?.name || c.dept || "—";
+                  const prog = programById.get(c.program_id);
+                  const programName = prog ? `${prog.department_name} - ${prog.name}` : c.program_name || c.dept || "—";
                   return (
                     <article
                       key={c.id}
@@ -349,7 +353,7 @@ export default function ManageCoursesPage() {
                           <div className="space-y-1">
                             <h3 className="text-xs sm:text-sm font-semibold text-[var(--color-text-primary)]">{c.name}</h3>
                             <p className="text-xs leading-5 text-[var(--color-text-secondary)]">
-                              Department: {departmentName}
+                              Program: {programName}
                             </p>
                           </div>
                         </div>
@@ -390,7 +394,7 @@ export default function ManageCoursesPage() {
                     {editingId ? "Edit Course" : "Add Course"}
                   </h2>
                   <p className="mt-1 text-xs sm:text-sm text-[var(--color-text-secondary)]">
-                    Keep the course code unique and choose the correct department before saving.
+                    Keep the course code unique and choose the correct program before saving.
                   </p>
                 </div>
                 <button
@@ -442,20 +446,20 @@ export default function ManageCoursesPage() {
                     htmlFor="modal-course-dept"
                     className="mb-2 block text-xs sm:text-sm font-medium text-[var(--color-text-secondary)]"
                   >
-                    Department
+                    Program
                   </label>
                   <select
                     id="modal-course-dept"
-                    value={newDeptId}
-                    onChange={(e) => setNewDeptId(e.target.value)}
+                    value={newProgramId}
+                    onChange={(e) => setNewProgramId(e.target.value)}
                     className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-[var(--color-text-primary)] outline-none transition-colors focus:border-[rgba(79,142,247,0.35)]"
                   >
                     <option value="" disabled>
-                      Select Department
+                      Select Program
                     </option>
-                    {departments.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name} ({d.fullName})
+                    {programs.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.department_name} - {p.name}
                       </option>
                     ))}
                   </select>
@@ -505,7 +509,7 @@ export default function ManageCoursesPage() {
                   <button
                     id="modal-course-save"
                     onClick={saveCourse}
-                    disabled={saving || !newCode || !newDeptId}
+                    disabled={saving || !newCode || !newProgramId}
                     className="flex-1 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-[0_12px_28px_rgba(79,142,247,0.22)] transition-all duration-200 hover:translate-y-[-1px] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {saving ? "Saving..." : editingId ? "Save Changes" : "Save Course"}

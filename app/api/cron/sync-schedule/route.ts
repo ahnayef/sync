@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
-import { syncDepartmentSchedule } from "@/lib/schedule-parser";
+import { syncProgramSchedule } from "@/lib/schedule-parser";
 
 export const dynamic = "force-dynamic";
 
@@ -57,25 +57,26 @@ export async function GET(req: Request) {
   }
 
   try {
-    // Fetch all departments with sheet sync enabled
-    const [departments]: any[] = await db.execute(
-      "SELECT id, name, sheet_link FROM departments WHERE sync_enabled = true AND sheet_link IS NOT NULL"
+    // Fetch all programs with sheet sync enabled
+    const [programs]: any[] = await db.execute(
+      "SELECT p.id, p.name, d.name as department_name, p.sheet_link FROM programs p JOIN departments d ON p.department_id = d.id WHERE p.sync_enabled = true AND p.sheet_link IS NOT NULL"
     );
 
     const results = [];
-    for (const dept of departments) {
+    for (const prog of programs) {
+      const displayName = `${prog.department_name} - ${prog.name}`;
       try {
-        console.log(`⏳ Starting cron sync for department ${dept.name} (${dept.id})...`);
-        const syncResult = await syncDepartmentSchedule(dept.id, dept.sheet_link);
+        console.log(`⏳ Starting cron sync for program ${displayName} (${prog.id})...`);
+        const syncResult = await syncProgramSchedule(prog.id, prog.sheet_link);
         results.push({
-          department: dept.name,
+          program: displayName,
           status: "success",
           inserted: syncResult.inserted
         });
       } catch (err) {
-        console.error(`❌ Cron sync failed for department ${dept.name}:`, err);
+        console.error(`❌ Cron sync failed for program ${displayName}:`, err);
         results.push({
-          department: dept.name,
+          program: displayName,
           status: "error",
           error: err instanceof Error ? err.message : "Sync failed"
         });
@@ -84,10 +85,10 @@ export async function GET(req: Request) {
             const time = new Date().toISOString();
             const errMsg = err instanceof Error ? err.message : String(err);
             const readableError = formatTelegramErrorList(errMsg);
-            const message = `<b>Sync Cron — Department Error</b>\n<b>Department:</b> ${escapeHtml(String(dept.name))} (${dept.id})\n<b>Time:</b> ${time}\n<b>Validation issues:</b>\n${readableError}`;
+            const message = `<b>Sync Cron — Program Error</b>\n<b>Program:</b> ${escapeHtml(String(displayName))} (${prog.id})\n<b>Time:</b> ${time}\n<b>Validation issues:</b>\n${readableError}`;
             await sendTelegramReport(message);
           } catch (notifyErr) {
-            console.error("Failed to notify telegram about department error:", notifyErr);
+            console.error("Failed to notify telegram about program error:", notifyErr);
           }
       }
     }

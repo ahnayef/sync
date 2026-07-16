@@ -33,7 +33,7 @@ export type ScheduleRow = {
   batch: string;
   batchSession?: string | null;
   section: string;
-  dept: string;
+  program: string;
   startTime: string;
   endTime: string;
   room: string;
@@ -41,7 +41,7 @@ export type ScheduleRow = {
   status: "ok" | "warning" | "error";
 };
 
-type DepartmentOption = {
+type ProgramOption = {
   id: number;
   name: string;
   fullName?: string;
@@ -62,7 +62,7 @@ type ImportScheduleRow = {
   status: "ok" | "warning" | "error";
   errors: string[];
   warnings: string[];
-  department_id: number | null;
+  program_id: number | null;
   course_id: number | null;
   teacher_id: number | null;
   batch_id: number | null;
@@ -86,7 +86,7 @@ type ScheduleApiRow = {
   teacher_name: string | null;
   batch_name: string | null;
   batch_session: string | null;
-  department_name: string | null;
+  program_name: string | null;
   room_number: number | null;
   room_title: string | null;
 };
@@ -101,7 +101,7 @@ const MOCK_DATA: ScheduleRow[] = [
     batch: "CSE 21",
     batchSession: "21",
     section: "A",
-    dept: "CSE",
+    program: "CSE",
     startTime: "08:00 AM",
     endTime: "09:30 AM",
     room: "401",
@@ -117,7 +117,7 @@ const MOCK_DATA: ScheduleRow[] = [
     batch: "CSE 22",
     batchSession: "22",
     section: "B",
-    dept: "MAT",
+    program: "MAT",
     startTime: "10:00 AM",
     endTime: "11:30 AM",
     room: "302",
@@ -133,7 +133,7 @@ const MOCK_DATA: ScheduleRow[] = [
     batch: "CSE 20",
     batchSession: "20",
     section: "A",
-    dept: "CSE",
+    program: "CSE",
     startTime: "01:00 PM",
     endTime: "03:30 PM",
     room: "Lab-2",
@@ -164,7 +164,7 @@ const STATUS_CONFIG = {
 };
 
 // --- Mock Data for Dropdowns ---
-const DEPARTMENTS = ["CSE", "MAT", "HUM", "EEE", "BBA"];
+const PROGRAMS = ["CSE", "MAT", "HUM", "EEE", "BBA"];
 const TEACHERS = [
   { id: 1, short: "DR. RAHMAN", name: "Dr. Abdur Rahman" },
   { id: 2, short: "PROF. AHMED", name: "Prof. Tanvir Ahmed" },
@@ -172,16 +172,16 @@ const TEACHERS = [
   { id: 4, short: "MS. BEGUM", name: "Ms. Nasreen Begum" },
 ];
 const COURSES = [
-  { id: 1, code: "CSE301", title: "Data Structures", dept: "CSE", isLab: false },
-  { id: 2, code: "CSE315L", title: "OS Lab", dept: "CSE", isLab: true },
-  { id: 3, code: "MAT201", title: "Discrete Mathematics", dept: "MAT", isLab: false },
-  { id: 4, code: "EEE101", title: "Electrical Circuits", dept: "EEE", isLab: false },
+  { id: 1, code: "CSE301", title: "Data Structures", program: "CSE", isLab: false },
+  { id: 2, code: "CSE315L", title: "OS Lab", program: "CSE", isLab: true },
+  { id: 3, code: "MAT201", title: "Discrete Mathematics", program: "MAT", isLab: false },
+  { id: 4, code: "EEE101", title: "Electrical Circuits", program: "EEE", isLab: false },
 ];
 const BATCHES = [
-  { id: 1, name: "CSE 21", dept: "CSE" },
-  { id: 2, name: "CSE 22", dept: "CSE" },
-  { id: 3, name: "MAT 15", dept: "MAT" },
-  { id: 4, name: "EEE 09", dept: "EEE" },
+  { id: 1, name: "CSE 21", program: "CSE" },
+  { id: 2, name: "CSE 22", program: "CSE" },
+  { id: 3, name: "MAT 15", program: "MAT" },
+  { id: 4, name: "EEE 09", program: "EEE" },
 ];
 const ROOMS = ["401", "402", "305", "Lab-1", "Lab-2", "Seminar Hall"];
 
@@ -326,7 +326,7 @@ function mapScheduleApiRow(row: ScheduleApiRow): ScheduleRow {
     batch: row.batch_name || row.batch_session || "",
     batchSession: row.batch_session || null,
     section: row.section || "none",
-    dept: row.department_name || "",
+    program: row.program_name || "",
     startTime: displayTime(row.start_time || "00:00"),
     endTime: displayTime(row.end_time || "00:00"),
     room: row.room_number ? String(row.room_number) : row.room_title || "",
@@ -339,8 +339,8 @@ function formatBatchSec(row: ScheduleRow) {
   const batchLabel = row.batchSession || row.batch;
   const sectionLabel = row.section && row.section !== "none" ? row.section : "none";
 
-  if (row.dept) {
-    return `${row.dept} - ${batchLabel} (${sectionLabel})`;
+  if (row.program) {
+    return `${row.program} - ${batchLabel} (${sectionLabel})`;
   }
 
   return `${batchLabel} (${sectionLabel})`;
@@ -351,7 +351,7 @@ export default function ManageSchedulePage() {
 
   // List View State
   const [schedules, setSchedules] = useState(MOCK_DATA);
-  const [departments, setDepartments] = useState<DepartmentOption[]>([]);
+  const [programs, setPrograms] = useState<ProgramOption[]>([]);
   const [courses, setCourses] = useState<CourseOption[]>(COURSES);
   const [teachersList, setTeachersList] = useState<TeacherOption[]>(TEACHERS);
   const [batchesList, setBatchesList] = useState<BatchOption[]>(BATCHES);
@@ -360,7 +360,7 @@ export default function ManageSchedulePage() {
   const [listLoading, setListLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
-  const [selectedDept, setSelectedDept] = useState("All");
+  const [selectedProgram, setSelectedProgram] = useState("All");
   const [dayFilter, setDayFilter] = useState<string | "All">("All");
   const [typeFilter, setTypeFilter] = useState<"All" | "Lab" | "Theory">("All");
   const [sortBy, setSortBy] = useState<"day" | "course" | "time">("day");
@@ -370,7 +370,7 @@ export default function ManageSchedulePage() {
 
   const filtersActive = Boolean(
     search.trim() ||
-    selectedDept !== "All" ||
+    selectedProgram !== "All" ||
     dayFilter !== "All" ||
     typeFilter !== "All" ||
     sortBy !== "day" ||
@@ -379,7 +379,7 @@ export default function ManageSchedulePage() {
 
   // Edit Form State
   const [editData, setEditData] = useState({
-    day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: "", startTime: "08:00 AM", endTime: "09:30 AM", room: ""
+    day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", program: "", startTime: "08:00 AM", endTime: "09:30 AM", room: ""
   });
 
   // Import Wizard State
@@ -388,18 +388,18 @@ export default function ManageSchedulePage() {
   const [googleUrl, setGoogleUrl] = useState("");
   const [loadingSheet, setLoadingSheet] = useState(false);
   const [importRows, setImportRows] = useState<ImportScheduleRow[]>([]);
-  const [selectedImportDept, setSelectedImportDept] = useState("CSE");
+  const [selectedImportProgram, setSelectedImportProgram] = useState("CSE");
   const [fixingId, setFixingId] = useState<number | null>(null);
   const [importError, setImportError] = useState("");
   const [appliedCount, setAppliedCount] = useState(0);
 
   // Auto Sync States
   const [syncConfigLoading, setSyncConfigLoading] = useState(false);
-  const [syncDepts, setSyncDepts] = useState<any[]>([]);
+  const [syncPrograms, setSyncPrograms] = useState<any[]>([]);
   const [syncLogs, setSyncLogs] = useState<any[]>([]);
   const [editingSyncLinks, setEditingSyncLinks] = useState<Record<number, string>>({});
-  const [syncingDeptId, setSyncingDeptId] = useState<number | null>(null);
-  const [savingDeptId, setSavingDeptId] = useState<number | null>(null);
+  const [syncingProgramId, setSyncingProgramId] = useState<number | null>(null);
+  const [savingProgramId, setSavingProgramId] = useState<number | null>(null);
   const [justRefreshed, setJustRefreshed] = useState(false);
 
   const fetchSyncData = async () => {
@@ -408,11 +408,11 @@ export default function ManageSchedulePage() {
       const res = await fetch(`/api/schedules/sync?t=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to load sync configurations.");
       const data = await res.json();
-      setSyncDepts(data.departments || []);
+      setSyncPrograms(data.programs || []);
       setSyncLogs(data.logs || []);
 
       const links: Record<number, string> = {};
-      data.departments.forEach((d: any) => {
+      data.programs.forEach((d: any) => {
         links[d.id] = d.sheet_link || "";
       });
       setEditingSyncLinks(links);
@@ -433,16 +433,16 @@ export default function ManageSchedulePage() {
     }
   }, [step]);
 
-  const handleToggleSync = async (deptId: number, currentEnabled: boolean) => {
+  const handleToggleSync = async (programId: number, currentEnabled: boolean) => {
     try {
       const newEnabled = !currentEnabled;
       const res = await fetch("/api/schedules/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          departmentId: deptId,
+          programId: programId,
           syncEnabled: newEnabled,
-          sheetLink: editingSyncLinks[deptId] || null
+          sheetLink: editingSyncLinks[programId] || null
         })
       });
 
@@ -451,23 +451,23 @@ export default function ManageSchedulePage() {
         throw new Error(error.error || "Failed to update sync setting");
       }
 
-      setSyncDepts(prev => prev.map(d => d.id === deptId ? { ...d, sync_enabled: newEnabled } : d));
+      setSyncPrograms(prev => prev.map(d => d.id === programId ? { ...d, sync_enabled: newEnabled } : d));
       await fetchSyncData();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to toggle sync.");
     }
   };
 
-  const handleSaveSyncLink = async (deptId: number) => {
-    setSavingDeptId(deptId);
+  const handleSaveSyncLink = async (programId: number) => {
+    setSavingProgramId(programId);
     try {
-      const link = editingSyncLinks[deptId] || "";
+      const link = editingSyncLinks[programId] || "";
       const res = await fetch("/api/schedules/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          departmentId: deptId,
-          syncEnabled: syncDepts.find(d => d.id === deptId)?.sync_enabled || false,
+          programId: programId,
+          syncEnabled: syncPrograms.find(d => d.id === programId)?.sync_enabled || false,
           sheetLink: link === "" ? null : link
         })
       });
@@ -482,14 +482,14 @@ export default function ManageSchedulePage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save link.");
     } finally {
-      setSavingDeptId(null);
+      setSavingProgramId(null);
     }
   };
 
-  const handleTriggerManualSync = async (deptId: number) => {
-    setSyncingDeptId(deptId);
+  const handleTriggerManualSync = async (programId: number) => {
+    setSyncingProgramId(programId);
     try {
-      const link = editingSyncLinks[deptId] || "";
+      const link = editingSyncLinks[programId] || "";
       if (!link) {
         toast.error("Please enter and save a valid Google Sheet link first.");
         return;
@@ -499,7 +499,7 @@ export default function ManageSchedulePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          departmentId: deptId,
+          programId: programId,
           sheetLink: link,
           triggerNow: true
         })
@@ -524,7 +524,7 @@ export default function ManageSchedulePage() {
       console.error(err);
       await fetchSyncData();
     } finally {
-      setSyncingDeptId(null);
+      setSyncingProgramId(null);
     }
   };
 
@@ -565,8 +565,8 @@ export default function ManageSchedulePage() {
     return `${hours.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
   };
 
-  const departmentNames = departments.length > 0 ? departments.map((dept) => dept.name) : DEPARTMENTS;
-  const selectedImportDepartment = departments.find((dept) => dept.name === selectedImportDept);
+  const programNames = programs.length > 0 ? programs.map((dept) => dept.name) : PROGRAMS;
+  const selectedImportProgramObj = programs.find((dept) => dept.name === selectedImportProgram);
 
   const loadSchedules = async () => {
     setListLoading(true);
@@ -586,7 +586,7 @@ export default function ManageSchedulePage() {
     const loadInitialData = async () => {
       try {
         const [departmentRes, scheduleRes, coursesRes, teachersRes, batchesRes, roomsRes] = await Promise.all([
-          fetch("/api/departments", { cache: "no-store" }),
+          fetch("/api/programs", { cache: "no-store" }),
           fetch("/api/schedules", { cache: "no-store" }),
           fetch("/api/courses", { cache: "no-store" }),
           fetch("/api/teachers", { cache: "no-store" }),
@@ -594,10 +594,10 @@ export default function ManageSchedulePage() {
           fetch("/api/rooms", { cache: "no-store" }),
         ]);
         if (departmentRes.ok) {
-          const rows = (await departmentRes.json()) as DepartmentOption[];
-          setDepartments(rows);
+          const rows = (await departmentRes.json()) as ProgramOption[];
+          setPrograms(rows);
           if (rows.length > 0) {
-            setSelectedImportDept((current) =>
+            setSelectedImportProgram((current) =>
               rows.some((dept) => dept.name === current) ? current : rows[0].name
             );
           }
@@ -612,14 +612,14 @@ export default function ManageSchedulePage() {
           if (Array.isArray(data) && data.length) {
             const normalized = data.map((c: any) => {
               // Extract department name from various possible property names
-              const deptName = c.dept || c.department || c.department_name || c.dept_name || "";
+              const deptName = c.program || c.department || c.program_name || c.program_name || "";
               return {
                 id: c.id,
                 code: c.code || c.course_code || c.code_name || c.id || String(c.id || ""),
                 title: c.title || c.course_name || c.name || c.course_title || "Untitled",
-                dept: deptName,
+                program: deptName,
                 isLab: Boolean(c.isLab || c.is_lab || c.lab),
-                department_id: c.department_id  // Include this for reference
+                program_id: c.program_id  // Include this for reference
               };
             });
             setCourses(normalized);
@@ -646,7 +646,7 @@ export default function ManageSchedulePage() {
             const normalized = data.map((b: any) => ({
               id: b.id,
               name: b.name || b.batch_name || b.session || (b.label || ""),
-              dept: b.dept || b.department || b.department_name || b.department_code || "",
+              program: b.program || b.department || b.program_name || b.department_code || "",
               session: b.session || b.batch_session || null
             }));
             setBatchesList(normalized);
@@ -711,8 +711,8 @@ export default function ManageSchedulePage() {
     setImportError("");
     const formData = new FormData();
     formData.append("action", "preview");
-    formData.append("departmentName", selectedImportDept);
-    if (selectedImportDepartment) formData.append("departmentId", String(selectedImportDepartment.id));
+    formData.append("programName", selectedImportProgram);
+    if (selectedImportProgramObj) formData.append("programId", String(selectedImportProgramObj.id));
     if (file) formData.append("file", file);
     if (googleSheet) formData.append("googleSheet", googleSheet);
 
@@ -738,7 +738,7 @@ export default function ManageSchedulePage() {
         s.courseTitle.toLowerCase().includes(searchLower) ||
         s.teacher.toLowerCase().includes(searchLower);
 
-      const matchesDept = selectedDept === "All" || s.dept === selectedDept;
+      const matchesDept = selectedProgram === "All" || s.program === selectedProgram;
       const matchesDay = dayFilter === "All" || s.day === dayFilter;
       const matchesType = typeFilter === "All" || (typeFilter === "Lab" ? s.isLab : !s.isLab);
 
@@ -779,7 +779,7 @@ export default function ManageSchedulePage() {
       const course = (courses.length > 0 ? courses : COURSES).find((c: any) => c.code === editData.courseCode);
       const teacher = (teachersList.length > 0 ? teachersList : TEACHERS).find((t: any) => t.short === editData.teacher);
       const batch = (batchesList.length > 0 ? batchesList : BATCHES).find((b: any) => b.name === editData.batch);
-      const dept = departments.find((d) => d.name === editData.dept);
+      const dept = programs.find((d) => d.name === editData.program);
 
       // Find room from roomsData (full objects with ID)
       const room = (roomsData.length > 0 ? roomsData : []).find((r: any) => {
@@ -812,7 +812,7 @@ export default function ManageSchedulePage() {
         course_id: course?.id,
         teacher_id: teacher?.id || null,
         batch_id: batch?.id || null,
-        department_id: dept?.id || null,
+        program_id: dept?.id || null,
         room_id: room?.id || null,
       };
 
@@ -910,8 +910,8 @@ export default function ManageSchedulePage() {
     setImportError("");
     const formData = new FormData();
     formData.append("action", "apply");
-    formData.append("departmentName", selectedImportDept);
-    if (selectedImportDepartment) formData.append("departmentId", String(selectedImportDepartment.id));
+    formData.append("programName", selectedImportProgram);
+    if (selectedImportProgramObj) formData.append("programId", String(selectedImportProgramObj.id));
     formData.append("rows", JSON.stringify(importRows));
 
     const res = await fetch("/api/schedules/import", {
@@ -949,7 +949,7 @@ export default function ManageSchedulePage() {
                 <button
                   onClick={() => {
                     setEditingId(null);
-                    setEditData({ day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", dept: selectedDept === "All" ? "CSE" : selectedDept, startTime: "08:00", endTime: "09:30", room: "" });
+                    setEditData({ day: "Sunday", courseCode: "", courseTitle: "", teacher: "", batch: "", section: "none", program: selectedProgram === "All" ? "CSE" : selectedProgram, startTime: "08:00", endTime: "09:30", room: "" });
                     setShowEditModal(true);
                   }}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-elevated)]"
@@ -1003,9 +1003,9 @@ export default function ManageSchedulePage() {
               <div className={`${showFiltersMobile ? "flex flex-col" : "hidden"} sm:flex sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto`}>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 w-full sm:w-auto">
                   <label className="text-xs font-semibold text-[var(--color-text-secondary)] sm:min-w-fit">Department</label>
-                  <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none focus:border-[var(--color-accent)]">
+                  <select value={selectedProgram} onChange={(e) => setSelectedProgram(e.target.value)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none focus:border-[var(--color-accent)]">
                     <option value="All">All</option>
-                    {departmentNames.map(d => <option key={d} value={d}>{d}</option>)}
+                    {programNames.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
 
@@ -1043,7 +1043,7 @@ export default function ManageSchedulePage() {
                 </div>
 
                 <button
-                  onClick={() => { setSearch(""); setSelectedDept("All"); setDayFilter("All"); setTypeFilter("All"); setSortBy("day"); setSortDir("asc"); }}
+                  onClick={() => { setSearch(""); setSelectedProgram("All"); setDayFilter("All"); setTypeFilter("All"); setSortBy("day"); setSortDir("asc"); }}
                   aria-pressed={filtersActive}
                   title={filtersActive ? "Clear active filters" : "No filters applied"}
                   className={`w-full sm:w-auto ${filtersActive ? "px-5 py-2.5 rounded-lg border-none cursor-pointer text-sm font-semibold text-white bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] shadow-[0_0_20px_rgba(79,142,247,0.3)] hover:scale-[1.02] active:scale-95 transition-all" : "px-3 py-1.5 rounded-lg text-sm transition-all border border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)]"}`}
@@ -1197,9 +1197,9 @@ export default function ManageSchedulePage() {
                   <div className="col-span-2">
                     <SearchableSelect
                       label="Department"
-                      options={departmentNames}
-                      value={editData.dept}
-                      onChange={(dept: string) => setEditData({ ...editData, dept, batch: "", courseCode: "", courseTitle: "" })}
+                      options={programNames}
+                      value={editData.program}
+                      onChange={(program: string) => setEditData({ ...editData, program, batch: "", courseCode: "", courseTitle: "" })}
                       placeholder="Select Department"
                     />
                   </div>
@@ -1217,7 +1217,7 @@ export default function ManageSchedulePage() {
                         <div className="flex flex-col">
                           <span className="font-semibold text-xs">{c.code}</span>
                           <span className="text-[11px] opacity-70">{c.title}</span>
-                          <span className="text-[10px] text-[var(--color-text-muted)]">{(c as any).dept || (c as any).department || "no dept"}</span>
+                          <span className="text-[10px] text-[var(--color-text-muted)]">{(c as any).program || (c as any).department || "no dept"}</span>
                         </div>
                       )}
                     />
@@ -1244,13 +1244,13 @@ export default function ManageSchedulePage() {
                   <div>
                     <SearchableSelect
                       label="Batch"
-                      options={(batchesList.length ? batchesList : BATCHES).filter((b: any) => ((b.dept || b.department) === editData.dept) || !editData.dept)}
+                      options={(batchesList.length ? batchesList : BATCHES).filter((b: any) => ((b.program || b.department) === editData.program) || !editData.program)}
                       value={editData.batch ? (batchesList.find(b => b.name === editData.batch) || BATCHES.find(b => b.name === editData.batch)) : null}
                       onChange={(b: any) => setEditData({ ...editData, batch: b.name })}
                       placeholder="Select Batch"
-                      displayValue={(b: any) => `${b.dept ? b.dept + " - " : ""}${b.session || b.name}`}
-                      searchKey={(b: any) => `${b.name} ${b.dept || ""} ${b.session || ""}`}
-                      renderOption={(b: any) => <span>{b.dept ? `${b.dept} - ${b.session || b.name}` : b.name}</span>}
+                      displayValue={(b: any) => `${b.program ? b.program + " - " : ""}${b.session || b.name}`}
+                      searchKey={(b: any) => `${b.name} ${b.program || ""} ${b.session || ""}`}
+                      renderOption={(b: any) => <span>{b.program ? `${b.program} - ${b.session || b.name}` : b.name}</span>}
                     />
                   </div>
 
@@ -1413,15 +1413,15 @@ export default function ManageSchedulePage() {
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* Left Column: Config Panel */}
             <div className="flex-1 w-full space-y-6">
-              {syncConfigLoading && syncDepts.length === 0 ? (
+              {syncConfigLoading && syncPrograms.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-20 glass rounded-3xl border border-[var(--color-border)]">
                   <FiRefreshCw className="animate-spin text-[var(--color-accent)] text-4xl mb-4" />
                   <p className="text-sm text-[var(--color-text-secondary)]">Loading sync configurations...</p>
                 </div>
               ) : (
-                syncDepts.map((dept) => {
-                  const isSyncing = syncingDeptId === dept.id;
-                  const isSaving = savingDeptId === dept.id;
+                syncPrograms.map((dept) => {
+                  const isSyncing = syncingProgramId === dept.id;
+                  const isSaving = savingProgramId === dept.id;
                   const currentLink = editingSyncLinks[dept.id] || "";
 
                   return (
@@ -1546,7 +1546,7 @@ export default function ManageSchedulePage() {
                         >
                           <div className="flex items-center justify-between gap-2">
                             <span className="font-bold text-[10px] uppercase tracking-wider text-[var(--color-text-secondary)]">
-                              {log.department_name}
+                              {log.program_name}
                             </span>
                             <span
                               style={{
@@ -1596,9 +1596,9 @@ export default function ManageSchedulePage() {
             <div className="w-full max-w-[400px]">
               <SearchableSelect
                 label="Import for Department"
-                options={departmentNames}
-                value={selectedImportDept}
-                onChange={setSelectedImportDept}
+                options={programNames}
+                value={selectedImportProgram}
+                onChange={setSelectedImportProgram}
                 placeholder="Select Department"
               />
             </div>
@@ -1633,7 +1633,7 @@ export default function ManageSchedulePage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-[var(--color-text-primary)]">{fileName || "schedule_fall2026.xlsx"}</p>
-                <p className="text-xs text-[var(--color-text-muted)]">Parsed {importRows.length} entries for <span className="font-bold text-[var(--color-accent)]">{selectedImportDept}</span></p>
+                <p className="text-xs text-[var(--color-text-muted)]">Parsed {importRows.length} entries for <span className="font-bold text-[var(--color-accent)]">{selectedImportProgram}</span></p>
               </div>
             </div>
             <div className="flex gap-2.5 items-center flex-wrap">
@@ -1681,7 +1681,7 @@ export default function ManageSchedulePage() {
                         <td className={`px-3.5 py-3 text-sm ${row.teacher_id ? "text-[var(--color-text-secondary)]" : "text-[var(--color-danger)]"}`}>{row.teacher_short_name || <span className="inline-flex items-center gap-2 text-[var(--color-danger)]"><FiAlertCircle /> Missing</span>}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-primary)]">{row.batch}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.section === "none" ? "—" : row.section}</td>
-                        <td className="px-3.5 py-3 text-sm font-medium text-[var(--color-accent)] bg-[var(--color-accent-muted)]/10">{selectedImportDept}</td>
+                        <td className="px-3.5 py-3 text-sm font-medium text-[var(--color-accent)] bg-[var(--color-accent-muted)]/10">{selectedImportProgram}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">{displayTime(row.start_time)}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)] whitespace-nowrap">{displayTime(row.end_time)}</td>
                         <td className="px-3.5 py-3 text-sm text-[var(--color-text-secondary)]">{row.room_number ?? "—"}</td>
@@ -1733,7 +1733,7 @@ export default function ManageSchedulePage() {
                       <span>•</span>
                       <span>Room: <span className="text-[var(--color-text-secondary)] font-medium">{row.room_number ?? "—"}</span></span>
                       <span>•</span>
-                      <span>Dept: <span className="text-[var(--color-text-secondary)] font-medium">{selectedImportDept}</span></span>
+                      <span>Dept: <span className="text-[var(--color-text-secondary)] font-medium">{selectedImportProgram}</span></span>
                     </div>
                   </div>
 

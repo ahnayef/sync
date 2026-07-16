@@ -23,7 +23,7 @@ export type ResolvedScheduleRow = RawScheduleRow & {
   status: "ok" | "warning" | "error";
   errors: string[];
   warnings: string[];
-  department_id: number | null;
+  program_id: number | null;
   course_id: number | null;
   teacher_id: number | null;
   batch_id: number | null;
@@ -63,7 +63,7 @@ type BatchRow = RowDataPacket & {
   id: number;
   name: string;
   session: string;
-  department_id: number;
+  program_id: number;
 };
 
 type RoomRow = RowDataPacket & {
@@ -576,19 +576,19 @@ function isSameRoom(
   return false;
 }
 
-export async function resolveRows(rawRows: RawScheduleRow[], departmentIdInput: number | null, departmentNameInput: string | null) {
-  const [departmentRows] = await db.execute<DepartmentRow[]>(
-    "SELECT id, name FROM departments WHERE id = ? OR UPPER(name) = ? LIMIT 1",
-    [departmentIdInput || 0, normalizeCode(departmentNameInput)]
+export async function resolveRows(rawRows: RawScheduleRow[], programIdInput: number | null, programNameInput: string | null) {
+  const [programRows] = await db.execute<any[]>(
+    "SELECT p.id, p.name, d.name as department_name FROM programs p JOIN departments d ON p.department_id = d.id WHERE p.id = ? OR UPPER(p.name) = ? LIMIT 1",
+    [programIdInput || 0, normalizeCode(programNameInput)]
   );
-  const department = departmentRows[0] || null;
-  const departmentId = department?.id || null;
+  const program = programRows[0] || null;
+  const programId = program?.id || null;
 
   const [courseRows] = await db.execute<CourseRow[]>("SELECT id, name, code, is_lab FROM courses");
   const [teacherRows] = await db.execute<TeacherRow[]>("SELECT id, name, short FROM teachers");
   const [batchRows] = await db.execute<BatchRow[]>(
-    "SELECT id, name, session, department_id FROM batches WHERE department_id = ?",
-    [departmentId || 0]
+    "SELECT id, name, session, program_id FROM batches WHERE program_id = ?",
+    [programId || 0]
   );
   const [roomRows] = await db.execute<RoomRow[]>("SELECT id, number, title FROM rooms");
 
@@ -610,10 +610,10 @@ export async function resolveRows(rawRows: RawScheduleRow[], departmentIdInput: 
     const batch = batchesByName.get(normalizeKey(row.batch)) || null;
     const room = row.room_number === null ? null : roomsByNumber.get(String(row.room_number)) || null;
 
-    if (!departmentId) errors.push("Department was not found.");
+    if (!programId) errors.push("Program was not found.");
     if (!course) errors.push(`Course ${row.course_code} was not found.`);
     if (!teacher) errors.push(`Teacher ${row.teacher_short_name || "(blank)"} was not found.`);
-    if (!batch) errors.push(`Batch ${row.batch} was not found in ${department?.name || "the selected department"}.`);
+    if (!batch) errors.push(`Batch ${row.batch} was not found in ${program?.name || "the selected program"}.`);
     if (!room) errors.push(`Room ${row.room_number ?? "(blank)"} was not found.`);
 
     return {
@@ -621,7 +621,7 @@ export async function resolveRows(rawRows: RawScheduleRow[], departmentIdInput: 
       status: errors.length > 0 ? "error" : "ok",
       errors,
       warnings,
-      department_id: departmentId,
+      program_id: programId,
       course_id: course?.id || null,
       teacher_id: teacher?.id || null,
       batch_id: batch?.id || null,
@@ -645,15 +645,15 @@ async function applyConflictChecks(rows: ResolvedScheduleRow[]) {
   const validTeacherIds = Array.from(
     new Set(rows.map((row) => row.teacher_id).filter((id): id is number => typeof id === "number"))
   );
-  const replacingDepartmentIds = Array.from(
-    new Set(rows.map((row) => row.department_id).filter((id): id is number => typeof id === "number"))
+  const replacingProgramIds = Array.from(
+    new Set(rows.map((row) => row.program_id).filter((id): id is number => typeof id === "number"))
   );
 
   if (validTeacherIds.length > 0) {
     const teacherPlaceholders = validTeacherIds.map(() => "?").join(",");
-    const departmentFilter =
-      replacingDepartmentIds.length > 0
-        ? `AND (s.department_id IS NULL OR s.department_id NOT IN (${replacingDepartmentIds.map(() => "?").join(",")}))`
+    const programFilter =
+      replacingProgramIds.length > 0
+        ? `AND (s.program_id IS NULL OR s.program_id NOT IN (${replacingProgramIds.map(() => "?").join(",")}))`
         : "";
     const [existingRows] = await db.execute<ScheduleConflictRow[]>(
       `
@@ -671,12 +671,13 @@ async function applyConflictChecks(rows: ResolvedScheduleRow[]) {
         LEFT JOIN courses c ON s.course_id = c.id
         LEFT JOIN teachers t ON s.teacher_id = t.id
         LEFT JOIN batches b ON s.batch_id = b.id
-        LEFT JOIN departments d ON s.department_id = d.id
+        LEFT JOIN programs p ON s.program_id = p.id
+        LEFT JOIN departments d ON p.department_id = d.id
         LEFT JOIN rooms r ON s.room_id = r.id
         WHERE s.teacher_id IN (${teacherPlaceholders})
-        ${departmentFilter}
+        ${programFilter}
       `,
-      [...validTeacherIds, ...replacingDepartmentIds]
+      [...validTeacherIds, ...replacingProgramIds]
     );
 
     for (const row of rows) {
@@ -723,23 +724,23 @@ export async function applyRows(rows: ResolvedScheduleRow[]) {
     return { inserted: 0, errors: invalidRows.length };
   }
 
-  const departmentIds = Array.from(
-    new Set(rows.map((row) => row.department_id).filter((id): id is number => typeof id === "number"))
+  const programIds = Array.from(
+    new Set(rows.map((row) => row.program_id).filter((id): id is number => typeof id === "number"))
   );
-  if (departmentIds.length !== 1) {
-    throw new Error("Imported schedules must resolve to exactly one department before applying.");
+  if (programIds.length !== 1) {
+    throw new Error("Imported schedules must resolve to exactly one program before applying.");
   }
 
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
-    await connection.execute("DELETE FROM schedules WHERE department_id = ?", [departmentIds[0]]);
+    await connection.execute("DELETE FROM schedules WHERE program_id = ?", [programIds[0]]);
 
     for (const row of rows) {
       await connection.execute(
         `
           INSERT INTO schedules
-            (course_id, teacher_id, batch_id, section, department_id, room_id, start_time, end_time, day)
+            (course_id, teacher_id, batch_id, section, program_id, room_id, start_time, end_time, day)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         [
@@ -747,7 +748,7 @@ export async function applyRows(rows: ResolvedScheduleRow[]) {
           row.teacher_id,
           row.batch_id,
           row.section || "none",
-          row.department_id,
+          row.program_id,
           row.room_id,
           row.start_time,
           row.end_time,
@@ -765,14 +766,14 @@ export async function applyRows(rows: ResolvedScheduleRow[]) {
   }
 }
 
-export async function syncDepartmentSchedule(departmentId: number, sheetLink: string) {
+export async function syncProgramSchedule(programId: number, sheetLink: string) {
   if (!sheetLink || !sheetLink.trim()) {
     throw new Error("Sheet link is empty.");
   }
 
   try {
-    const [departmentRows] = await db.execute<DepartmentRow[]>("SELECT id, name FROM departments WHERE id = ? LIMIT 1", [departmentId]);
-    const departmentName = departmentRows[0]?.name || null;
+    const [programRows] = await db.execute<any[]>("SELECT p.id, p.name, d.name as department_name FROM programs p JOIN departments d ON p.department_id = d.id WHERE p.id = ? LIMIT 1", [programId]);
+    const programName = programRows[0] ? `${programRows[0].department_name} - ${programRows[0].name}` : null;
 
     // 1. Download sheet
     const sheet = await fetchGoogleSheetBuffer(sheetLink);
@@ -780,38 +781,38 @@ export async function syncDepartmentSchedule(departmentId: number, sheetLink: st
     // 2. Parse workbook
     const rawRows = await parseWorkbook(sheet.buffer, sheet.fileName, sheet.gid);
 
-    // 3. Resolve rows for this department
-    const rows = await resolveRows(rawRows, departmentId, null);
+    // 3. Resolve rows for this program
+    const rows = await resolveRows(rawRows, programId, null);
 
     // 4. Check for errors
     const errorRows = rows.filter(r => r.status === "error");
     if (errorRows.length > 0) {
       const totalErrors = errorRows.length;
-      const errorMsg = buildValidationMessage(errorRows, departmentName) || "Validation errors were found.";
+      const errorMsg = buildValidationMessage(errorRows, programName) || "Validation errors were found.";
       const fullMsg = `**Sync failed.** Found **${totalErrors}** validation errors.\n\n${errorMsg}`;
 
       await db.execute(
-        "INSERT INTO sheet_sync_logs (department_id, status, message) VALUES (?, 'error', ?)",
-        [departmentId, fullMsg]
+        "INSERT INTO sheet_sync_logs (program_id, status, message) VALUES (?, 'error', ?)",
+        [programId, fullMsg]
       );
 
       throw new Error(fullMsg);
     }
 
-    // 5. Apply rows (replaces old schedules for this department)
+    // 5. Apply rows (replaces old schedules for this program)
     const applied = await applyRows(rows);
 
     // 6. Update last_sync_at
     await db.execute(
-      "UPDATE departments SET last_sync_at = CURRENT_TIMESTAMP WHERE id = ?",
-      [departmentId]
+      "UPDATE programs SET last_sync_at = CURRENT_TIMESTAMP WHERE id = ?",
+      [programId]
     );
 
     // 7. Write success to sync logs
     const successMsg = `Successfully synced ${applied.inserted} schedule items.`;
     await db.execute(
-      "INSERT INTO sheet_sync_logs (department_id, status, message) VALUES (?, 'success', ?)",
-      [departmentId, successMsg]
+      "INSERT INTO sheet_sync_logs (program_id, status, message) VALUES (?, 'success', ?)",
+      [programId, successMsg]
     );
 
     return { success: true, inserted: applied.inserted };
@@ -821,8 +822,8 @@ export async function syncDepartmentSchedule(departmentId: number, sheetLink: st
     // Write error to sync logs
     try {
       await db.execute(
-        "INSERT INTO sheet_sync_logs (department_id, status, message) VALUES (?, 'error', ?)",
-        [departmentId, `Sync failed: ${errorMsg}`]
+        "INSERT INTO sheet_sync_logs (program_id, status, message) VALUES (?, 'error', ?)",
+        [programId, `Sync failed: ${errorMsg}`]
       );
     } catch (dbErr) {
       console.error("Failed to write error log to db:", dbErr);

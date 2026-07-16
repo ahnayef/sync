@@ -5,28 +5,28 @@ import { FiSearch, FiX } from "react-icons/fi";
 
 export default function ManageBatchPage() {
   const [batches, setBatches] = useState<any[]>([]);
-  const [departments, setDepartments] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
   const [newSession, setNewSession] = useState("");
-  const [newDeptId, setNewDeptId] = useState<string>("");
+  const [newProgramId, setNewProgramId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const fetchData = async () => {
     try {
-      const [batchRes, deptRes] = await Promise.all([
+      const [batchRes, progRes] = await Promise.all([
         fetch("/api/batches"),
-        fetch("/api/departments")
+        fetch("/api/programs")
       ]);
-      const [batchData, deptData] = await Promise.all([
+      const [batchData, progData] = await Promise.all([
         batchRes.json(),
-        deptRes.json()
+        progRes.json()
       ]);
       if (batchRes.ok) setBatches(batchData);
-      if (deptRes.ok) setDepartments(deptData);
+      if (progRes.ok) setPrograms(progData);
     } catch (err) {
       console.error(err);
     } finally {
@@ -38,17 +38,17 @@ export default function ManageBatchPage() {
     fetchData();
   }, []);
 
-  const departmentById = useMemo(() => new Map(departments.map((d) => [d.id, d])), [departments]);
+  const programById = useMemo(() => new Map(programs.map((p) => [p.id, p])), [programs]);
 
   const batchCount = batches.length;
-  const departmentCount = departments.length;
+  const programCount = programs.length;
 
   const filtered = batches.filter((b) => {
-    const deptName = departmentById.get(b.department_id)?.name || b.dept || "";
+    const progName = programById.get(b.program_id)?.name || b.program_name || "";
     return (
       b.name.toLowerCase().includes(search.toLowerCase()) ||
       b.session.toLowerCase().includes(search.toLowerCase()) ||
-      deptName.toLowerCase().includes(search.toLowerCase())
+      progName.toLowerCase().includes(search.toLowerCase())
     );
   });
 
@@ -56,7 +56,7 @@ export default function ManageBatchPage() {
     setEditingId(null);
     setNewName("");
     setNewSession("");
-    setNewDeptId(departments[0]?.id || "");
+    setNewProgramId(programs[0]?.id || "");
     setShowModal(true);
   };
 
@@ -64,18 +64,18 @@ export default function ManageBatchPage() {
     setEditingId(batch.id);
     setNewName(batch.name);
     setNewSession(batch.session);
-    setNewDeptId(batch.department_id);
+    setNewProgramId(batch.program_id);
     setShowModal(true);
   };
 
   const saveBatch = async () => {
-    if (!newName || !newSession || !newDeptId) return;
+    if (!newName || !newSession || !newProgramId) return;
     setSaving(true);
     try {
       const method = editingId ? "PUT" : "POST";
       const payload = editingId
-        ? { id: editingId, name: newName, session: newSession, departmentId: newDeptId }
-        : { name: newName, session: newSession, departmentId: newDeptId };
+        ? { id: editingId, name: newName, session: newSession, programId: newProgramId }
+        : { name: newName, session: newSession, programId: newProgramId };
 
       const res = await fetch("/api/batches", {
         method,
@@ -122,12 +122,12 @@ export default function ManageBatchPage() {
           <div className="relative flex flex-col gap-4 sm:gap-6">
             <div className="space-y-1 sm:space-y-2">
               <h1 className="text-xl sm:text-2xl md:text-[24px] lg:text-[26px] font-bold text-[var(--color-text-primary)]">Batch Management</h1>
-              <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">Create and manage batches, their sessions, and linked departments.</p>
+              <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">Create and manage batches, their sessions, and linked programs.</p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="hidden sm:block rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 sm:px-4 py-2 text-xs sm:text-xs text-[var(--color-text-secondary)]">
-                {batchCount} batches • {departmentCount} departments
+                {batchCount} batches • {programCount} programs
               </div>
               <button id="add-batch-btn" onClick={openAdd} className="inline-flex items-center justify-center gap-2 rounded-lg sm:rounded-xl bg-[var(--color-accent)] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">
                 + Add Batch
@@ -156,7 +156,7 @@ export default function ManageBatchPage() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-[var(--color-bg-elevated)]/90 border-b border-[var(--color-border)]">
-                  {["Name", "Session", "Department", "Actions"].map((h) => (
+                  {["Name", "Session", "Program", "Actions"].map((h) => (
                     <th key={h} className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
@@ -181,7 +181,10 @@ export default function ManageBatchPage() {
                         <span className="text-xs sm:text-sm text-[var(--color-text-secondary)]">{b.session}</span>
                       </td>
                       <td className="px-3 sm:px-4 py-3">
-                        <div className="text-xs sm:text-sm text-[var(--color-text-primary)]">{departmentById.get(b.department_id)?.name || b.dept || "—"}</div>
+                        <div className="text-xs sm:text-sm text-[var(--color-text-primary)]">
+                          {programById.get(b.program_id)?.department_name ? `${programById.get(b.program_id)?.department_name} - ` : ""}
+                          {programById.get(b.program_id)?.name || b.program_name || "—"}
+                        </div>
                       </td>
                       <td className="px-3 sm:px-4 py-3">
                         <div className="flex gap-2">
@@ -222,7 +225,7 @@ export default function ManageBatchPage() {
                       </div>
                     </div>
                     <p className="text-xs text-[var(--color-text-secondary)]">
-                      <span className="font-medium">Department:</span> {departmentById.get(b.department_id)?.name || b.dept || "—"}
+                      <span className="font-medium">Program:</span> {programById.get(b.program_id)?.department_name ? `${programById.get(b.program_id)?.department_name} - ` : ""}{programById.get(b.program_id)?.name || b.program_name || "—"}
                     </p>
                     <div className="flex gap-2 pt-2">
                       <button id={`batch-edit-${b.id}`} onClick={() => openEdit(b)} className="flex-1 px-2 py-1.5 rounded-md border border-[var(--color-border)] bg-transparent text-[var(--color-text-secondary)] text-xs transition-colors hover:bg-[var(--color-bg-surface)]">Edit</button>
@@ -243,7 +246,7 @@ export default function ManageBatchPage() {
               <div className="flex items-start justify-between gap-3 sm:gap-4 border-b border-[var(--color-border)] pb-3 sm:pb-4">
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-[var(--color-text-primary)] mb-1">{editingId ? "Edit Batch" : "Add Batch"}</h2>
-                  <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">Provide batch name, session and assign the department.</p>
+                  <p className="text-xs sm:text-sm text-[var(--color-text-secondary)]">Provide batch name, session and assign the program.</p>
                 </div>
                 <button onClick={() => setShowModal(false)} className="rounded-lg p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]" aria-label="Close modal"><FiX size={18} /></button>
               </div>
@@ -257,17 +260,17 @@ export default function ManageBatchPage() {
                   <input id="modal-batch-session" type="text" value={newSession} onChange={(e) => setNewSession(e.target.value)} placeholder="e.g. 2021-2025" className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]" />
                 </div>
                 <div>
-                  <label htmlFor="modal-batch-dept" className="block text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] mb-2">Department</label>
-                  <select id="modal-batch-dept" value={newDeptId} onChange={(e) => setNewDeptId(e.target.value)} className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base text-[var(--color-text-primary)] outline-none">
-                    <option value="" disabled>Select Department</option>
-                    {departments.map((d) => (
-                      <option key={d.id} value={d.id}>{d.name} ({d.fullName})</option>
+                  <label htmlFor="modal-batch-dept" className="block text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] mb-2">Program</label>
+                  <select id="modal-batch-dept" value={newProgramId} onChange={(e) => setNewProgramId(e.target.value)} className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base text-[var(--color-text-primary)] outline-none">
+                    <option value="" disabled>Select Program</option>
+                    {programs.map((p) => (
+                      <option key={p.id} value={p.id}>{p.department_name} - {p.name}</option>
                     ))}
                   </select>
                 </div>
                 <div className="flex gap-2 sm:gap-3 pt-2 sm:pt-3">
                   <button id="modal-batch-cancel" onClick={() => setShowModal(false)} className="flex-1 rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-transparent px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-elevated)]">Cancel</button>
-                  <button id="modal-batch-save" onClick={saveBatch} disabled={saving || !newName || !newSession || !newDeptId} className="flex-1 rounded-lg sm:rounded-xl bg-[var(--color-accent)] px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed">{saving ? "Saving..." : (editingId ? "Save Changes" : "Save")}</button>
+                  <button id="modal-batch-save" onClick={saveBatch} disabled={saving || !newName || !newSession || !newProgramId} className="flex-1 rounded-lg sm:rounded-xl bg-[var(--color-accent)] px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed">{saving ? "Saving..." : (editingId ? "Save Changes" : "Save")}</button>
                 </div>
               </div>
             </div>

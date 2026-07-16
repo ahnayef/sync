@@ -23,11 +23,21 @@ CREATE TABLE `departments` (
   `id`             int          PRIMARY KEY AUTO_INCREMENT,
   `name`           varchar(255) UNIQUE,               -- short name, e.g. CSE
   `full_name`      varchar(255) UNIQUE,               -- e.g. Computer Science & Engineering
+  `created_at`     timestamp    DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`     timestamp    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- ─── 2.5 PROGRAMS ───────────────────────────────────────────
+CREATE TABLE `programs` (
+  `id`             int          PRIMARY KEY AUTO_INCREMENT,
+  `department_id`  int          NOT NULL,
+  `name`           varchar(255) NOT NULL,             -- e.g. Hons, MBA, MA
   `sheet_link`     varchar(1000) DEFAULT NULL,
   `sync_enabled`   boolean      NOT NULL DEFAULT false,
   `last_sync_at`   timestamp    NULL DEFAULT NULL,
   `created_at`     timestamp    DEFAULT CURRENT_TIMESTAMP,
-  `updated_at`     timestamp    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at`     timestamp    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`) ON DELETE CASCADE
 );
 
 -- ─── 3. TEACHERS ────────────────────────────────────────────
@@ -46,11 +56,11 @@ CREATE TABLE `batches` (
   `id`            int          PRIMARY KEY AUTO_INCREMENT,
   `name`          varchar(255) NOT NULL UNIQUE,
   `session`       varchar(255) NOT NULL,           -- e.g. "2021-2025"
-  `department_id` int          NOT NULL,
-  UNIQUE KEY (`session`, `department_id`),
+  `program_id`    int          NOT NULL,
+  UNIQUE KEY (`session`, `program_id`),
   `created_at`    timestamp    DEFAULT CURRENT_TIMESTAMP,
   `updated_at`    timestamp    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`) ON DELETE CASCADE
+  FOREIGN KEY (`program_id`) REFERENCES `programs`(`id`) ON DELETE CASCADE
 );
 
 -- ─── 5. ROOMS ───────────────────────────────────────────────
@@ -72,10 +82,10 @@ CREATE TABLE `courses` (
   `name`          varchar(255),
   `code`          varchar(255) NOT NULL UNIQUE,   -- e.g. CSE-06134024
   `is_lab`        boolean      DEFAULT false,
-  `department_id` int,
+  `program_id`    int,
   `created_at`    timestamp    DEFAULT CURRENT_TIMESTAMP,
   `updated_at`    timestamp    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`) ON DELETE CASCADE
+  FOREIGN KEY (`program_id`) REFERENCES `programs`(`id`) ON DELETE CASCADE
 );
 
 -- ─── 7. SCHEDULES ───────────────────────────────────────────
@@ -85,7 +95,7 @@ CREATE TABLE `schedules` (
   `teacher_id`    int,
   `batch_id`      int,
   `section`       varchar(255) NOT NULL DEFAULT 'none',
-  `department_id` int,
+  `program_id`    int,
   `room_id`       int,
   `start_time`    time,
   `end_time`      time,
@@ -95,7 +105,7 @@ CREATE TABLE `schedules` (
   FOREIGN KEY (`course_id`)     REFERENCES `courses`(`id`)     ON DELETE CASCADE,
   FOREIGN KEY (`teacher_id`)    REFERENCES `teachers`(`id`)    ON DELETE CASCADE,
   FOREIGN KEY (`batch_id`)      REFERENCES `batches`(`id`)     ON DELETE CASCADE,
-  FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`program_id`)    REFERENCES `programs`(`id`)    ON DELETE CASCADE,
   FOREIGN KEY (`room_id`)       REFERENCES `rooms`(`id`)       ON DELETE CASCADE
 );
 
@@ -152,9 +162,9 @@ CREATE INDEX `idx_schedules_teacher_day`
 CREATE INDEX `idx_schedules_room_day`
   ON `schedules` (`room_id`, `day`);
 
--- "All schedules for a department on a given day"
-CREATE INDEX `idx_schedules_dept_day`
-  ON `schedules` (`department_id`, `day`);
+-- "All schedules for a program on a given day"
+CREATE INDEX `idx_schedules_prog_day`
+  ON `schedules` (`program_id`, `day`);
 
 -- Fast session token lookup
 CREATE INDEX `idx_sessions_user_expiry`
@@ -169,11 +179,11 @@ CREATE INDEX `idx_student_courses_teacher`
 -- ─── 11. SHEET SYNC LOGS ────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `sheet_sync_logs` (
   `id`            int          PRIMARY KEY AUTO_INCREMENT,
-  `department_id` int          NOT NULL,
+  `program_id`    int          NOT NULL,
   `status`        enum('success','error') NOT NULL,
   `message`       text,
   `created_at`    timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (`department_id`) REFERENCES `departments`(`id`) ON DELETE CASCADE
+  FOREIGN KEY (`program_id`) REFERENCES `programs`(`id`) ON DELETE CASCADE
 );
 
 -- ─── 12. PASSWORD RESETS ───────────────────────────────────

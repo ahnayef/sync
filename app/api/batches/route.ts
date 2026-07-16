@@ -17,9 +17,10 @@ export async function GET() {
 
   try {
     const [rows] = await db.execute(`
-      SELECT b.id, b.name, b.session, d.name as dept, b.department_id
+      SELECT b.id, b.name, b.session, p.name as program_name, d.name as dept, b.program_id
       FROM batches b
-      JOIN departments d ON b.department_id = d.id
+      JOIN programs p ON b.program_id = p.id
+      JOIN departments d ON p.department_id = d.id
       ORDER BY b.name ASC
     `);
     return NextResponse.json(rows);
@@ -33,20 +34,20 @@ export async function POST(req: Request) {
   if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { name, session, departmentId } = await req.json();
-    if (!name || !session || !departmentId) {
+    const { name, session, programId } = await req.json();
+    if (!name || !session || !programId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const [result]: any = await db.execute(
-      "INSERT INTO batches (name, session, department_id) VALUES (?, ?, ?)",
-      [name, session, departmentId]
+      "INSERT INTO batches (name, session, program_id) VALUES (?, ?, ?)",
+      [name, session, programId]
     );
 
     return NextResponse.json({ success: true, id: result.insertId });
   } catch (error: any) {
     if (error.code === 'ER_DUP_ENTRY') {
-      return NextResponse.json({ error: "Batch already exists for this session/department" }, { status: 400 });
+      return NextResponse.json({ error: "Batch already exists for this session/program" }, { status: 400 });
     }
     console.error("Add batch err:", error);
     return NextResponse.json({ error: "Database error" }, { status: 500 });
@@ -57,20 +58,20 @@ export async function PUT(req: Request) {
   if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { id, name, session, departmentId } = await req.json();
-    if (!id || !name || !session || !departmentId) {
+    const { id, name, session, programId } = await req.json();
+    if (!id || !name || !session || !programId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     await db.execute(
-      "UPDATE batches SET name = ?, session = ?, department_id = ? WHERE id = ?",
-      [name, session, departmentId, id]
+      "UPDATE batches SET name = ?, session = ?, program_id = ? WHERE id = ?",
+      [name, session, programId, id]
     );
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
     if (error.code === 'ER_DUP_ENTRY') {
-      return NextResponse.json({ error: "Batch already exists for this session/department" }, { status: 400 });
+      return NextResponse.json({ error: "Batch already exists for this session/program" }, { status: 400 });
     }
     console.error("Update batch err:", error);
     return NextResponse.json({ error: "Database error" }, { status: 500 });

@@ -22,11 +22,13 @@ export async function GET() {
         c.name, 
         c.code, 
         c.is_lab as isLab, 
+        COALESCE(p.name, '') as program_name,
         COALESCE(d.name, '') as dept,
-        c.department_id
+        c.program_id
       FROM courses c
-      LEFT JOIN departments d ON c.department_id = d.id
-      ORDER BY COALESCE(d.name, ''), c.code ASC
+      LEFT JOIN programs p ON c.program_id = p.id
+      LEFT JOIN departments d ON p.department_id = d.id
+      ORDER BY COALESCE(d.name, ''), COALESCE(p.name, ''), c.code ASC
     `);
     
     // Ensure dept is never null or undefined in response
@@ -46,14 +48,14 @@ export async function POST(req: Request) {
   if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { name, code, isLab, departmentId } = await req.json();
-    if (!code || !departmentId) {
+    const { name, code, isLab, programId } = await req.json();
+    if (!code || !programId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const [result]: any = await db.execute(
-      "INSERT INTO courses (name, code, is_lab, department_id) VALUES (?, ?, ?, ?)",
-      [name, code.toUpperCase(), isLab ? 1 : 0, departmentId]
+      "INSERT INTO courses (name, code, is_lab, program_id) VALUES (?, ?, ?, ?)",
+      [name, code.toUpperCase(), isLab ? 1 : 0, programId]
     );
 
     return NextResponse.json({ success: true, id: result.insertId });
@@ -70,14 +72,14 @@ export async function PUT(req: Request) {
   if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { id, name, code, isLab, departmentId } = await req.json();
-    if (!id || !code || !departmentId) {
+    const { id, name, code, isLab, programId } = await req.json();
+    if (!id || !code || !programId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     await db.execute(
-      "UPDATE courses SET name = ?, code = ?, is_lab = ?, department_id = ? WHERE id = ?",
-      [name, code.toUpperCase(), isLab ? 1 : 0, departmentId, id]
+      "UPDATE courses SET name = ?, code = ?, is_lab = ?, program_id = ? WHERE id = ?",
+      [name, code.toUpperCase(), isLab ? 1 : 0, programId, id]
     );
 
     return NextResponse.json({ success: true });
