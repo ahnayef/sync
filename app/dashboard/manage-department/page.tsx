@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
+import { useToast } from "@/components/Toast";
 
 export default function ManageDepartmentPage() {
+  const toast = useToast();
   const [departments, setDepartments] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -70,9 +72,10 @@ export default function ManageDepartmentPage() {
 
       if (!res.ok) {
         const error = await res.json();
-        alert(error.error || "Failed to save department");
+        toast.error(error.error || "Failed to save department");
       } else {
         await fetchDepartments();
+        toast.success(editingId ? "Department updated successfully" : "Department added successfully");
         setNewName("");
         setNewFullName("");
         setEditingId(null);
@@ -80,7 +83,7 @@ export default function ManageDepartmentPage() {
       }
     } catch (err) {
       console.error(err);
-      alert("An error occurred");
+      toast.error("An error occurred");
     } finally {
       setSaving(false);
     }
@@ -92,12 +95,14 @@ export default function ManageDepartmentPage() {
       const res = await fetch(`/api/departments?id=${id}`, { method: "DELETE" });
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Failed to delete");
+        toast.error(err.error || "Failed to delete");
       } else {
         await fetchDepartments();
+        toast.success("Department deleted successfully");
       }
     } catch (err) {
       console.error(err);
+      toast.error("An error occurred");
     }
   };
 
