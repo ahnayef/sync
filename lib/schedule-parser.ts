@@ -220,7 +220,7 @@ function findMergeRange(sheet: ExcelJS.Worksheet, row: number, col: number) {
 function cleanBatchName(batchCell: string) {
   return batchCell
     .replace(/\[.*?\]/g, "")
-    .replace(/\(\d+\/\d+\)/, "")
+    .replace(/\([^)]*\)/g, "")
     .replace(/-/g, " ")
     .trim();
 }
