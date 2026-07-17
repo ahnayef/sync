@@ -91,56 +91,7 @@ type ScheduleApiRow = {
   room_title: string | null;
 };
 
-const MOCK_DATA: ScheduleRow[] = [
-  {
-    id: 1,
-    day: "Sunday",
-    courseCode: "CSE301",
-    courseTitle: "Data Structures",
-    teacher: "DR. RAHMAN",
-    batch: "CSE 21",
-    batchSession: "21",
-    section: "A",
-    program: "CSE",
-    startTime: "08:00 AM",
-    endTime: "09:30 AM",
-    room: "401",
-    isLab: false,
-    status: "ok",
-  },
-  {
-    id: 2,
-    day: "Sunday",
-    courseCode: "MAT201",
-    courseTitle: "Discrete Mathematics",
-    teacher: "PROF. AHMED",
-    batch: "CSE 22",
-    batchSession: "22",
-    section: "B",
-    program: "MAT",
-    startTime: "10:00 AM",
-    endTime: "11:30 AM",
-    room: "302",
-    isLab: false,
-    status: "ok" as const,
-  },
-  {
-    id: 3,
-    day: "Sunday",
-    courseCode: "CSE315L",
-    courseTitle: "OS Lab",
-    teacher: "DR. KARIM",
-    batch: "CSE 20",
-    batchSession: "20",
-    section: "A",
-    program: "CSE",
-    startTime: "01:00 PM",
-    endTime: "03:30 PM",
-    room: "Lab-2",
-    isLab: true,
-    status: "ok",
-  },
-];
+
 
 const STATUS_CONFIG = {
   ok: {
@@ -164,30 +115,15 @@ const STATUS_CONFIG = {
 };
 
 // --- Mock Data for Dropdowns ---
-const PROGRAMS = ["CSE", "MAT", "HUM", "EEE", "BBA"];
-const TEACHERS = [
-  { id: 1, short: "DR. RAHMAN", name: "Dr. Abdur Rahman" },
-  { id: 2, short: "PROF. AHMED", name: "Prof. Tanvir Ahmed" },
-  { id: 3, short: "DR. KARIM", name: "Dr. Fazlul Karim" },
-  { id: 4, short: "MS. BEGUM", name: "Ms. Nasreen Begum" },
-];
-const COURSES = [
-  { id: 1, code: "CSE301", title: "Data Structures", program: "CSE", isLab: false },
-  { id: 2, code: "CSE315L", title: "OS Lab", program: "CSE", isLab: true },
-  { id: 3, code: "MAT201", title: "Discrete Mathematics", program: "MAT", isLab: false },
-  { id: 4, code: "EEE101", title: "Electrical Circuits", program: "EEE", isLab: false },
-];
-const BATCHES = [
-  { id: 1, name: "CSE 21", program: "CSE" },
-  { id: 2, name: "CSE 22", program: "CSE" },
-  { id: 3, name: "MAT 15", program: "MAT" },
-  { id: 4, name: "EEE 09", program: "EEE" },
-];
-const ROOMS = ["401", "402", "305", "Lab-1", "Lab-2", "Seminar Hall"];
 
-type CourseOption = (typeof COURSES)[number];
-type TeacherOption = (typeof TEACHERS)[number];
-type BatchOption = (typeof BATCHES)[number];
+
+
+
+
+
+type CourseOption = { id: number; code: string; title: string; program: string; isLab: boolean };
+type TeacherOption = { id: number; short: string; name: string };
+type BatchOption = { id: number; name: string; program: string; session: string | null };
 
 type SearchableSelectProps<T> = {
   label: string;
@@ -350,12 +286,12 @@ export default function ManageSchedulePage() {
   const [step, setStep] = useState<ViewMode>("list");
 
   // List View State
-  const [schedules, setSchedules] = useState(MOCK_DATA);
+  const [schedules, setSchedules] = useState<ScheduleRow[]>([]);
   const [programs, setPrograms] = useState<ProgramOption[]>([]);
-  const [courses, setCourses] = useState<CourseOption[]>(COURSES);
-  const [teachersList, setTeachersList] = useState<TeacherOption[]>(TEACHERS);
-  const [batchesList, setBatchesList] = useState<BatchOption[]>(BATCHES);
-  const [roomsList, setRoomsList] = useState<string[]>(ROOMS);
+  const [courses, setCourses] = useState<CourseOption[]>([]);
+  const [teachersList, setTeachersList] = useState<TeacherOption[]>([]);
+  const [batchesList, setBatchesList] = useState<BatchOption[]>([]);
+  const [roomsList, setRoomsList] = useState<string[]>([]);
   const [roomsData, setRoomsData] = useState<any[]>([]); // Full room objects with IDs
   const [listLoading, setListLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -565,7 +501,7 @@ export default function ManageSchedulePage() {
     return `${hours.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
   };
 
-  const programNames = programs.length > 0 ? programs.map((dept) => dept.name) : PROGRAMS;
+  const programNames = programs.map((dept) => dept.name);
   const selectedImportProgramObj = programs.find((dept) => dept.name === selectedImportProgram);
 
   const loadSchedules = async () => {
@@ -624,7 +560,7 @@ export default function ManageSchedulePage() {
             });
             setCourses(normalized);
           } else {
-            setCourses(COURSES);
+            setCourses([]);
           }
         }
         if (teachersRes && teachersRes.ok) {
@@ -637,7 +573,7 @@ export default function ManageSchedulePage() {
             }));
             setTeachersList(normalized);
           } else {
-            setTeachersList(TEACHERS);
+            setTeachersList([]);
           }
         }
         if (batchesRes && batchesRes.ok) {
@@ -651,7 +587,7 @@ export default function ManageSchedulePage() {
             }));
             setBatchesList(normalized);
           } else {
-            setBatchesList(BATCHES);
+            setBatchesList([]);
           }
         }
         if (roomsRes && roomsRes.ok) {
@@ -675,7 +611,7 @@ export default function ManageSchedulePage() {
             });
             setRoomsList(normalized);
           } else {
-            setRoomsList(ROOMS);
+            setRoomsList([]);
             setRoomsData([]);
           }
         }
@@ -776,9 +712,9 @@ export default function ManageSchedulePage() {
       const dayLower = editData.day.toLowerCase();
 
       // Find IDs from the lists
-      const course = (courses.length > 0 ? courses : COURSES).find((c: any) => c.code === editData.courseCode);
-      const teacher = (teachersList.length > 0 ? teachersList : TEACHERS).find((t: any) => t.short === editData.teacher);
-      const batch = (batchesList.length > 0 ? batchesList : BATCHES).find((b: any) => b.name === editData.batch);
+      const course = courses.find((c: any) => c.code === editData.courseCode);
+      const teacher = teachersList.find((t: any) => t.short === editData.teacher);
+      const batch = batchesList.find((b: any) => b.name === editData.batch);
       const dept = programs.find((d) => d.name === editData.program);
 
       // Find room from roomsData (full objects with ID)
@@ -1002,7 +938,7 @@ export default function ManageSchedulePage() {
 
               <div className={`${showFiltersMobile ? "flex flex-col" : "hidden"} sm:flex sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto`}>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 w-full sm:w-auto">
-                  <label className="text-xs font-semibold text-[var(--color-text-secondary)] sm:min-w-fit">Department</label>
+                  <label className="text-xs font-semibold text-[var(--color-text-secondary)] sm:min-w-fit">Program</label>
                   <select value={selectedProgram} onChange={(e) => setSelectedProgram(e.target.value)} className="w-full sm:w-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 px-3 text-sm outline-none focus:border-[var(--color-accent)]">
                     <option value="All">All</option>
                     {programNames.map(d => <option key={d} value={d}>{d}</option>)}
@@ -1075,7 +1011,7 @@ export default function ManageSchedulePage() {
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-0.5">
                           {(() => {
-                            const isLab = (courses.find(c => c.code === row.courseCode) || COURSES.find(c => c.code === row.courseCode))?.isLab || row.isLab;
+                            const isLab = courses.find(c => c.code === row.courseCode)?.isLab || row.isLab;
                             return (
                               <code className={`text-[11px] font-bold px-1.5 py-[2px] rounded w-fit ${isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
                                 {row.courseCode}
@@ -1124,7 +1060,7 @@ export default function ManageSchedulePage() {
                 <div className="flex items-center justify-between gap-2 mb-2.5">
                   <div className="flex items-center gap-2 min-w-0">
                     {(() => {
-                      const isLab = (courses.find(c => c.code === row.courseCode) || COURSES.find(c => c.code === row.courseCode))?.isLab || row.isLab;
+                      const isLab = courses.find(c => c.code === row.courseCode)?.isLab || row.isLab;
                       return (
                         <code className={`text-[10px] font-bold px-2 py-0.5 rounded ${isLab ? "text-[#a371f7] bg-[rgba(163,113,247,0.1)]" : "text-[#4f8ef7] bg-[rgba(79,142,247,0.1)]"}`}>
                           {row.courseCode}
@@ -1196,19 +1132,19 @@ export default function ManageSchedulePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
                   <div className="col-span-2">
                     <SearchableSelect
-                      label="Department"
+                      label="Program"
                       options={programNames}
                       value={editData.program}
                       onChange={(program: string) => setEditData({ ...editData, program, batch: "", courseCode: "", courseTitle: "" })}
-                      placeholder="Select Department"
+                      placeholder="Select Program"
                     />
                   </div>
 
                   <div className="col-span-2">
                     <SearchableSelect
                       label="Course"
-                      options={courses && courses.length > 0 ? courses : COURSES}
-                      value={editData.courseCode ? ((courses && courses.length > 0 ? courses : COURSES).find((c: any) => c.code === editData.courseCode)) || null : null}
+                      options={courses || []}
+                      value={editData.courseCode ? (courses.find((c: any) => c.code === editData.courseCode)) || null : null}
                       onChange={(c: CourseOption) => setEditData({ ...editData, courseCode: c.code, courseTitle: c.title })}
                       placeholder="Select Course"
                       displayValue={(c: CourseOption) => `${c.code} — ${c.title}`}
@@ -1226,8 +1162,8 @@ export default function ManageSchedulePage() {
                   <div className="col-span-2">
                     <SearchableSelect
                       label="Teacher"
-                      options={teachersList.length ? teachersList : TEACHERS}
-                      value={editData.teacher ? (teachersList.find(t => t.short === editData.teacher) || TEACHERS.find(t => t.short === editData.teacher)) : null}
+                      options={teachersList}
+                      value={editData.teacher ? (teachersList.find(t => t.short === editData.teacher)) || null : null}
                       onChange={(t: TeacherOption) => setEditData({ ...editData, teacher: t.short })}
                       placeholder="Select Teacher"
                       displayValue={(t: TeacherOption) => t.short}
@@ -1244,8 +1180,8 @@ export default function ManageSchedulePage() {
                   <div>
                     <SearchableSelect
                       label="Batch"
-                      options={(batchesList.length ? batchesList : BATCHES).filter((b: any) => ((b.program || b.department) === editData.program) || !editData.program)}
-                      value={editData.batch ? (batchesList.find(b => b.name === editData.batch) || BATCHES.find(b => b.name === editData.batch)) : null}
+                      options={batchesList.filter((b: any) => ((b.program || b.department) === editData.program) || !editData.program)}
+                      value={editData.batch ? (batchesList.find(b => b.name === editData.batch)) || null : null}
                       onChange={(b: any) => setEditData({ ...editData, batch: b.name })}
                       placeholder="Select Batch"
                       displayValue={(b: any) => `${b.program ? b.program + " - " : ""}${b.session || b.name}`}
@@ -1301,7 +1237,7 @@ export default function ManageSchedulePage() {
                   <div>
                     <SearchableSelect
                       label="Room"
-                      options={roomsList.length ? roomsList : ROOMS}
+                      options={roomsList}
                       value={editData.room}
                       onChange={(room: string) => setEditData({ ...editData, room })}
                       placeholder="Select Room"
@@ -1595,11 +1531,11 @@ export default function ManageSchedulePage() {
           <div className="mt-[18px] flex flex-col gap-4 items-center">
             <div className="w-full max-w-[400px]">
               <SearchableSelect
-                label="Import for Department"
+                label="Import for Program"
                 options={programNames}
                 value={selectedImportProgram}
                 onChange={setSelectedImportProgram}
-                placeholder="Select Department"
+                placeholder="Select Program"
               />
             </div>
 

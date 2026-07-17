@@ -61,8 +61,8 @@ export default function ManageProgramsPage() {
     try {
       const method = editingId ? "PUT" : "POST";
       const payload = editingId
-        ? { id: editingId, name: newName, departmentId: newDepartmentId }
-        : { name: newName, departmentId: newDepartmentId };
+        ? { id: editingId, name: newName, department_id: newDepartmentId }
+        : { name: newName, department_id: newDepartmentId };
 
       const res = await fetch("/api/programs", {
         method,
