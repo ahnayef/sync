@@ -13,6 +13,14 @@ export type ParsedRow = {
   errors: string[];
 };
 
+// Map expected column names based on entity type
+const EXPECTED_HEADERS: Record<EntityType, string[]> = {
+  teacher: ["name", "short name", "department"],
+  batch: ["name", "session", "program"],
+  course: ["name", "code", "program", "is lab"],
+  room: ["number", "building name", "floor number", "room type", "capacity", "title"]
+};
+
 export async function parseEntityWorkbook(buffer: Buffer, fileName: string, entityType: EntityType, programId?: number) {
   const workbook = new ExcelJS.Workbook();
   if (fileName.toLowerCase().endsWith(".csv")) {
@@ -36,6 +44,13 @@ export async function parseEntityWorkbook(buffer: Buffer, fileName: string, enti
 
   if (headers.length === 0) {
     throw new Error("Worksheet appears to be empty or has no headers in the first row.");
+  }
+
+  const expectedHeaders = EXPECTED_HEADERS[entityType];
+  const missingHeaders = expectedHeaders.filter(h => !headers.includes(h));
+  
+  if (missingHeaders.length > 0) {
+    throw new Error(`Invalid file format. Missing required columns: ${missingHeaders.join(", ")}`);
   }
 
   const parsedRows: ParsedRow[] = [];
@@ -77,14 +92,6 @@ export async function fetchAndParseEntitySheet(sheetLink: string, entityType: En
   const sheet = await fetchGoogleSheetBuffer(sheetLink);
   return parseEntityWorkbook(sheet.buffer, sheet.fileName, entityType, programId);
 }
-
-// Map expected column names based on entity type
-const EXPECTED_HEADERS: Record<EntityType, string[]> = {
-  teacher: ["name", "short name", "department"],
-  batch: ["name", "session", "program"],
-  course: ["name", "code", "program", "is lab"],
-  room: ["number", "building name", "floor number", "room type", "capacity", "title"]
-};
 
 async function validateParsedRows(rows: ParsedRow[], entityType: EntityType, selectedProgramId?: number) {
   // Pre-fetch some db lookup tables to speed up validation
