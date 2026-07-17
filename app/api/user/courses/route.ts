@@ -32,6 +32,7 @@ export async function GET() {
         t.id as teacherId, 
         t.name as teacherName,
         d.name as deptName,
+        p.name as programName,
         GROUP_CONCAT(DISTINCT b.name ORDER BY b.name SEPARATOR ', ') as batchNames,
         GROUP_CONCAT(DISTINCT b.session ORDER BY b.session SEPARATOR ', ') as batchSessions
       FROM schedules s
@@ -40,7 +41,7 @@ export async function GET() {
       LEFT JOIN batches b ON s.batch_id = b.id
       LEFT JOIN programs p ON s.program_id = p.id
       LEFT JOIN departments d ON p.department_id = d.id
-      GROUP BY c.id, c.code, c.name, c.is_lab, t.id, t.name, d.name
+      GROUP BY c.id, c.code, c.name, c.is_lab, t.id, t.name, d.name, p.name
       ORDER BY c.code ASC, t.name ASC
     `);
 

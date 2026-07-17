@@ -18,6 +18,7 @@ interface CourseTeacher {
   teacherId: number;
   teacherName: string;
   deptName: string | null;
+  programName: string | null;
   batchNames: string | null;
   batchSessions: string | null;
 }
@@ -51,7 +52,7 @@ export default function CoursesPage() {
   // Sorting & Filtering State (Focusing on Session)
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [filterDept, setFilterDept] = useState("all");
+  const [filterProgram, setFilterProgram] = useState("all");
   const [filterSession, setFilterSession] = useState("all");
   const [sortBy, setSortBy] = useState("code-asc");
   const [showFilters, setShowFilters] = useState(false);
@@ -78,14 +79,14 @@ export default function CoursesPage() {
   const availableCount = courses.length;
 
   // Extract unique departments from API deptName directly
-  const departments = useMemo(() => {
-    const depts = new Set<string>();
+  const programsList = useMemo(() => {
+    const progs = new Set<string>();
     courses.forEach((c) => {
-      if (c.deptName) {
-        depts.add(c.deptName.toUpperCase());
+      if (c.programName) {
+        progs.add(c.programName.toUpperCase());
       }
     });
-    return Array.from(depts).sort();
+    return Array.from(progs).sort();
   }, [courses]);
 
   // Extract unique batch sessions and associate a department label for display
@@ -96,16 +97,16 @@ export default function CoursesPage() {
         c.batchSessions.split(", ").forEach((s) => {
           const sess = s.trim();
           if (!sess) return;
-          const dept = c.deptName ? c.deptName.toUpperCase() : "";
+          const prog = c.programName ? c.programName.toUpperCase() : "";
           if (!map.has(sess)) map.set(sess, new Set());
-          if (dept) map.get(sess)!.add(dept);
+          if (prog) map.get(sess)!.add(prog);
         });
       }
     });
-    const arr = Array.from(map.entries()).map(([sess, deptsSet]) => {
-      const depts = Array.from(deptsSet).sort();
-      const deptLabel = depts.length === 0 ? "General" : depts.length === 1 ? depts[0] : "Multiple";
-      return { sess, deptLabel };
+    const arr = Array.from(map.entries()).map(([sess, progsSet]) => {
+      const progs = Array.from(progsSet).sort();
+      const programLabel = progs.length === 0 ? "General" : progs.length === 1 ? progs[0] : "Multiple";
+      return { sess, programLabel };
     });
     return arr.sort((a, b) => b.sess.localeCompare(a.sess));
   }, [courses]);
@@ -113,12 +114,12 @@ export default function CoursesPage() {
   // Count active filters (to show in a badge)
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (filterDept !== "all") count++;
+    if (filterProgram !== "all") count++;
     if (filterSession !== "all") count++;
     if (filterType !== "all") count++;
     if (filterStatus !== "all") count++;
     return count;
-  }, [filterDept, filterSession, filterType, filterStatus]);
+  }, [filterProgram, filterSession, filterType, filterStatus]);
 
   // Dynamic filter and sort application
   const filtered = useMemo(() => {
@@ -149,10 +150,11 @@ export default function CoursesPage() {
       result = result.filter((c) => !selected.has(`${c.courseId}-${c.teacherId}`));
     }
 
-    // 4. Department filter (from database deptName)
-    if (filterDept !== "all") {
+    
+    // 4. Program filter (from database programName)
+    if (filterProgram !== "all") {
       result = result.filter(
-        (c) => c.deptName && c.deptName.toLowerCase() === filterDept.toLowerCase()
+        (c) => c.programName && c.programName.toLowerCase() === filterProgram.toLowerCase()
       );
     }
 
@@ -182,7 +184,7 @@ export default function CoursesPage() {
     });
 
     return result;
-  }, [courses, search, filterType, filterStatus, filterDept, filterSession, sortBy, selected]);
+  }, [courses, search, filterType, filterStatus, filterProgram, filterSession, sortBy, selected]);
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -371,14 +373,14 @@ export default function CoursesPage() {
                   <label className="text-[11px] font-bold tracking-wider text-[var(--color-text-muted)] uppercase">Department</label>
                   <select
                     id="filter-dept"
-                    value={filterDept}
-                    onChange={(e) => setFilterDept(e.target.value)}
+                    value={filterProgram}
+                    onChange={(e) => setFilterProgram(e.target.value)}
                     className={selectCls}
                   >
-                    <option value="all">All Departments</option>
-                    {departments.map((dept) => (
-                      <option key={dept} value={dept}>
-                        {dept}
+                    <option value="all">All Programs</option>
+                    {programsList.map((prog) => (
+                      <option key={prog} value={prog}>
+                        {prog}
                       </option>
                     ))}
                   </select>
@@ -394,9 +396,9 @@ export default function CoursesPage() {
                     className={selectCls}
                   >
                     <option value="all">All Sessions</option>
-                    {sessionOptions.map(({ sess, deptLabel }) => (
+                    {sessionOptions.map(({ sess, programLabel }) => (
                       <option key={sess} value={sess}>
-                        {sess} - {deptLabel}
+                        {sess} - {programLabel}
                       </option>
                     ))}
                   </select>
@@ -450,7 +452,7 @@ export default function CoursesPage() {
               </div>
 
               {/* Action row at bottom of expanded panel */}
-              {(filterDept !== "all" ||
+              {(filterProgram !== "all" ||
                 filterSession !== "all" ||
                 filterType !== "all" ||
                 filterStatus !== "all" ||
@@ -459,7 +461,7 @@ export default function CoursesPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      setFilterDept("all");
+                      setFilterProgram("all");
                       setFilterSession("all");
                       setFilterType("all");
                       setFilterStatus("all");
@@ -487,7 +489,7 @@ export default function CoursesPage() {
               <FiInbox className="mx-auto text-3xl text-[var(--color-text-muted)]" />
             </div>
             <h3 className="mb-1 text-base font-semibold text-[var(--color-text-primary)]">
-              {(filterDept !== "all" ||
+              {(filterProgram !== "all" ||
               filterSession !== "all" ||
               filterType !== "all" ||
               filterStatus !== "all" ||
@@ -495,7 +497,7 @@ export default function CoursesPage() {
                 ? "No courses match your selected filter criteria"
                 : "No courses available in the schedule"}
             </h3>
-            {(filterDept !== "all" ||
+            {(filterProgram !== "all" ||
               filterSession !== "all" ||
               filterType !== "all" ||
               filterStatus !== "all" ||
@@ -503,7 +505,7 @@ export default function CoursesPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setFilterDept("all");
+                  setFilterProgram("all");
                   setFilterSession("all");
                   setFilterType("all");
                   setFilterStatus("all");
@@ -587,8 +589,8 @@ export default function CoursesPage() {
                           </span>
                         ) : null}
 
-                        {course.deptName ? (
-                          <span className="ml-auto rounded-md bg-[rgba(255,255,255,0.02)] px-2 py-0.5 text-[10px] font-semibold text-white/60 uppercase">{course.deptName}</span>
+                        {course.programName ? (
+                          <span className="ml-auto rounded-md bg-[rgba(255,255,255,0.02)] px-2 py-0.5 text-[10px] font-semibold text-white/60 uppercase">{course.programName}</span>
                         ) : null}
                       </div>
                     </div>
