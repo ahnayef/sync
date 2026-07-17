@@ -19,7 +19,7 @@ export async function GET() {
     const [rows] = await db.execute(`
       SELECT t.id, t.name, t.short as short, d.name as dept, t.department_id
       FROM teachers t
-      JOIN departments d ON t.department_id = d.id
+      LEFT JOIN departments d ON t.department_id = d.id
       ORDER BY t.name ASC
     `);
     return NextResponse.json(rows);
@@ -34,13 +34,13 @@ export async function POST(req: Request) {
 
   try {
     const { name, short, departmentId } = await req.json();
-    if (!name || !short || !departmentId) {
+    if (!name || !short || departmentId === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const [result]: any = await db.execute(
       "INSERT INTO teachers (name, short, department_id) VALUES (?, ?, ?)",
-      [name, short.toUpperCase(), departmentId]
+      [name, short.toUpperCase(), departmentId || null]
     );
 
     return NextResponse.json({ success: true, id: result.insertId });
@@ -58,13 +58,13 @@ export async function PUT(req: Request) {
 
   try {
     const { id, name, short, departmentId } = await req.json();
-    if (!id || !name || !short || !departmentId) {
+    if (!id || !name || !short || departmentId === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     await db.execute(
       "UPDATE teachers SET name = ?, short = ?, department_id = ? WHERE id = ?",
-      [name, short.toUpperCase(), departmentId, id]
+      [name, short.toUpperCase(), departmentId || null, id]
     );
 
     return NextResponse.json({ success: true });

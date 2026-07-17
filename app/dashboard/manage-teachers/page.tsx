@@ -75,7 +75,7 @@ export default function ManageTeachersPage() {
   };
 
   const saveTeacher = async () => {
-    if (!newName || !newShort || !newDeptId) return;
+    if (!newName || !newShort) return;
     setSaving(true);
     try {
       const method = editingId ? "PUT" : "POST";
