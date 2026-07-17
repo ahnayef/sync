@@ -3,6 +3,7 @@
 import { SessionProvider, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import posthog from "posthog-js";
+import "@/instrumentation-client";
 import { ToastProvider } from "./Toast";
 
 /**
