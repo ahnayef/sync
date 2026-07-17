@@ -38,7 +38,8 @@ export async function GET() {
       JOIN courses c ON s.course_id = c.id
       JOIN teachers t ON s.teacher_id = t.id
       LEFT JOIN batches b ON s.batch_id = b.id
-      LEFT JOIN departments d ON s.department_id = d.id
+      LEFT JOIN programs p ON s.program_id = p.id
+      LEFT JOIN departments d ON p.department_id = d.id
       GROUP BY c.id, c.code, c.name, c.is_lab, t.id, t.name, d.name
       ORDER BY c.code ASC, t.name ASC
     `);

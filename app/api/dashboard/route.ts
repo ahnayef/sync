@@ -83,7 +83,8 @@ export async function GET() {
       LEFT JOIN teachers t ON s.teacher_id = t.id
       LEFT JOIN batches b ON s.batch_id = b.id
       LEFT JOIN rooms r ON s.room_id = r.id
-      LEFT JOIN departments d ON s.department_id = d.id
+      LEFT JOIN programs p ON s.program_id = p.id
+      LEFT JOIN departments d ON p.department_id = d.id
       WHERE s.day = ?
       ORDER BY s.start_time ASC
     `, [queryDay]);
@@ -93,7 +94,8 @@ export async function GET() {
       SELECT s.day, TIME_FORMAT(s.start_time, '%H:%i') as start_time, TIME_FORMAT(s.end_time, '%H:%i') as end_time,
              d.name as department_name
       FROM schedules s
-      LEFT JOIN departments d ON s.department_id = d.id
+      LEFT JOIN programs p ON s.program_id = p.id
+      LEFT JOIN departments d ON p.department_id = d.id
     `);
 
     // 4. Room Analytics
@@ -153,7 +155,8 @@ export async function GET() {
     const [deptClasses] = await db.execute(`
       SELECT d.id, d.name as department_name, COUNT(s.id) as class_count
       FROM departments d
-      LEFT JOIN schedules s ON d.id = s.department_id
+      LEFT JOIN programs p ON d.id = p.department_id
+      LEFT JOIN schedules s ON p.id = s.program_id
       GROUP BY d.id
       ORDER BY class_count DESC
     `);
@@ -162,15 +165,16 @@ export async function GET() {
     const [deptBatches] = await db.execute(`
       SELECT d.id, d.name as department_name, COUNT(b.id) as batch_count
       FROM departments d
-      LEFT JOIN batches b ON d.id = b.department_id
+      LEFT JOIN programs p ON d.id = p.department_id
+      LEFT JOIN batches b ON p.id = b.program_id
       GROUP BY d.id
     `);
 
     // Course Catalog vs Scheduled Routines per department
     const [deptLabTheory] = await db.execute(`
       SELECT d.id, d.name as department_name,
-             (SELECT COUNT(*) FROM courses c WHERE c.department_id = d.id) as total_courses,
-             (SELECT COUNT(*) FROM schedules s WHERE s.department_id = d.id) as scheduled_classes
+             (SELECT COUNT(*) FROM courses c JOIN programs p ON c.program_id = p.id WHERE p.department_id = d.id) as total_courses,
+             (SELECT COUNT(*) FROM schedules s JOIN programs p ON s.program_id = p.id WHERE p.department_id = d.id) as scheduled_classes
       FROM departments d
       ORDER BY scheduled_classes DESC
     `);
