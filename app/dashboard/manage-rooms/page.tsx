@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiSearch, FiX } from "react-icons/fi";
+import { FiSearch, FiX, FiDownloadCloud } from "react-icons/fi";
+import ImportWizard from "@/components/ImportWizard";
 
 export default function ManageRoomsPage() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const [newNumber, setNewNumber] = useState("");

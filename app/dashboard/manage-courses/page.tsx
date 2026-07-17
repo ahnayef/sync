@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { FiSearch, FiX } from "react-icons/fi";
+import { FiSearch, FiX, FiDownloadCloud } from "react-icons/fi";
+import ImportWizard from "@/components/ImportWizard";
 
 export default function ManageCoursesPage() {
   const [courses, setCourses] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newCode, setNewCode] = useState("");
   const [newName, setNewName] = useState("");
@@ -379,6 +381,14 @@ export default function ManageCoursesPage() {
             )}
           </div>
         </section>
+
+        {showImportModal && (
+          <ImportWizard 
+            entityType="course" 
+            onClose={() => setShowImportModal(false)} 
+            onSuccess={() => { setShowImportModal(false); fetchData(); }} 
+          />
+        )}
 
         {showModal && (
           <div

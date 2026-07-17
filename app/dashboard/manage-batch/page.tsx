@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { FiSearch, FiX } from "react-icons/fi";
+import { FiSearch, FiX, FiDownloadCloud } from "react-icons/fi";
+import ImportWizard from "@/components/ImportWizard";
 
 export default function ManageBatchPage() {
   const [batches, setBatches] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
   const [newSession, setNewSession] = useState("");
@@ -240,6 +242,14 @@ export default function ManageBatchPage() {
           </div>
         </section>
 
+        {showImportModal && (
+          <ImportWizard 
+            entityType="batch" 
+            onClose={() => setShowImportModal(false)} 
+            onSuccess={() => { setShowImportModal(false); fetchData(); }} 
+          />
+        )}
+
         {showModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4" onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}>
             <div className="w-full max-w-xl sm:max-w-2xl rounded-2xl sm:rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] p-4 sm:p-5 lg:p-6 max-h-[90vh] overflow-y-auto">
@@ -253,11 +263,11 @@ export default function ManageBatchPage() {
               <div className="flex flex-col gap-3 sm:gap-4 pt-4 sm:pt-5">
                 <div>
                   <label htmlFor="modal-batch-name" className="block text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] mb-2">Batch Name</label>
-                  <input id="modal-batch-name" type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. CSE 21" className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]" />
+                  <input id="modal-batch-name" type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. CSE-31" className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]" />
                 </div>
                 <div>
                   <label htmlFor="modal-batch-session" className="block text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] mb-2">Session</label>
-                  <input id="modal-batch-session" type="text" value={newSession} onChange={(e) => setNewSession(e.target.value)} placeholder="e.g. 2021-2025" className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]" />
+                  <input id="modal-batch-session" type="text" value={newSession} onChange={(e) => setNewSession(e.target.value)} placeholder="e.g. Spring 23" className="w-full rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] py-2 sm:py-3 px-3 sm:px-4 text-sm sm:text-base text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]" />
                 </div>
                 <div>
                   <label htmlFor="modal-batch-dept" className="block text-xs sm:text-sm font-medium text-[var(--color-text-secondary)] mb-2">Program</label>
