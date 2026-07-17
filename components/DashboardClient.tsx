@@ -21,7 +21,8 @@ import {
   FiRefreshCw,
   FiChevronDown,
   FiChevronUp,
-  FiLogOut
+  FiLogOut,
+  FiAlertCircle
 } from "react-icons/fi";
 
 import {
@@ -480,6 +481,25 @@ export default function DashboardClient() {
         <div className="text-center space-y-4">
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[var(--color-accent)] border-t-transparent" />
           <p className="text-sm font-medium text-[var(--color-text-secondary)] font-sans">Synthesizing comprehensive academic charts...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--color-bg-base)]">
+        <div className="text-center space-y-4 p-6 glass rounded-2xl border border-[var(--color-border)] shadow-xl">
+          <FiAlertCircle className="mx-auto h-12 w-12 text-[var(--color-danger)]" />
+          <p className="text-sm font-medium text-[var(--color-text-secondary)] font-sans">
+            Unable to retrieve dashboard analytics.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-semibold"
+          >
+            Refresh Data
+          </button>
         </div>
       </div>
     );
@@ -1270,8 +1290,8 @@ export default function DashboardClient() {
                 </div>
               ) : (
                 <div className={`space-y-2.5 transition-all duration-300 ${showAllClasses
-                    ? "max-h-[620px] overflow-y-auto pr-1"
-                    : ""
+                  ? "max-h-[620px] overflow-y-auto pr-1"
+                  : ""
                   }`}>
                   {displayedClasses.map((s: any) => {
                     const isOngoing = s.status === "ongoing";
