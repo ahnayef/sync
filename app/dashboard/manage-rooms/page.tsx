@@ -130,6 +130,9 @@ export default function ManageRoomsPage() {
               <div className="hidden sm:block rounded-lg sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-xs text-[var(--color-text-secondary)]">
                 {rooms.length} rooms
               </div>
+              <button id="import-room-btn" onClick={() => setShowImportModal(true)} className="inline-flex items-center justify-center gap-2 rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-2.5 sm:px-4 py-1.5 sm:py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors">
+                <FiDownloadCloud size={16} /> Import
+              </button>
               <button
                 id="add-room-btn"
                 onClick={openAdd}
@@ -310,6 +313,14 @@ export default function ManageRoomsPage() {
           </div>
         </section>
       </div>
+
+      {showImportModal && (
+        <ImportWizard 
+          entityType="room" 
+          onClose={() => setShowImportModal(false)} 
+          onSuccess={() => { setShowImportModal(false); fetchData(); }} 
+        />
+      )}
 
       {showModal && (
         <div

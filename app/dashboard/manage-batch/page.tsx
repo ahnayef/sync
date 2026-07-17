@@ -131,6 +131,9 @@ export default function ManageBatchPage() {
               <div className="hidden sm:block rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 sm:px-4 py-2 text-xs sm:text-xs text-[var(--color-text-secondary)]">
                 {batchCount} batches • {programCount} programs
               </div>
+              <button id="import-batch-btn" onClick={() => setShowImportModal(true)} className="inline-flex items-center justify-center gap-2 rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors">
+                <FiDownloadCloud size={16} /> Import
+              </button>
               <button id="add-batch-btn" onClick={openAdd} className="inline-flex items-center justify-center gap-2 rounded-lg sm:rounded-xl bg-[var(--color-accent)] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-[0_10px_24px_rgba(79,142,247,0.18)] transition-all duration-200 hover:bg-[#5d95f7] active:scale-[0.99]">
                 + Add Batch
               </button>
@@ -241,6 +244,14 @@ export default function ManageBatchPage() {
             )}
           </div>
         </section>
+
+        {showImportModal && (
+          <ImportWizard 
+            entityType="batch" 
+            onClose={() => setShowImportModal(false)} 
+            onSuccess={() => { setShowImportModal(false); fetchData(); }} 
+          />
+        )}
 
         {showImportModal && (
           <ImportWizard 

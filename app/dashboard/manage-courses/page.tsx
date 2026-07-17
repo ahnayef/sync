@@ -147,6 +147,9 @@ export default function ManageCoursesPage() {
               <div className="hidden sm:block rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 sm:px-4 py-2 text-xs sm:text-xs text-[var(--color-text-secondary)]">
                 {courses.length} courses • {programs.length} programs
               </div>
+              <button id="import-course-btn" onClick={() => setShowImportModal(true)} className="inline-flex items-center justify-center gap-2 rounded-lg sm:rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors">
+                <FiDownloadCloud size={16} /> Import
+              </button>
               <button
                 id="add-course-btn"
                 onClick={openAdd}
