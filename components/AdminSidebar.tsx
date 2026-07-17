@@ -191,7 +191,7 @@ export default function AdminSidebar() {
           }`}
       >
         {/* Sidebar Header with Logo and Close/Collapse Buttons */}
-        <div className="mb-6 flex items-center justify-between px-1 py-2">
+        <div className={`mb-6 flex ${isCollapsed ? "md:flex-col md:gap-3 md:items-center" : "items-center justify-between"} px-1 py-2`}>
           <Link href="/" id="admin-sidebar-logo" className="flex items-center gap-2.5 no-underline">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-[var(--color-accent-muted)] shadow-[0_0_18px_rgba(79,142,247,0.18)]">
               <LogoIcon className="h-6 w-6" />
@@ -214,19 +214,24 @@ export default function AdminSidebar() {
             </svg>
           </button>
 
-          {/* Desktop collapse button (hidden on mobile, hidden when collapsed) */}
-          {!isCollapsed && (
-            <button
-              onClick={toggleCollapse}
-              className="hidden md:flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] transition-all active:scale-95 cursor-pointer shadow-sm"
-              title="Collapse Sidebar"
-            >
+          {/* Desktop collapse/expand button (hidden on mobile) */}
+          <button
+            onClick={toggleCollapse}
+            className="hidden md:flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] transition-all active:scale-95 cursor-pointer shadow-sm"
+            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {isCollapsed ? (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+                <line x1="3" y1="12" x2="15" y2="12" />
+              </svg>
+            ) : (
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6" />
                 <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
-            </button>
-          )}
+            )}
+          </button>
         </div>
 
         {/* Nav Items */}
@@ -264,20 +269,6 @@ export default function AdminSidebar() {
               </Link>
             );
           })}
-
-          {/* Expand button (visible only on desktop when collapsed as the last item of nav list) */}
-          {isCollapsed && (
-            <button
-              onClick={toggleCollapse}
-              className="hidden md:flex h-9 w-full items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-subtle)] transition-all active:scale-95 cursor-pointer shadow-sm mt-2 animate-fade-in"
-              title="Expand Sidebar"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-                <line x1="3" y1="12" x2="15" y2="12" />
-              </svg>
-            </button>
-          )}
         </nav>
 
         <div className="flex flex-col gap-2 sm:gap-3 border-t border-[var(--color-border)] pt-4 sm:pt-6 mt-auto">
