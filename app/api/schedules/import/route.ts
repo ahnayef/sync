@@ -80,12 +80,17 @@ export async function POST(req: Request) {
           program_name: programName,
         },
       });
+      await posthog.flush();
       return NextResponse.json({ success: true, rows, summary, ...applied });
     }
 
     return NextResponse.json({ rows, summary });
   } catch (error) {
     console.error("Schedule import error:", error);
+    const posthog = getPostHogClient();
+    const distinctId = (session.user as { email?: string })?.email ?? "unknown";
+    posthog.captureException(error, distinctId);
+    await posthog.flush();
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Could not import schedule." },
       { status: 500 }

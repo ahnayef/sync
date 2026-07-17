@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(req: Request) {
   try {
@@ -38,9 +39,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to forward message." }, { status: 502 });
     }
 
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: "anonymous",
+      event: "contact_form_submitted",
+      properties: { source: "contact_form" },
+    });
+    await posthog.flush();
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Contact form endpoint exception:", error);
+    const posthog = getPostHogClient();
+    posthog.captureException(error, "anonymous");
+    await posthog.flush();
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

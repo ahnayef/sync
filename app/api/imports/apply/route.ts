@@ -3,10 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import db from "@/lib/db";
 import { ParsedRow, EntityType } from "@/lib/entity-importer";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session || !["admin", "moderator"].includes((session.user as any)?.role || "")) {
+  const sessionUser = session?.user as { email?: string; role?: string } | undefined;
+  if (!session || !["admin", "moderator"].includes(sessionUser?.role ?? "")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -57,6 +59,14 @@ export async function POST(req: Request) {
       }
 
       await connection.commit();
+      const posthog = getPostHogClient();
+      const distinctId = (session.user as { email?: string }).email ?? "unknown";
+      posthog.capture({
+        distinctId,
+        event: "entity_import_completed",
+        properties: { entity_type: entityType, inserted_count: insertedCount },
+      });
+      await posthog.flush();
       return NextResponse.json({ success: true, inserted: insertedCount });
     } catch (err) {
       await connection.rollback();
@@ -64,8 +74,13 @@ export async function POST(req: Request) {
     } finally {
       connection.release();
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Apply error:", error);
-    return NextResponse.json({ error: error.message || "Failed to apply import." }, { status: 500 });
+    const posthog = getPostHogClient();
+    const distinctId = (session.user as { email?: string }).email ?? "unknown";
+    posthog.captureException(error, distinctId);
+    await posthog.flush();
+    const message = error instanceof Error ? error.message : "Failed to apply import.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

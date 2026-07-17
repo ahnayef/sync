@@ -1,35 +1,29 @@
-<wizard-report>
 # PostHog post-wizard report
 
-The wizard has completed a deep integration of PostHog analytics into the Sync scheduling app. The integration covers client-side initialization via `instrumentation-client.ts` (the recommended Next.js 15.3+ approach), a server-side PostHog client in `lib/posthog-server.ts`, a reverse-proxy configuration in `next.config.ts` for reliable event delivery, environment variables for the project token and host, and event tracking across 8 files spanning authentication, course management, the routine viewer, user profile, and admin schedule imports. User identification is performed on credentials login and error tracking via `captureException` is added at every catch boundary.
+PostHog is configured for this Next.js App Router application through `instrumentation-client.ts`, using the project’s `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` environment variables. The existing ingestion proxy remains in place. The server-side client now flushes short-lived route-handler events and supports exception autocapture.
+
+This setup also corrected the credentials sign-in event so it no longer sends an email address as an event property. Authenticated users continue to be identified with their email as a person property. New server-side tracking covers successful contact submissions and completed bulk entity imports, with no submitted names, email addresses, subjects, messages, or other user-entered content captured as event properties.
 
 | Event | Description | File |
 |---|---|---|
-| `user_signed_in` | Admin/moderator successfully logs in with email and password credentials | `components/LoginForm.tsx` |
-| `user_signed_in_google` | User initiates Google sign-in from the login or signup page | `components/AuthButtons.tsx` |
-| `course_toggled` | Student selects or deselects a course in the course selection page | `app/(users)/courses/page.tsx` |
-| `courses_saved` | Student saves their course selection; includes count of selected courses | `app/(users)/courses/page.tsx` |
-| `focus_mode_toggled` | User enables or disables focus mode on the routine page | `app/(users)/routine/page.tsx` |
-| `routine_day_changed` | User navigates to a different day in the routine view | `app/(users)/routine/page.tsx` |
-| `profile_updated` | User successfully updates their profile information (name, email, student ID) | `app/(users)/profile/page.tsx` |
-| `password_changed` | User successfully changes their account password | `app/(users)/profile/page.tsx` |
-| `account_deleted` | User confirms and initiates account deletion | `app/(users)/profile/page.tsx` |
-| `password_reset_requested` | User submits email to start the forgot-password OTP flow | `app/(regular)/forgot-password/ForgotPasswordClient.tsx` |
-| `schedule_imported` | Admin applies an imported schedule to the database; includes rows/summary counts | `app/api/schedules/import/route.ts` |
+| `user_signed_in` | Tracks a successful credentials sign-in without including email in event properties. | `components/LoginForm.tsx` |
+| `schedule_imported` | Tracks a completed schedule import with aggregate row counts and program context. | `app/api/schedules/import/route.ts` |
+| `contact_form_submitted` | Tracks a successful contact request without recording message contents or contact details. | `app/api/contact/route.ts` |
+| `entity_import_completed` | Tracks an administrator or moderator bulk import with imported entity type and record count. | `app/api/imports/apply/route.ts` |
 
 ## Next steps
 
-We've built some insights and a dashboard for you to keep an eye on user behavior, based on the events we just instrumented:
+- [Analytics basics (wizard) dashboard](https://us.posthog.com/project/175494/dashboard/1866327)
+- [Sign-ins over time (wizard) insight](https://us.posthog.com/project/175494/insights/XNqB4C9K)
 
-- [Analytics basics dashboard](/dashboard/1623435)
-- [Sign-in trends](/insights/Rx1qTbO2) — daily credentials vs Google sign-ins
-- [Course selection to save funnel](/insights/3CmddJTn) — conversion from toggling courses to saving selections
-- [Focus mode usage](/insights/TLE8L2cC) — how often students use focus mode on the routine page
-- [Profile action trends](/insights/xj4qRyJ5) — profile updates, password changes, and account deletions (churn signal)
-- [Schedule imports by admins](/insights/gnrA6qfm) — weekly admin schedule import activity
+## Verify before merging
+
+- [ ] Run a full production build and fix any lint or type errors introduced by the generated code.
+- [ ] Run the test suite — call sites that were rewritten or instrumented may need updated mocks or fixtures.
+- [ ] Add `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` to `.env.example` and any bootstrap scripts so collaborators know what to set.
+- [ ] Wire source-map upload (`posthog-cli sourcemap` or a bundler upload step) into CI so production stack traces de-minify.
+- [ ] Confirm the returning-visitor path calls `identify` and preserves authenticated user attribution.
 
 ### Agent skill
 
-We've left an agent skill folder in your project. You can use this context for further agent development when using Claude Code. This will help ensure the model provides the most up-to-date approaches for integrating PostHog.
-
-</wizard-report>
+The integration skill remains in `.claude/skills/integration-nextjs-app-router` for future agent-assisted PostHog work.

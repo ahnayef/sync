@@ -33,7 +33,7 @@ export default function LoginForm() {
       setError("Invalid email or password");
     } else {
       posthog.identify(email, { email });
-      posthog.capture("user_signed_in", { method: "credentials", email });
+      posthog.capture("user_signed_in", { method: "credentials" });
       router.push("/dashboard");
     }
   };

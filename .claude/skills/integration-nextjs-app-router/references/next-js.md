@@ -21,7 +21,7 @@ To follow this guide along, you need:
 
 Install PostHog for Next.js in seconds with our wizard by running this prompt with [LLM coding agents](/blog/envoy-wizard-llm-agent.md) like Cursor and Bolt, or by running it in your terminal.
 
-`npx @posthog/wizard@latest`
+`npx @posthog/wizard`
 
 [Learn more](/wizard.md)
 
@@ -64,7 +64,7 @@ Add your environment variables to your `.env.local` file and to your hosting pro
 PostHog AI
 
 ```shell
-NEXT_PUBLIC_POSTHOG_TOKEN=<ph_project_token>
+NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=<ph_project_token>
 NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 ```
 
@@ -80,9 +80,9 @@ PostHog AI
 
 ```javascript
 import posthog from 'posthog-js'
-posthog.init(process.env.NEXT_PUBLIC_POSTHOG_TOKEN, {
+posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN, {
   api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-  defaults: '2026-01-30'
+  defaults: '2026-05-30'
 });
 ```
 
@@ -90,9 +90,9 @@ posthog.init(process.env.NEXT_PUBLIC_POSTHOG_TOKEN, {
 
 ```typescript
 import posthog from 'posthog-js'
-posthog.init(process.env.NEXT_PUBLIC_POSTHOG_TOKEN!, {
+posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN!, {
   api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-  defaults: '2026-01-30'
+  defaults: '2026-05-30'
 });
 ```
 
@@ -131,7 +131,7 @@ This makes it possible to track users across their entire journey (e.g. from vis
 
 Add IPs to Firewall/WAF allowlists (recommended)
 
-For certain features like [heatmaps](/docs/toolbar/heatmaps.md), your Web Application Firewall (WAF) may be blocking PostHog’s requests to your site. Add these IP addresses to your WAF allowlist or rules to let PostHog access your site.
+For certain features like [heatmaps](/docs/toolbar/heatmaps.md), your Web Application Firewall (WAF) may be blocking PostHog's requests to your site. Add these IP addresses to your WAF allowlist or rules to let PostHog access your site.
 
 **EU**: `3.75.65.221`, `18.197.246.42`, `3.120.223.253`
 
@@ -233,7 +233,7 @@ PostHog AI
 // app/posthog.js
 import { PostHog } from 'posthog-node'
 export default function PostHogClient() {
-  const posthogClient = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_TOKEN, {
+  const posthogClient = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN, {
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     flushAt: 1,
     flushInterval: 0
@@ -313,7 +313,7 @@ export async function getServerSideProps(ctx) {
   let flags = null
   if (session) {
     const client = new PostHog(
-      process.env.NEXT_PUBLIC_POSTHOG_TOKEN,
+      process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,
       {
         host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
       }
@@ -352,7 +352,7 @@ TSX
 PostHog AI
 
 ```jsx
-posthog.init(process.env.NEXT_PUBLIC_POSTHOG_TOKEN, {
+posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN, {
   // ... your configuration
   fetch_options: {
     cache: 'force-cache', // Use Next.js cache
