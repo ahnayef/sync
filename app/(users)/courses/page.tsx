@@ -48,6 +48,7 @@ export default function CoursesPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Sorting & Filtering State (Focusing on Session)
   const [filterType, setFilterType] = useState("all");
@@ -196,6 +197,7 @@ export default function CoursesPage() {
       return next;
     });
     setSaved(false);
+    setHasUnsavedChanges(true);
   };
 
   const saveSelections = async () => {
@@ -209,6 +211,7 @@ export default function CoursesPage() {
       if (res.ok) {
         posthog.capture("courses_saved", { selected_count: selected.size });
         setSaved(true);
+        setHasUnsavedChanges(false);
         // Refresh the JWT token so the proxy sees hasSelectedCourses = true
         // immediately without requiring the user to re-login
         if (selected.size > 0) {
@@ -238,6 +241,7 @@ export default function CoursesPage() {
   const clearSelection = () => {
     setSelected(new Set());
     setSaved(false);
+    setHasUnsavedChanges(true);
   };
 
   return (
@@ -252,9 +256,14 @@ export default function CoursesPage() {
             <h1 className="mt-2 text-[clamp(20px,4.5vw,28px)] sm:text-[32px] font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
               Course Selection
             </h1>
-            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              {selectedCount} selected · {filtered.length} visible of {availableCount} total
-            </p>
+            <div className="mt-2 flex flex-col gap-1">
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                {selectedCount} selected · {filtered.length} visible of {availableCount} total
+              </p>
+              <p className="text-[13px] font-medium text-blue-400">
+                Step 1: Select your courses below &nbsp;&rarr;&nbsp; Step 2: Click Save to generate your routine
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 w-auto flex-nowrap">
@@ -310,6 +319,36 @@ export default function CoursesPage() {
                 </>
               )}
             </button>
+          </div>
+        </div>
+
+        {/* Quick Batch Filter Pills */}
+        <div className="mb-2 w-full overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-2 w-max">
+            {sessionOptions.slice(0, 6).map(({ sess }) => (
+              <button
+                key={sess}
+                onClick={() => {
+                  setFilterSession(sess);
+                  setShowFilters(true);
+                }}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${
+                  filterSession === sess
+                    ? "border-blue-500 bg-blue-500/20 text-blue-300"
+                    : "border-white/10 bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:border-white/30 hover:text-white"
+                }`}
+              >
+                {sess}
+              </button>
+            ))}
+            {sessionOptions.length > 6 && (
+              <button
+                onClick={() => setShowFilters(true)}
+                className="px-3 py-1.5 text-xs font-semibold rounded-full border border-white/10 bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:border-white/30 hover:text-white"
+              >
+                View all...
+              </button>
+            )}
           </div>
         </div>
 
@@ -601,6 +640,49 @@ export default function CoursesPage() {
           </ul>
         )}
       </main>
+
+      {/* Floating Sticky Save Bar */}
+      {(hasUnsavedChanges || selectedCount > 0) && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-[500px] animate-in slide-in-from-bottom-10 fade-in duration-300">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[rgba(15,23,36,0.95)] backdrop-blur-xl p-3 sm:p-4 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+            <div className="flex flex-col">
+              <span className="text-sm sm:text-base font-bold text-white">
+                {selectedCount} Courses Selected
+              </span>
+              {hasUnsavedChanges && (
+                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-orange-400 font-medium">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                  </span>
+                  Unsaved changes
+                </span>
+              )}
+            </div>
+            <button
+              onClick={saveSelections}
+              disabled={saving}
+              className={`flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-bold text-white shadow-lg transition-all ${
+                saving 
+                  ? "bg-blue-600/50 cursor-not-allowed" 
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 hover:shadow-blue-500/25 active:scale-95"
+              }`}
+            >
+              {saving ? (
+                <>
+                  <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Saving
+                </>
+              ) : (
+                <>
+                  <FiSave className="text-lg" />
+                  Save & View Routine &rarr;
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
