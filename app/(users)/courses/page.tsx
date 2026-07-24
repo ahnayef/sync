@@ -217,8 +217,9 @@ export default function CoursesPage() {
         if (selected.size > 0) {
           await updateSession({ hasSelectedCourses: true });
         }
-        // Navigate to routine page after successful save
-        router.push("/routine");
+        // Force a hard navigation to routine page after successful save 
+        // to bypass any Next.js client-side router caching of the middleware redirect
+        window.location.href = "/routine";
         return;
       }
     } catch (err) {
