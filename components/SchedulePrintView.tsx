@@ -1,7 +1,5 @@
 "use client";
 
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"] as const;
-
 export interface ExportScheduleRow {
   day: string;
   start_time: string;
@@ -32,207 +30,155 @@ interface Props {
   exportDate: string;
 }
 
-export function SchedulePrintView({ rows, programName, batchSession, exportDate }: Props) {
-  const byDay = (day: string) =>
-    rows.filter((r) => r.day.toLowerCase() === day.toLowerCase());
-
+function SlotCard({ slot, isAlt }: { slot: ExportScheduleRow; isAlt: boolean }) {
   return (
-    <>
-      {/* ── Print-only global styles ── */}
-      <style>{`
-        @media print {
-          body * { visibility: hidden; }
-          #schedule-print-view,
-          #schedule-print-view * { visibility: visible; }
-          #schedule-print-view { position: fixed; inset: 0; }
+    <div
+      style={{
+        borderLeft: "3px solid #000",
+        border: "1px solid #ccc",
+        borderLeftWidth: "3px",
+        borderLeftColor: "#000",
+        padding: "5px 6px",
+        marginBottom: "3px",
+        backgroundColor: isAlt ? "#f5f5f5" : "#fff",
+        pageBreakInside: "avoid",
+      }}
+    >
+      {/* Time + Room */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "2px" }}>
+        <span style={{ fontFamily: "'Courier New', monospace", fontSize: "8.5px", fontWeight: 700, color: "#000" }}>
+          {fmt24to12(slot.start_time)} – {fmt24to12(slot.end_time)}
+        </span>
+        {slot.room_number && (
+          <span style={{ fontSize: "8px", fontWeight: 700, color: "#333" }}>
+            Rm {slot.room_number}
+            {slot.room_title ? ` · ${slot.room_title}` : ""}
+          </span>
+        )}
+      </div>
 
-          @page {
-            size: A4 landscape;
-            margin: 12mm 14mm;
-          }
+      {/* Code + tags */}
+      <div style={{ fontFamily: "'Courier New', monospace", fontSize: "7.5px", fontWeight: 700, color: "#444", marginBottom: "2px", letterSpacing: "0.04em" }}>
+        {slot.course_code}
+        {slot.is_lab && (
+          <span style={{ display: "inline-block", border: "1px solid #000", fontSize: "6.5px", fontWeight: 900, padding: "0 2.5px", letterSpacing: "0.07em", verticalAlign: "middle", marginLeft: "3px" }}>
+            LAB
+          </span>
+        )}
+        {slot.section && slot.section !== "none" && (
+          <span style={{ fontSize: "7px", color: "#555", marginLeft: "4px" }}>§{slot.section}</span>
+        )}
+      </div>
 
-          /* Wednesday always starts a new page */
-          .print-page-break { page-break-before: always; }
+      {/* Course name — dominant element */}
+      <div style={{ fontSize: "10px", fontWeight: 800, lineHeight: 1.25, color: "#000", marginBottom: "2px" }}>
+        {slot.course_name}
+      </div>
 
-          /* Never split a row across pages */
-          .schedule-row { page-break-inside: avoid; }
+      {/* Teacher */}
+      <div style={{ fontSize: "8px", color: "#444" }}>
+        {slot.teacher_name}
+        {slot.teacher_short && (
+          <span style={{ color: "#888", marginLeft: "3px" }}>({slot.teacher_short})</span>
+        )}
+      </div>
+    </div>
+  );
+}
 
-          /* Force black & white */
-          * {
-            color: black !important;
-            background: white !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-          .day-header-bar {
-            background: black !important;
-            color: white !important;
-          }
-          .row-alt { background: #f2f2f2 !important; }
-          .lab-tag {
-            border: 1px solid black !important;
-            background: white !important;
-          }
-        }
-      `}</style>
+function DayColumn({ day, rows }: { day: string; rows: ExportScheduleRow[] }) {
+  const slots = rows.filter((r) => r.day.toLowerCase() === day.toLowerCase());
+  return (
+    <div style={{ flex: 1, minWidth: 0 }}>
+      {/* Day header */}
+      <div style={{
+        background: "#000",
+        color: "#fff",
+        fontSize: "9px",
+        fontWeight: 900,
+        letterSpacing: "0.14em",
+        padding: "4px 7px",
+        marginBottom: "4px",
+        textTransform: "uppercase",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <span>{day}</span>
+        <span style={{ fontWeight: 400, fontSize: "8px", color: "#aaa" }}>
+          {slots.length === 0 ? "No classes" : `${slots.length} class${slots.length !== 1 ? "es" : ""}`}
+        </span>
+      </div>
 
-      <div id="schedule-print-view" className="font-sans text-black bg-white">
-
-        {/* ── Document header ── */}
-        <div className="mb-5 border-b-2 border-black pb-3">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500 mb-0.5">
-                Loop · Class Schedule
-              </p>
-              <h1 className="text-[22px] font-extrabold leading-tight tracking-tight text-black">
-                {programName}
-              </h1>
-              {batchSession && (
-                <p className="text-[12px] font-semibold text-gray-600 mt-0.5">
-                  Session: {batchSession}
-                </p>
-              )}
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] text-gray-500">Exported</p>
-              <p className="text-[12px] font-semibold text-black">{exportDate}</p>
-            </div>
-          </div>
+      {/* Slots */}
+      {slots.length === 0 ? (
+        <div style={{ fontSize: "8px", color: "#999", fontStyle: "italic", padding: "5px 6px" }}>
+          No classes scheduled.
         </div>
+      ) : (
+        slots.map((slot, i) => (
+          <SlotCard key={`${slot.course_code}-${slot.start_time}-${i}`} slot={slot} isAlt={i % 2 === 1} />
+        ))
+      )}
+    </div>
+  );
+}
 
-        {/* ── Day sections ── */}
-        {DAYS.map((day, idx) => {
-          const dayRows = byDay(day);
-          const isPageBreak = day === "Wednesday";
-          return (
-            <div
-              key={day}
-              className={`mb-6 ${isPageBreak ? "print-page-break" : ""}`}
-            >
-              {/* Day header bar */}
-              <div className="day-header-bar flex items-center gap-3 bg-black px-4 py-2 mb-0">
-                <span className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-white">
-                  {day}
-                </span>
-                <span className="text-[10px] font-medium text-gray-300 ml-auto">
-                  {dayRows.length === 0
-                    ? "No classes"
-                    : `${dayRows.length} class${dayRows.length > 1 ? "es" : ""}`}
-                </span>
-              </div>
+export function SchedulePrintView({ rows, programName, batchSession, exportDate }: Props) {
+  return (
+    <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: "9px", color: "#000", background: "#fff" }}>
 
-              {dayRows.length === 0 ? (
-                <div className="border border-t-0 border-black px-4 py-3">
-                  <p className="text-[11px] text-gray-400 italic">
-                    No classes scheduled for {day}.
-                  </p>
-                </div>
-              ) : (
-                <table className="w-full border-collapse border border-t-0 border-black text-black">
-                  {/* Table header */}
-                  <thead>
-                    <tr className="border-b border-black bg-gray-100">
-                      <th className="w-[16%] border-r border-black px-3 py-1.5 text-left text-[8.5px] font-bold uppercase tracking-[0.12em] text-gray-600">
-                        Time
-                      </th>
-                      <th className="w-[42%] border-r border-black px-3 py-1.5 text-left text-[8.5px] font-bold uppercase tracking-[0.12em] text-gray-600">
-                        Course
-                      </th>
-                      <th className="w-[28%] border-r border-black px-3 py-1.5 text-left text-[8.5px] font-bold uppercase tracking-[0.12em] text-gray-600">
-                        Teacher
-                      </th>
-                      <th className="w-[14%] px-3 py-1.5 text-left text-[8.5px] font-bold uppercase tracking-[0.12em] text-gray-600">
-                        Room
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {dayRows.map((slot, i) => (
-                      <tr
-                        key={`${slot.course_code}-${slot.start_time}-${i}`}
-                        className={`schedule-row border-b border-black last:border-b-0 ${
-                          i % 2 === 1 ? "row-alt bg-gray-50" : "bg-white"
-                        }`}
-                      >
-                        {/* TIME column */}
-                        <td className="border-r border-black px-3 py-2.5 align-top">
-                          <span className="block font-mono text-[11px] font-bold leading-tight text-black">
-                            {fmt24to12(slot.start_time)}
-                          </span>
-                          <span className="block text-[9px] text-gray-400 leading-none mt-0.5">
-                            to
-                          </span>
-                          <span className="block font-mono text-[11px] font-bold leading-tight text-black mt-0.5">
-                            {fmt24to12(slot.end_time)}
-                          </span>
-                        </td>
-
-                        {/* COURSE column */}
-                        <td className="border-r border-black px-3 py-2.5 align-top">
-                          <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                            <span className="inline-block rounded px-1.5 py-0.5 text-[9px] font-mono font-bold bg-gray-100 border border-gray-400 text-gray-700 leading-none">
-                              {slot.course_code}
-                            </span>
-                            {slot.is_lab && (
-                              <span className="lab-tag inline-block rounded px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wide border border-black text-black leading-none">
-                                Lab
-                              </span>
-                            )}
-                            {slot.section && slot.section !== "none" && (
-                              <span className="inline-block text-[9px] font-semibold text-gray-500 leading-none">
-                                Sec {slot.section}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[13px] font-bold leading-snug text-black">
-                            {slot.course_name}
-                          </p>
-                        </td>
-
-                        {/* TEACHER column */}
-                        <td className="border-r border-black px-3 py-2.5 align-top">
-                          <p className="text-[11.5px] font-medium text-black leading-snug">
-                            {slot.teacher_name}
-                          </p>
-                          {slot.teacher_short && (
-                            <p className="text-[9px] text-gray-500 mt-0.5">
-                              ({slot.teacher_short})
-                            </p>
-                          )}
-                        </td>
-
-                        {/* ROOM column */}
-                        <td className="px-3 py-2.5 align-top">
-                          <p className="text-[12px] font-bold text-black">
-                            {slot.room_number ? `Room ${slot.room_number}` : "—"}
-                          </p>
-                          {slot.room_title && (
-                            <p className="text-[9px] text-gray-500 mt-0.5 leading-tight">
-                              {slot.room_title}
-                            </p>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          );
-        })}
-
-        {/* ── Footer ── */}
-        <div className="mt-4 border-t border-gray-300 pt-2 flex justify-between items-center">
-          <p className="text-[9px] text-gray-400">
-            Generated by Loop · Schedule Management System
-          </p>
-          <p className="text-[9px] text-gray-400">
-            {exportDate}
-          </p>
+      {/* ── Document header ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: "2px solid #000", paddingBottom: "5px", marginBottom: "7px" }}>
+        <div>
+          <div style={{ fontSize: "16px", fontWeight: 900, letterSpacing: "-0.02em" }}>{programName}</div>
+          {batchSession && <div style={{ fontSize: "9px", color: "#555", marginTop: "2px" }}>Session: {batchSession}</div>}
+          <div style={{ fontSize: "9px", color: "#555", marginTop: "1px" }}>Loop · Weekly Class Schedule</div>
+        </div>
+        <div style={{ textAlign: "right", fontSize: "8px", color: "#666", lineHeight: 1.6 }}>
+          Exported<br />
+          <strong style={{ fontSize: "9px", color: "#000" }}>{exportDate}</strong>
         </div>
       </div>
-    </>
+
+      {/* ── Page 1: Sun · Mon · Tue ── */}
+      <div style={{ display: "flex", gap: "7px", alignItems: "flex-start", marginBottom: "12px" }}>
+        <DayColumn day="Sunday"  rows={rows} />
+        <DayColumn day="Monday"  rows={rows} />
+        <DayColumn day="Tuesday" rows={rows} />
+      </div>
+
+      {/* ── Page break indicator (screen only) ── */}
+      <div style={{ borderTop: "2px dashed #ccc", margin: "8px 0", position: "relative" }}>
+        <span style={{
+          position: "absolute",
+          top: "-9px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: "#f0f0f0",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+          padding: "1px 8px",
+          fontSize: "8px",
+          color: "#999",
+          whiteSpace: "nowrap",
+          fontFamily: "sans-serif",
+        }}>
+          — Page 2 —
+        </span>
+      </div>
+
+      {/* ── Page 2: Wed · Thu ── */}
+      <div style={{ display: "flex", gap: "9px", alignItems: "flex-start" }}>
+        <DayColumn day="Wednesday" rows={rows} />
+        <DayColumn day="Thursday"  rows={rows} />
+      </div>
+
+      {/* ── Footer ── */}
+      <div style={{ marginTop: "8px", borderTop: "1px solid #ccc", paddingTop: "4px", display: "flex", justifyContent: "space-between", fontSize: "7px", color: "#999" }}>
+        <span>Generated by Loop · Schedule Management System</span>
+        <span>{exportDate}</span>
+      </div>
+    </div>
   );
 }

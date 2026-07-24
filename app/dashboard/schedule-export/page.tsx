@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { FiPrinter, FiLoader, FiAlertCircle, FiFileText } from "react-icons/fi";
 import { SchedulePrintView, ExportScheduleRow } from "@/components/SchedulePrintView";
+import { generateSchedulePrintHTML } from "@/lib/generateSchedulePrintHTML";
 
 interface Program {
   id: number;
@@ -100,7 +101,22 @@ export default function ScheduleExportPage() {
   });
 
   const handlePrint = () => {
-    window.print();
+    const html = generateSchedulePrintHTML(
+      scheduleRows,
+      selectedProgram?.name ?? "",
+      selectedBatch?.session,
+      exportDate
+    );
+    const blob = new Blob([html], { type: "text/html" });
+    const url  = URL.createObjectURL(blob);
+    const win  = window.open(url, "_blank");
+    // Revoke the blob URL after the new window has loaded it
+    if (win) {
+      win.addEventListener("load", () => URL.revokeObjectURL(url), { once: true });
+    } else {
+      // fallback: revoke after a delay if pop-up was blocked
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    }
   };
 
   return (
@@ -255,8 +271,8 @@ export default function ScheduleExportPage() {
             <p className="mt-3 text-center text-[11px] text-[var(--color-text-muted)]">
               Click{" "}
               <strong className="text-[var(--color-text-secondary)]">Export as PDF</strong>{" "}
-              above → in the print dialog, set destination to{" "}
-              <em>Save as PDF</em> and layout to <em>Landscape</em>.
+              — a new window will open and the print dialog will appear automatically.
+              Choose <em>Save as PDF</em> as the destination.
             </p>
           </div>
         )}
@@ -277,17 +293,6 @@ export default function ScheduleExportPage() {
         )}
       </div>
 
-      {/* ── Print-only view (hidden on screen) ── */}
-      <div className="hidden print:block">
-        {scheduleRows.length > 0 && (
-          <SchedulePrintView
-            rows={scheduleRows}
-            programName={selectedProgram?.name ?? ""}
-            batchSession={selectedBatch?.session}
-            exportDate={exportDate}
-          />
-        )}
-      </div>
     </div>
   );
 }
