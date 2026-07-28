@@ -74,8 +74,10 @@ type RoomRow = RowDataPacket & {
 
 type ScheduleConflictRow = RowDataPacket & {
   id: number;
-  teacher_id: number;
+  teacher_id: number | null;
   room_id: number | null;
+  batch_id: number | null;
+  section: string | null;
   day: DayName;
   start_time: string;
   end_time: string;
@@ -319,6 +321,55 @@ function buildValidationMessage(rows: ResolvedScheduleRow[], departmentName: str
       if (existingMatch) {
         const rowText = formatUploadedRowText(row, departmentName);
         fallbackMessages.push(`| ${row.sourceRow} | ${rowText} <br/><br/>**conflicts with existing ${existingMatch[1]} schedule in ${existingMatch[2]}** | Update / Remove |`);
+        continue;
+      }
+
+      const teacherExistingMatch = error.match(/^Teacher conflict with existing schedule: (.+)\.$/);
+      if (teacherExistingMatch) {
+        const rowText = formatUploadedRowText(row, departmentName);
+        fallbackMessages.push(`| ${row.sourceRow} | ${rowText} <br/><br/>**teacher conflict with existing:** ${teacherExistingMatch[1]} | Update / Remove |`);
+        continue;
+      }
+
+      const roomUploadedMatch = error.match(/^Room conflict with uploaded row (\d+)\.$/);
+      if (roomUploadedMatch) {
+        const otherRowNumber = Number(roomUploadedMatch[1]);
+        const otherRow = rowBySourceRow.get(otherRowNumber);
+        if (otherRow) {
+          const left = row.sourceRow < otherRow.sourceRow ? row : otherRow;
+          const right = row.sourceRow < otherRow.sourceRow ? otherRow : row;
+          const leftText = `Row ${left.sourceRow}:<br/>` + formatUploadedRowText(left, departmentName);
+          const rightText = `Row ${right.sourceRow}:<br/>` + formatUploadedRowText(right, departmentName);
+          pairMessages.add(`| ${left.sourceRow}, ${right.sourceRow} | ${leftText} <br/><br/>**room conflict with**<br/><br/> ${rightText} | Remove one |`);
+          continue;
+        }
+      }
+
+      const roomExistingMatch = error.match(/^Room conflict with existing schedule: (.+)\.$/);
+      if (roomExistingMatch) {
+        const rowText = formatUploadedRowText(row, departmentName);
+        fallbackMessages.push(`| ${row.sourceRow} | ${rowText} <br/><br/>**room conflict with existing:** ${roomExistingMatch[1]} | Update / Remove |`);
+        continue;
+      }
+
+      const batchUploadedMatch = error.match(/^Batch\/section overlap with uploaded row (\d+)\.$/);
+      if (batchUploadedMatch) {
+        const otherRowNumber = Number(batchUploadedMatch[1]);
+        const otherRow = rowBySourceRow.get(otherRowNumber);
+        if (otherRow) {
+          const left = row.sourceRow < otherRow.sourceRow ? row : otherRow;
+          const right = row.sourceRow < otherRow.sourceRow ? otherRow : row;
+          const leftText = `Row ${left.sourceRow}:<br/>` + formatUploadedRowText(left, departmentName);
+          const rightText = `Row ${right.sourceRow}:<br/>` + formatUploadedRowText(right, departmentName);
+          pairMessages.add(`| ${left.sourceRow}, ${right.sourceRow} | ${leftText} <br/><br/>**batch/section overlap with**<br/><br/> ${rightText} | Remove one |`);
+          continue;
+        }
+      }
+
+      const batchExistingMatch = error.match(/^Batch\/section overlap with existing schedule: (.+)\.$/);
+      if (batchExistingMatch) {
+        const rowText = formatUploadedRowText(row, departmentName);
+        fallbackMessages.push(`| ${row.sourceRow} | ${rowText} <br/><br/>**batch/section overlap with existing:** ${batchExistingMatch[1]} | Update / Remove |`);
         continue;
       }
 
@@ -645,19 +696,43 @@ async function applyConflictChecks(rows: ResolvedScheduleRow[]) {
   const validTeacherIds = Array.from(
     new Set(rows.map((row) => row.teacher_id).filter((id): id is number => typeof id === "number"))
   );
+  const validRoomIds = Array.from(
+    new Set(rows.map((row) => row.room_id).filter((id): id is number => typeof id === "number"))
+  );
+  const validBatchIds = Array.from(
+    new Set(rows.map((row) => row.batch_id).filter((id): id is number => typeof id === "number"))
+  );
   const replacingProgramIds = Array.from(
     new Set(rows.map((row) => row.program_id).filter((id): id is number => typeof id === "number"))
   );
 
+  const programFilter =
+    replacingProgramIds.length > 0
+      ? `AND (s.program_id IS NULL OR s.program_id NOT IN (${replacingProgramIds.map(() => "?").join(",")}))`
+      : "";
+
+  // Build a combined OR query covering teacher, room, and batch IDs
+  const orConditions: string[] = [];
+  const orParams: number[] = [];
+
   if (validTeacherIds.length > 0) {
-    const teacherPlaceholders = validTeacherIds.map(() => "?").join(",");
-    const programFilter =
-      replacingProgramIds.length > 0
-        ? `AND (s.program_id IS NULL OR s.program_id NOT IN (${replacingProgramIds.map(() => "?").join(",")}))`
-        : "";
-    const [existingRows] = await db.execute<ScheduleConflictRow[]>(
+    orConditions.push(`s.teacher_id IN (${validTeacherIds.map(() => "?").join(",")})`);
+    orParams.push(...validTeacherIds);
+  }
+  if (validRoomIds.length > 0) {
+    orConditions.push(`s.room_id IN (${validRoomIds.map(() => "?").join(",")})`);
+    orParams.push(...validRoomIds);
+  }
+  if (validBatchIds.length > 0) {
+    orConditions.push(`s.batch_id IN (${validBatchIds.map(() => "?").join(",")})`);
+    orParams.push(...validBatchIds);
+  }
+
+  let existingRows: ScheduleConflictRow[] = [];
+  if (orConditions.length > 0) {
+    const [fetched] = await db.execute<ScheduleConflictRow[]>(
       `
-        SELECT s.id, s.teacher_id, s.room_id, s.day,
+        SELECT s.id, s.teacher_id, s.room_id, s.batch_id, s.section, s.day,
           TIME_FORMAT(s.start_time, '%H:%i:%s') as start_time,
           TIME_FORMAT(s.end_time, '%H:%i:%s') as end_time,
           r.number as room_number,
@@ -674,46 +749,90 @@ async function applyConflictChecks(rows: ResolvedScheduleRow[]) {
         LEFT JOIN programs p ON s.program_id = p.id
         LEFT JOIN departments d ON p.department_id = d.id
         LEFT JOIN rooms r ON s.room_id = r.id
-        WHERE s.teacher_id IN (${teacherPlaceholders})
+        WHERE (${orConditions.join(" OR ")})
         ${programFilter}
       `,
-      [...validTeacherIds, ...replacingProgramIds]
+      [...orParams, ...replacingProgramIds]
     );
+    existingRows = fetched;
+  }
 
-    for (const row of rows) {
-      if (!row.teacher_id || !row.room_id) continue;
-      const conflict = existingRows.find(
-        (existing) =>
-          existing.teacher_id === row.teacher_id &&
-          existing.day === row.day &&
-          !isSameRoom(row, existing) &&
-          timesOverlap(row.start_time, row.end_time, existing.start_time, existing.end_time)
-      );
-
-      if (conflict) {
-        row.errors.push(
-          `Teacher conflict with existing schedule: ${formatExistingScheduleSummary(conflict)}.`
-        );
-      }
+  // --- Teacher conflicts vs existing DB schedules ---
+  for (const row of rows) {
+    if (!row.teacher_id) continue;
+    const conflict = existingRows.find(
+      (existing) =>
+        existing.teacher_id === row.teacher_id &&
+        existing.day === row.day &&
+        timesOverlap(row.start_time, row.end_time, existing.start_time, existing.end_time)
+    );
+    if (conflict) {
+      row.errors.push(`Teacher conflict with existing schedule: ${formatExistingScheduleSummary(conflict)}.`);
     }
   }
 
+  // --- Room conflicts vs existing DB schedules ---
+  for (const row of rows) {
+    if (!row.room_id) continue;
+    const conflict = existingRows.find(
+      (existing) =>
+        existing.room_id !== null &&
+        existing.room_id === row.room_id &&
+        existing.day === row.day &&
+        timesOverlap(row.start_time, row.end_time, existing.start_time, existing.end_time)
+    );
+    if (conflict) {
+      row.errors.push(`Room conflict with existing schedule: ${formatExistingScheduleSummary(conflict)}.`);
+    }
+  }
+
+  // --- Batch/section conflicts vs existing DB schedules ---
+  for (const row of rows) {
+    if (!row.batch_id) continue;
+    const section = row.section || "none";
+    const conflict = existingRows.find(
+      (existing) =>
+        existing.batch_id !== null &&
+        existing.batch_id === row.batch_id &&
+        (existing.section || "none") === section &&
+        existing.day === row.day &&
+        timesOverlap(row.start_time, row.end_time, existing.start_time, existing.end_time)
+    );
+    if (conflict) {
+      row.errors.push(`Batch/section overlap with existing schedule: ${formatExistingScheduleSummary(conflict)}.`);
+    }
+  }
+
+  // --- Intra-upload conflict checks ---
   for (let i = 0; i < rows.length; i++) {
     const left = rows[i];
-    if (!left.teacher_id || !left.room_id) continue;
-
     for (let j = i + 1; j < rows.length; j++) {
       const right = rows[j];
-      if (!right.teacher_id || !right.room_id) continue;
-      const hasConflict =
-        left.teacher_id === right.teacher_id &&
-        left.day === right.day &&
-        !isSameRoom(left, right) &&
-        timesOverlap(left.start_time, left.end_time, right.start_time, right.end_time);
+      if (left.day !== right.day) continue;
+      if (!timesOverlap(left.start_time, left.end_time, right.start_time, right.end_time)) continue;
 
-      if (!hasConflict) continue;
-      left.errors.push(`Teacher conflict with uploaded row ${right.sourceRow}.`);
-      right.errors.push(`Teacher conflict with uploaded row ${left.sourceRow}.`);
+      // Teacher conflict
+      if (left.teacher_id && right.teacher_id && left.teacher_id === right.teacher_id) {
+        left.errors.push(`Teacher conflict with uploaded row ${right.sourceRow}.`);
+        right.errors.push(`Teacher conflict with uploaded row ${left.sourceRow}.`);
+      }
+
+      // Room conflict
+      if (left.room_id && right.room_id && left.room_id === right.room_id) {
+        left.errors.push(`Room conflict with uploaded row ${right.sourceRow}.`);
+        right.errors.push(`Room conflict with uploaded row ${left.sourceRow}.`);
+      }
+
+      // Batch/section conflict
+      if (
+        left.batch_id &&
+        right.batch_id &&
+        left.batch_id === right.batch_id &&
+        (left.section || "none") === (right.section || "none")
+      ) {
+        left.errors.push(`Batch/section overlap with uploaded row ${right.sourceRow}.`);
+        right.errors.push(`Batch/section overlap with uploaded row ${left.sourceRow}.`);
+      }
     }
   }
 }
@@ -766,6 +885,103 @@ export async function applyRows(rows: ResolvedScheduleRow[]) {
   }
 }
 
+export interface ManualConflictInfo {
+  type: "teacher" | "room" | "batch";
+  message: string;
+}
+
+/**
+ * Checks for schedule conflicts against the existing database for a manual add or edit.
+ * Pass `excludeId` when editing so the row being updated does not conflict with itself.
+ */
+export async function checkManualScheduleConflicts(params: {
+  day: string;
+  start_time: string;
+  end_time: string;
+  teacher_id?: number | null;
+  room_id?: number | null;
+  batch_id?: number | null;
+  section?: string | null;
+  excludeId?: number | null;
+}): Promise<ManualConflictInfo[]> {
+  const { day, start_time, end_time, teacher_id, room_id, batch_id, section, excludeId } = params;
+
+  const orConditions: string[] = [];
+  const orParams: (number | string)[] = [];
+
+  if (teacher_id) {
+    orConditions.push(`s.teacher_id = ?`);
+    orParams.push(teacher_id);
+  }
+  if (room_id) {
+    orConditions.push(`s.room_id = ?`);
+    orParams.push(room_id);
+  }
+  if (batch_id) {
+    orConditions.push(`(s.batch_id = ? AND s.section = ?)`);
+    orParams.push(batch_id, section || "none");
+  }
+
+  if (orConditions.length === 0) return [];
+
+  // Overlap condition: new.start_time < existing.end_time AND new.end_time > existing.start_time
+  let sql = `
+    SELECT s.id, s.teacher_id, s.room_id, s.batch_id, s.section, s.day,
+      TIME_FORMAT(s.start_time, '%H:%i:%s') as start_time,
+      TIME_FORMAT(s.end_time, '%H:%i:%s') as end_time,
+      r.number as room_number,
+      c.code as course_code,
+      c.name as course_name,
+      t.short as teacher_short,
+      t.name as teacher_name,
+      b.name as batch_name,
+      d.name as department_name
+    FROM schedules s
+    LEFT JOIN courses c ON s.course_id = c.id
+    LEFT JOIN teachers t ON s.teacher_id = t.id
+    LEFT JOIN batches b ON s.batch_id = b.id
+    LEFT JOIN programs p ON s.program_id = p.id
+    LEFT JOIN departments d ON p.department_id = d.id
+    LEFT JOIN rooms r ON s.room_id = r.id
+    WHERE s.day = ?
+      AND s.start_time < ?
+      AND s.end_time > ?
+      AND (${orConditions.join(" OR ")})
+  `;
+  const allParams: (number | string)[] = [day, end_time, start_time, ...orParams];
+
+  if (excludeId) {
+    sql += ` AND s.id != ?`;
+    allParams.push(excludeId);
+  }
+
+  const [existingRows] = await db.execute<ScheduleConflictRow[]>(sql, allParams);
+  const conflicts: ManualConflictInfo[] = [];
+
+  for (const existing of existingRows) {
+    if (teacher_id && existing.teacher_id === teacher_id) {
+      conflicts.push({
+        type: "teacher",
+        message: `Teacher already scheduled: ${formatExistingScheduleSummary(existing)}.`,
+      });
+    }
+    if (room_id && existing.room_id === room_id) {
+      conflicts.push({
+        type: "room",
+        message: `Room already booked: ${formatExistingScheduleSummary(existing)}.`,
+      });
+    }
+    if (batch_id && existing.batch_id === batch_id && (existing.section || "none") === (section || "none")) {
+      conflicts.push({
+        type: "batch",
+        message: `Batch/section already has a class at this time: ${formatExistingScheduleSummary(existing)}.`,
+      });
+    }
+  }
+
+  return conflicts;
+}
+
 export async function syncProgramSchedule(programId: number, sheetLink: string) {
   if (!sheetLink || !sheetLink.trim()) {
     throw new Error("Sheet link is empty.");
@@ -809,7 +1025,19 @@ export async function syncProgramSchedule(programId: number, sheetLink: string) 
     );
 
     // 7. Write success to sync logs
-    const successMsg = `Successfully synced ${applied.inserted} schedule items.`;
+    const warningRows = rows.filter((r) => r.status === "warning");
+    const warningDetail =
+      warningRows.length > 0
+        ? `\n\n### Warnings\n${buildValidationMessage(warningRows, programName)}`
+        : "";
+    const successMsg =
+      `✅ Sync successful — **${applied.inserted} schedule${applied.inserted !== 1 ? "s" : ""}** imported.\n\n` +
+      `| Stat | Count |\n|---|---|\n` +
+      `| Total rows | ${rows.length} |\n` +
+      `| Imported | ${applied.inserted} |\n` +
+      `| Warnings | ${warningRows.length} |\n` +
+      `| Errors | 0 |` +
+      warningDetail;
     await db.execute(
       "INSERT INTO sheet_sync_logs (program_id, status, message) VALUES (?, 'success', ?)",
       [programId, successMsg]

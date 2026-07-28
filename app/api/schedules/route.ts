@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import db from "@/lib/db";
+import { checkManualScheduleConflicts } from "@/lib/schedule-parser";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -79,6 +80,23 @@ export async function POST(req: Request) {
       );
     }
 
+    // Conflict validation
+    const conflicts = await checkManualScheduleConflicts({
+      day,
+      start_time,
+      end_time,
+      teacher_id: teacher_id || null,
+      room_id: room_id || null,
+      batch_id: batch_id || null,
+      section: section || null,
+    });
+    if (conflicts.length > 0) {
+      return NextResponse.json(
+        { error: "Schedule conflict detected.", conflicts: conflicts.map((c) => c.message) },
+        { status: 409 }
+      );
+    }
+
     const [result]: any = await db.execute(
       `INSERT INTO schedules 
        (day, start_time, end_time, section, course_id, teacher_id, batch_id, program_id, room_id)
@@ -112,6 +130,24 @@ export async function PUT(req: Request) {
 
     if (!id) {
       return NextResponse.json({ error: "Missing schedule ID" }, { status: 400 });
+    }
+
+    // Conflict validation — exclude the schedule being edited from the check
+    const conflicts = await checkManualScheduleConflicts({
+      day,
+      start_time,
+      end_time,
+      teacher_id: teacher_id || null,
+      room_id: room_id || null,
+      batch_id: batch_id || null,
+      section: section || null,
+      excludeId: Number(id),
+    });
+    if (conflicts.length > 0) {
+      return NextResponse.json(
+        { error: "Schedule conflict detected.", conflicts: conflicts.map((c) => c.message) },
+        { status: 409 }
+      );
     }
 
     await db.execute(
