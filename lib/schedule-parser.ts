@@ -1031,7 +1031,7 @@ export async function syncProgramSchedule(programId: number, sheetLink: string) 
         ? `\n\n### Warnings\n${buildValidationMessage(warningRows, programName)}`
         : "";
     const successMsg =
-      `✅ Sync successful — **${applied.inserted} schedule${applied.inserted !== 1 ? "s" : ""}** imported.\n\n` +
+      `Sync successful — **${applied.inserted} schedule${applied.inserted !== 1 ? "s" : ""}** imported.\n\n` +
       `| Stat | Count |\n|---|---|\n` +
       `| Total rows | ${rows.length} |\n` +
       `| Imported | ${applied.inserted} |\n` +
