@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Joyride, type Step, type EventData } from "react-joyride";
 
-const TOUR_KEY = "loop_courses_tour_v1";
+const TOUR_KEY = "Sync_courses_tour_v1";
 
 function makeSteps(filtersButtonId: string): Step[] {
   return [

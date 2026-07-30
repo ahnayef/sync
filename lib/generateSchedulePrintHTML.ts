@@ -1,183 +1,233 @@
 import type { ExportScheduleRow } from "@/components/SchedulePrintView";
 
-function fmt24to12(t: string): string {
+// ─────────────────────────────────────────────────────────────────────────────
+// Layout constants  (A4 landscape, 10mm margins → 277 × 190 mm content area)
+// ─────────────────────────────────────────────────────────────────────────────
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
+const MAX_P1 = 5;   // max time-slot rows on page 1
+const MAX_P2 = 5;   // max time-slot rows on page 2
+
+// Both pages use the same row height for visual consistency
+//   Page 1: 12 (doc hdr) + 8 (tbl hdr) + 5×32 + 4 (footer) = 184 ≤ 190 ✓
+//   Page 2: 8 (tbl hdr) + 5×32 + 4 (footer) = 172 ≤ 190 ✓
+const P1_ROW_H = 32;  // mm
+const P2_ROW_H = 32;  // mm  — same as P1 for consistent appearance
+const TBL_HDR_H = 8;   // mm  — day-name header row
+const CELL_PAD = 2.5; // mm  — uniform cell padding (border-box)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+function fmt12(t: string): string {
   const [h, m] = t.split(":").map(Number);
-  const period = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 || 12;
-  return `${h12}:${String(m).padStart(2, "0")} ${period}`;
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
 }
 
-function renderSlot(slot: ExportScheduleRow, isAlt: boolean): string {
-  const labTag = slot.is_lab
-    ? `<span style="display:inline-block;border:1px solid #000;font-size:6.5px;font-weight:900;padding:0 2.5px;letter-spacing:0.07em;vertical-align:middle;margin-left:3px;">LAB</span>`
-    : "";
-  const secTag =
-    slot.section && slot.section !== "none"
-      ? `<span style="font-size:7px;color:#555;margin-left:4px;">§${slot.section}</span>`
-      : "";
-  const roomStr = slot.room_number
-    ? `<span style="font-size:8px;font-weight:700;color:#333;">Rm ${slot.room_number}${slot.room_title ? ` · ${slot.room_title}` : ""}</span>`
-    : "";
+function getSlots(rows: ExportScheduleRow[]): { s: string; e: string }[] {
+  const seen = new Set<string>();
+  const out: { s: string; e: string }[] = [];
+  for (const r of rows) {
+    const k = `${r.start_time}|${r.end_time}`;
+    if (!seen.has(k)) { seen.add(k); out.push({ s: r.start_time, e: r.end_time }); }
+  }
+  return out.sort((a, b) => a.s.localeCompare(b.s));
+}
 
+function findEntry(
+  rows: ExportScheduleRow[], day: string, s: string, e: string,
+): ExportScheduleRow | undefined {
+  return rows.find(
+    r => r.day.toLowerCase() === day.toLowerCase()
+      && r.start_time === s
+      && r.end_time === e,
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cell renderers  (height: fixed mm, overflow: hidden → row height is LOCKED)
+// ─────────────────────────────────────────────────────────────────────────────
+function timeCell(s: string, e: string, rowH: number): string {
+  // Flexbox centering works inside a block div with explicit height
   return `
     <div style="
-      border:1px solid #ccc;
-      border-left:3px solid #000;
-      padding:5px 6px;
-      margin-bottom:3px;
-      background:${isAlt ? "#f5f5f5" : "#fff"};
-      page-break-inside:avoid;
+      height:${rowH}mm; box-sizing:border-box;
+      padding:0 ${CELL_PAD}mm; overflow:hidden;
+      display:flex; flex-direction:column;
+      justify-content:center; align-items:center;
+      background:#ebebeb;
     ">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">
-        <span style="font-family:'Courier New',monospace;font-size:8.5px;font-weight:700;color:#000;">
-          ${fmt24to12(slot.start_time)} – ${fmt24to12(slot.end_time)}
-        </span>
-        ${roomStr}
-      </div>
-      <div style="font-family:'Courier New',monospace;font-size:7.5px;font-weight:700;color:#444;margin-bottom:2px;letter-spacing:0.04em;">
-        ${slot.course_code}${labTag}${secTag}
-      </div>
-      <div style="font-size:10px;font-weight:800;line-height:1.25;color:#000;margin-bottom:2px;">
-        ${slot.course_name}
-      </div>
-      <div style="font-size:8px;color:#444;">
-        ${slot.teacher_name}${slot.teacher_short ? ` <span style="color:#888;">(${slot.teacher_short})</span>` : ""}
-      </div>
+      <span style="font:700 9pt/1.3 'Courier New',monospace;color:#000;text-align:center;">
+        ${fmt12(s)}
+      </span>
+      <span style="font:400 7pt/1 Arial;color:#aaa;margin:1mm 0;text-align:center;">—</span>
+      <span style="font:700 9pt/1.3 'Courier New',monospace;color:#000;text-align:center;">
+        ${fmt12(e)}
+      </span>
     </div>`;
 }
 
-function renderDay(day: string, rows: ExportScheduleRow[]): string {
-  const slots = rows.filter(
-    (r) => r.day.toLowerCase() === day.toLowerCase()
-  );
+function dataCell(entry: ExportScheduleRow | undefined, rowH: number): string {
+  if (!entry) {
+    return `<div style="height:${rowH}mm;box-sizing:border-box;background:#f7f7f7;overflow:hidden;"></div>`;
+  }
   return `
-    <div style="flex:1;min-width:0;">
-      <div style="
-        background:#000;
-        color:#fff;
-        font-size:9px;
-        font-weight:900;
-        letter-spacing:0.14em;
-        padding:4px 7px;
-        margin-bottom:4px;
-        text-transform:uppercase;
-      ">
-        ${day}
-        <span style="float:right;font-weight:400;font-size:8px;color:#aaa;">
-          ${slots.length === 0 ? "No classes" : `${slots.length} class${slots.length !== 1 ? "es" : ""}`}
-        </span>
+    <div style="
+      height:${rowH}mm; box-sizing:border-box;
+      padding:${CELL_PAD}mm ${CELL_PAD + 0.5}mm;
+      overflow:hidden; background:#fff;
+    ">
+      <div style="font:700 7pt/1.1 'Courier New',monospace;color:#888;margin-bottom:0.4mm;letter-spacing:.02em;">
+        ${entry.course_code}
       </div>
-      ${
-        slots.length === 0
-          ? `<div style="font-size:8px;color:#999;font-style:italic;padding:5px 6px;">No classes scheduled.</div>`
-          : slots.map((s, i) => renderSlot(s, i % 2 === 1)).join("")
-      }
+      <div style="font:800 10.5pt/1.2 Arial,sans-serif;color:#000;margin-bottom:0.5mm;">
+        ${entry.course_name}
+      </div>
+      <div style="font:400 8.5pt/1.2 Arial,sans-serif;color:#555;margin-bottom:0.4mm;">
+        ${entry.teacher_name}
+      </div>
+      <div style="font:600 7.5pt/1.1 Arial,sans-serif;color:#333;">
+        ${entry.room_number ? `Room&nbsp;${entry.room_number}` : "\u2014"}
+      </div>
     </div>`;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Table builder
+// ─────────────────────────────────────────────────────────────────────────────
+function renderTable(
+  slots: { s: string; e: string }[],
+  rows: ExportScheduleRow[],
+  rowH: number,
+): string {
+  if (!slots.length) return "";
+
+  const TH = `
+    height:${TBL_HDR_H}mm; padding:0;
+    background:#111; color:#fff;
+    font:700 9.5pt/1 Arial,sans-serif;
+    text-align:center; vertical-align:middle;
+    border:1pt solid #000; letter-spacing:.06em;`;
+
+  const thead = `
+    <thead>
+      <tr>
+        <th style="${TH} width:10%;">TIME</th>
+        ${DAYS.map(d => `<th style="${TH} width:18%;">${d.toUpperCase()}</th>`).join("")}
+      </tr>
+    </thead>`;
+
+  const tbody = `
+    <tbody>
+      ${slots.map(({ s, e }) => `
+        <tr>
+          <td style="padding:0;border:.75pt solid #bbb;vertical-align:top;">
+            ${timeCell(s, e, rowH)}
+          </td>
+          ${DAYS.map(day => {
+    const entry = findEntry(rows, day, s, e);
+    return `<td style="padding:0;border:.75pt solid #ddd;vertical-align:top;">
+              ${dataCell(entry, rowH)}
+            </td>`;
+  }).join("")}
+        </tr>`).join("")}
+    </tbody>`;
+
+  return `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">${thead}${tbody}</table>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main export
+// ─────────────────────────────────────────────────────────────────────────────
 export function generateSchedulePrintHTML(
   rows: ExportScheduleRow[],
   programName: string,
   batchSession?: string,
-  exportDate?: string
+  exportDate?: string,
 ): string {
-  const date = exportDate ?? new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const date = exportDate
+    ?? new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+  const allSlots = getSlots(rows);
+  const p1Slots = allSlots.slice(0, MAX_P1);
+  const p2Slots = allSlots.slice(MAX_P1, MAX_P1 + MAX_P2);
+  const hasExtra = allSlots.length > MAX_P1 + MAX_P2;
+
+  const footer = (extra = "") => `
+    <div style="
+      margin-top:2.5mm; border-top:.5pt solid #ccc; padding-top:1.5mm;
+      display:flex; justify-content:space-between;
+      font:400 6.5pt Arial; color:#ccc;
+    ">
+      <span>Sync &middot; Schedule Management System</span>
+      <span>${date}${extra}</span>
+    </div>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>${programName} — Class Schedule</title>
+  <meta charset="UTF-8"/>
+  <title>${programName} \u2014 Schedule</title>
   <style>
-    @page { size: A4 landscape; margin: 10mm 12mm; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      font-size: 9px;
-      color: #000;
+    @page {
+      size: A4 landscape;
+      margin: 10mm;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      /* NO fixed width \u2014 let @page determine the printable width */
+      font-family: Arial, 'Helvetica Neue', sans-serif;
       background: #fff;
+      color: #000;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
-    }
-
-    /* ── Header ── */
-    .doc-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      border-bottom: 2px solid #000;
-      padding-bottom: 5px;
-      margin-bottom: 7px;
-    }
-    .doc-title { font-size: 16px; font-weight: 900; letter-spacing: -0.02em; }
-    .doc-sub   { font-size: 9px; color: #555; margin-top: 2px; }
-    .doc-meta  { text-align: right; font-size: 8px; color: #666; line-height: 1.6; }
-
-    /* ── Page rows ── */
-    .page-row {
-      display: flex;
-      gap: 7px;
-      align-items: flex-start;
-    }
-    .page-row-2 {
-      display: flex;
-      gap: 9px;
-      align-items: flex-start;
-      page-break-before: always;
-    }
-
-    /* ── Footer ── */
-    .doc-footer {
-      margin-top: 7px;
-      border-top: 1px solid #ccc;
-      padding-top: 4px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 7px;
-      color: #999;
     }
   </style>
 </head>
 <body>
 
-  <!-- Document header -->
-  <div class="doc-header">
+  <!-- ===== PAGE 1 ===== -->
+
+  <!-- Document header (12 mm) -->
+  <div style="
+    display:flex; justify-content:space-between; align-items:flex-end;
+    border-bottom:2pt solid #000;
+    padding-bottom:2.5mm; margin-bottom:3mm;
+  ">
     <div>
-      <div class="doc-title">${programName}</div>
-      ${batchSession ? `<div class="doc-sub">Session: ${batchSession}</div>` : ""}
-      <div class="doc-sub" style="margin-top:1px;">Loop · Weekly Class Schedule</div>
+      <div style="font:900 13pt/1.1 Arial,sans-serif;letter-spacing:-.02em;">
+        ${programName}
+      </div>
+      ${batchSession
+      ? `<div style="font:600 8pt/1.4 Arial;color:#555;margin-top:1.5mm;">Session: ${batchSession}</div>`
+      : ""}
     </div>
-    <div class="doc-meta">
-      Exported<br>
-      <strong style="font-size:9px;color:#000;">${date}</strong>
+    <div style="text-align:right;font:400 8pt/1.6 Arial;color:#666;">
+      Sync &middot; Class Schedule<br>
+      <strong style="color:#000;font-size:8.5pt;">${date}</strong>
     </div>
   </div>
 
-  <!-- Page 1: Sunday · Monday · Tuesday -->
-  <div class="page-row">
-    ${renderDay("Sunday", rows)}
-    ${renderDay("Monday", rows)}
-    ${renderDay("Tuesday", rows)}
-  </div>
+  <!-- Grid (page 1) -->
+  ${renderTable(p1Slots, rows, P1_ROW_H)}
 
-  <!-- Page 2: Wednesday · Thursday -->
-  <div class="page-row-2">
-    ${renderDay("Wednesday", rows)}
-    ${renderDay("Thursday", rows)}
-  </div>
+  ${p2Slots.length === 0 ? footer() : ""}
 
-  <!-- Footer -->
-  <div class="doc-footer">
-    <span>Generated by Loop · Schedule Management System</span>
-    <span>${date}</span>
-  </div>
+  <!-- ===== PAGE 2 (if needed) ===== -->
+  ${p2Slots.length > 0 ? `
+  <div style="page-break-before:always;">
+    ${renderTable(p2Slots, rows, P2_ROW_H)}
+    ${hasExtra
+        ? `<div style="margin-top:2mm;font:400 7pt Arial;color:#c00;">
+           \u26a0 Some time slots exceeded the 2-page limit and are not shown.
+         </div>`
+        : ""}
+    ${footer(" \u2014 Page 2")}
+  </div>` : ""}
 
-  <script>
-    window.addEventListener('load', function () {
-      setTimeout(function () { window.print(); }, 350);
-    });
-  </script>
 </body>
 </html>`;
 }

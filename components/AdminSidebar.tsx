@@ -293,7 +293,7 @@ export default function AdminSidebar() {
             )}
             <div className={`flex-1 min-w-0 transition-all duration-200 ${isCollapsed ? "md:hidden" : "block"}`}>
               <p className="text-[11px] sm:text-[13px] font-semibold text-[var(--color-text-primary)] truncate">{session?.user?.name || "Admin"}</p>
-              <p className="text-[9px] sm:text-[11px] text-[var(--color-text-muted)] truncate">{session?.user?.email || "admin@loop.edu"}</p>
+              <p className="text-[9px] sm:text-[11px] text-[var(--color-text-muted)] truncate">{session?.user?.email || "admin@sync.edu"}</p>
             </div>
           </div>
 

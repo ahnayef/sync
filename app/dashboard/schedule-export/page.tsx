@@ -107,22 +107,35 @@ export default function ScheduleExportPage() {
       selectedBatch?.session,
       exportDate
     );
-    const blob = new Blob([html], { type: "text/html" });
-    const url  = URL.createObjectURL(blob);
-    const win  = window.open(url, "_blank");
-    // Revoke the blob URL after the new window has loaded it
-    if (win) {
-      win.addEventListener("load", () => URL.revokeObjectURL(url), { once: true });
-    } else {
-      // fallback: revoke after a delay if pop-up was blocked
-      setTimeout(() => URL.revokeObjectURL(url), 10_000);
-    }
+
+    // Create an invisible iframe — no new tab, print dialog appears in place
+    const iframe = document.createElement("iframe");
+    iframe.style.cssText =
+      "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument ?? iframe.contentWindow?.document;
+    if (!doc) { document.body.removeChild(iframe); return; }
+
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    iframe.onload = () => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      // Remove iframe after the print dialog has had time to open
+      setTimeout(() => {
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+      }, 2000);
+    };
   };
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)]">
-      {/* ── No-print page chrome ── */}
-      <div className="no-print mx-auto max-w-[900px] px-4 py-8 sm:px-6 sm:py-10">
+
+      {/* ── Controls section — stays narrow ── */}
+      <div className="mx-auto max-w-[900px] px-4 py-8 sm:px-6 sm:py-10">
 
         {/* Page header */}
         <div className="mb-8">
@@ -242,40 +255,7 @@ export default function ScheduleExportPage() {
               )}
             </div>
           )}
-        </div>
-
-        {/* ── Preview area (screen-only wrapper) ── */}
-        {scheduleRows.length > 0 && !loadingSchedule && (
-          <div>
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
-                Print Preview
-              </p>
-              <p className="text-xs text-[var(--color-text-muted)]">
-                A4 Landscape · Max 2 pages
-              </p>
-            </div>
-
-            {/* White paper preview */}
-            <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] shadow-[0_8px_40px_rgba(0,0,0,0.4)]">
-              <div className="bg-white p-8 sm:p-10">
-                <SchedulePrintView
-                  rows={scheduleRows}
-                  programName={selectedProgram?.name ?? ""}
-                  batchSession={selectedBatch?.session}
-                  exportDate={exportDate}
-                />
-              </div>
-            </div>
-
-            <p className="mt-3 text-center text-[11px] text-[var(--color-text-muted)]">
-              Click{" "}
-              <strong className="text-[var(--color-text-secondary)]">Export as PDF</strong>{" "}
-              — a new window will open and the print dialog will appear automatically.
-              Choose <em>Save as PDF</em> as the destination.
-            </p>
-          </div>
-        )}
+        </div>{/* end controls card */}
 
         {/* Empty state */}
         {!selectedProgramId && (
@@ -291,7 +271,40 @@ export default function ScheduleExportPage() {
             </p>
           </div>
         )}
-      </div>
+      </div>{/* end controls container */}
+
+      {/* ── Preview area — full width ── */}
+      {scheduleRows.length > 0 && !loadingSchedule && (
+        <div className="px-4 pb-12 sm:px-6 lg:px-8">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
+              Print Preview
+            </p>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              A4 Landscape · Max 2 pages
+            </p>
+          </div>
+
+          {/* White paper card — fills available width */}
+          <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] shadow-[0_8px_40px_rgba(0,0,0,0.4)]">
+            <div className="bg-white px-6 py-7 sm:px-8 sm:py-8">
+              <SchedulePrintView
+                rows={scheduleRows}
+                programName={selectedProgram?.name ?? ""}
+                batchSession={selectedBatch?.session}
+                exportDate={exportDate}
+              />
+            </div>
+          </div>
+
+          <p className="mt-3 text-center text-[11px] text-[var(--color-text-muted)]">
+            Click{" "}
+            <strong className="text-[var(--color-text-secondary)]">Export as PDF</strong>
+            {" "}— a new window will open and the print dialog will appear automatically.
+            Choose <em>Save as PDF</em> as the destination.
+          </p>
+        </div>
+      )}
 
     </div>
   );
