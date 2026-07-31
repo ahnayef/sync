@@ -275,7 +275,7 @@ export default function ScheduleExportPage() {
 
       {/* ── Preview area — full width ── */}
       {scheduleRows.length > 0 && !loadingSchedule && (
-        <div className="px-4 pb-12 sm:px-6 lg:px-8">
+        <div className="hidden lg:block px-4 pb-12 sm:px-6 lg:px-8">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
               Print Preview
