@@ -16,25 +16,31 @@ export interface ExportScheduleRow {
   batch_session: string | null;
 }
 
-// Match the print layout splits exactly
-const MAX_P1 = 5;
-const MAX_P2 = 5;
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"] as const;
+// ─────────────────────────────────────────────────────────────────────────────
+const DAYS_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
+const DAYS_ABB  = ["SUN",    "MON",    "TUE",     "WED",       "THU"    ];
 
-// Same row height for both pages — matches print (both 32mm)
-const P1_ROW_PX = 120;
-const P2_ROW_PX = 120;
-const HDR_ROW_PX = 36;
-const CELL_PAD_PX = 10; // px padding inside each cell div
+const ROW_H_PX  = 32;
+const HDR_H_PX  = 40;
+const CELL_PX   = 10;
 
+interface BatchInfo { session: string; key: string; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+/** "08:30" → "8:30 AM" */
 function fmt12(t: string): string {
-  const [h, m] = t.split(":").map(Number);
-  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  const [hStr, mStr] = t.slice(0, 5).split(":");
+  const h    = parseInt(hStr, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12  = h % 12 || 12;
+  return `${h12}:${mStr} ${ampm}`;
 }
 
-function getSlots(rows: ExportScheduleRow[]) {
+function getTimeSlots(rows: ExportScheduleRow[]): Array<{ s: string; e: string }> {
   const seen = new Set<string>();
-  const out: { s: string; e: string }[] = [];
+  const out: Array<{ s: string; e: string }> = [];
   for (const r of rows) {
     const k = `${r.start_time}|${r.end_time}`;
     if (!seen.has(k)) { seen.add(k); out.push({ s: r.start_time, e: r.end_time }); }
@@ -42,143 +48,199 @@ function getSlots(rows: ExportScheduleRow[]) {
   return out.sort((a, b) => a.s.localeCompare(b.s));
 }
 
-function findEntry(rows: ExportScheduleRow[], day: string, s: string, e: string) {
-  return rows.find(
-    r => r.day.toLowerCase() === day.toLowerCase()
-      && r.start_time === s
-      && r.end_time === e,
-  );
-}
-
-// ─── Cell components ──────────────────────────────────────────────────────────
-function TimeCell({ s, e, rowH }: { s: string; e: string; rowH: number }) {
-  return (
-    <div style={{
-      height: rowH,
-      boxSizing: "border-box",
-      padding: `0 ${CELL_PAD_PX}px`,
-      overflow: "hidden",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      background: "#ebebeb",
-    }}>
-      <span style={{ fontFamily: "'Courier New', monospace", fontSize: 12, fontWeight: 700, color: "#000", lineHeight: 1.3, textAlign: "center" }}>
-        {fmt12(s)}
-      </span>
-      <span style={{ fontSize: 10, color: "#aaa", margin: "3px 0", textAlign: "center" }}>—</span>
-      <span style={{ fontFamily: "'Courier New', monospace", fontSize: 12, fontWeight: 700, color: "#000", lineHeight: 1.3, textAlign: "center" }}>
-        {fmt12(e)}
-      </span>
-    </div>
-  );
-}
-
-function DataCell({ entry, rowH }: { entry?: ExportScheduleRow; rowH: number }) {
-  if (!entry) {
-    return (
-      <div style={{ height: rowH, boxSizing: "border-box", background: "#f7f7f7", overflow: "hidden" }} />
-    );
+function getBatchesForDay(rows: ExportScheduleRow[], day: string): BatchInfo[] {
+  const seen = new Set<string>();
+  const out: BatchInfo[] = [];
+  for (const r of rows) {
+    if (r.day.toLowerCase() !== day.toLowerCase()) continue;
+    const session = r.batch_session ?? r.batch_name ?? "";
+    const key = `${r.batch_name ?? ""}||${session}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push({ session, key });
+    }
   }
-  return (
-    <div style={{
-      height: rowH,
-      boxSizing: "border-box",
-      padding: `${CELL_PAD_PX}px ${CELL_PAD_PX + 2}px`,
-      overflow: "hidden",
-      background: "#fff",
-    }}>
-      {/* Course code */}
-      <div style={{ fontFamily: "'Courier New', monospace", fontSize: 9, fontWeight: 700, color: "#888", marginBottom: 2, letterSpacing: "0.02em" }}>
-        {entry.course_code}
-      </div>
-      {/* Course title — dominant */}
-      <div style={{ fontSize: 14, fontWeight: 800, color: "#000", lineHeight: 1.2, marginBottom: 3 }}>
-        {entry.course_name}
-      </div>
-      {/* Teacher */}
-      <div style={{ fontSize: 11, color: "#555", lineHeight: 1.2, marginBottom: 2 }}>
-        {entry.teacher_name}
-      </div>
-      {/* Room */}
-      <div style={{ fontSize: 11, fontWeight: 600, color: "#333" }}>
-        {entry.room_number ? `Room ${entry.room_number}` : "—"}
-      </div>
-    </div>
-  );
+  return out.sort((a, b) => a.session.localeCompare(b.session));
 }
 
-// ─── Grid ────────────────────────────────────────────────────────────────────
-function TimetableGrid({
-  slots,
-  rows,
-  rowH,
-}: {
-  slots: { s: string; e: string }[];
-  rows: ExportScheduleRow[];
-  rowH: number;
-}) {
-  if (!slots.length) return null;
+function buildLookup(rows: ExportScheduleRow[]): Map<string, ExportScheduleRow> {
+  const map = new Map<string, ExportScheduleRow>();
+  for (const r of rows) {
+    const session = r.batch_session ?? r.batch_name ?? "";
+    const bk = `${r.batch_name ?? ""}||${session}`;
+    const k  = `${r.day.toLowerCase()}||${bk}||${r.start_time}||${r.end_time}`;
+    if (!map.has(k)) map.set(k, r);
+  }
+  return map;
+}
 
-  const thStyle: React.CSSProperties = {
-    height: HDR_ROW_PX,
-    padding: "0 4px",
-    background: "#111",
-    color: "#fff",
-    fontSize: 11,
+function cellText(r: ExportScheduleRow | undefined): string {
+  if (!r) return "";
+  const parts: string[] = [r.course_code];
+  if (r.teacher_short) parts.push(r.teacher_short);
+  if (r.room_number != null) parts.push(`R-${r.room_number}`);
+  return parts.join(", ");
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sub-components
+// ─────────────────────────────────────────────────────────────────────────────
+function TimeHeader({ slots }: { slots: Array<{ s: string; e: string }> }) {
+  const thBase: React.CSSProperties = {
+    height: HDR_H_PX,
+    padding: "0 6px",
+    background: "#f0f0f0",
+    color: "#000",
+    fontSize: 10,
     fontWeight: 700,
-    letterSpacing: "0.06em",
+    letterSpacing: "0.04em",
     textAlign: "center",
     verticalAlign: "middle",
-    border: "1px solid #000",
+    border: "1px solid #888",
   };
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-      <colgroup>
-        <col style={{ width: "10%" }} />
-        {DAYS.map(d => <col key={d} style={{ width: "18%" }} />)}
-      </colgroup>
-      <thead>
-        <tr>
-          <th style={thStyle}>TIME</th>
-          {DAYS.map(d => <th key={d} style={thStyle}>{d.toUpperCase()}</th>)}
-        </tr>
-      </thead>
-      <tbody>
-        {slots.map(({ s, e }) => (
-          <tr key={`${s}-${e}`}>
-            <td style={{ padding: 0, border: "1px solid #bbb", verticalAlign: "top" }}>
-              <TimeCell s={s} e={e} rowH={rowH} />
+    <tr>
+      <th style={thBase}>DAY</th>
+      <th style={{ ...thBase, textAlign: "left", paddingLeft: 8 }}>SESSION</th>
+      {slots.map(s => (
+        <th key={`${s.s}-${s.e}`} style={thBase}>
+          <div>{fmt12(s.s)}</div>
+          <div>{fmt12(s.e)}</div>
+        </th>
+      ))}
+    </tr>
+  );
+}
+
+function DaySection({
+  day,
+  dayAbb,
+  batches,
+  slots,
+  lookup,
+}: {
+  day: string;
+  dayAbb: string;
+  batches: BatchInfo[];
+  slots: Array<{ s: string; e: string }>;
+  lookup: Map<string, ExportScheduleRow>;
+}) {
+  return (
+    <>
+      {batches.map((batch, bi) => {
+        const isFirst = bi === 0;
+        const rowBg   = bi % 2 === 0 ? "#ffffff" : "#f5f5f5";
+        const emptyBg = bi % 2 === 0 ? "#f2f2f2" : "#ebebeb";
+
+        return (
+          <tr key={batch.key}>
+            {/* Day cell — rowspan, light gray (ink-friendly) */}
+            {isFirst && (
+              <td
+                rowSpan={batches.length}
+                style={{
+                  padding: 0,
+                  textAlign: "center",
+                  verticalAlign: "middle",
+                  background: "#e8e8e8",
+                  color: "#000",
+                  fontWeight: 800,
+                  fontSize: 11,
+                  letterSpacing: "0.06em",
+                  border: "1px solid #888",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {dayAbb}
+              </td>
+            )}
+
+            {/* Batch session label */}
+            <td style={{ padding: 0, border: "1px solid #bbb", background: rowBg }}>
+              <div style={{
+                height: ROW_H_PX,
+                boxSizing: "border-box",
+                padding: `${CELL_PX / 2}px ${CELL_PX}px`,
+                overflow: "hidden",
+                fontSize: 10,
+                fontWeight: 600,
+                color: "#333",
+                lineHeight: 1.3,
+                display: "flex",
+                alignItems: "center",
+              }}>
+                {batch.session}
+              </div>
             </td>
-            {DAYS.map(day => {
-              const entry = findEntry(rows, day, s, e);
+
+            {/* Time slot cells */}
+            {slots.map(slot => {
+              const k     = `${day.toLowerCase()}||${batch.key}||${slot.s}||${slot.e}`;
+              const entry = lookup.get(k);
+              const text  = cellText(entry);
+
               return (
-                <td key={day} style={{ padding: 0, border: "1px solid #ddd", verticalAlign: "top" }}>
-                  <DataCell entry={entry} rowH={rowH} />
+                <td key={`${slot.s}-${slot.e}`} style={{
+                  padding: 0,
+                  border: "1px solid #ddd",
+                  background: entry ? rowBg : emptyBg,
+                }}>
+                  <div style={{
+                    height: ROW_H_PX,
+                    boxSizing: "border-box",
+                    padding: `${CELL_PX / 2}px ${CELL_PX / 2 + 2}px`,
+                    overflow: "hidden",
+                    fontFamily: "'Courier New', monospace",
+                    fontSize: 9.5,
+                    color: text ? "#000" : "transparent",
+                    lineHeight: 1.3,
+                    display: "flex",
+                    alignItems: "center",
+                  }}>
+                    {text || "."}
+                  </div>
                 </td>
               );
             })}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        );
+      })}
+
+      {/* Day separator row */}
+      <tr>
+        <td
+          colSpan={2 + slots.length}
+          style={{ height: 6, padding: 0, background: "#d8d8d8", border: "none" }}
+        />
+      </tr>
+    </>
   );
 }
 
-// ─── Main exported component ─────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Main exported component
+// ─────────────────────────────────────────────────────────────────────────────
 interface Props {
   rows: ExportScheduleRow[];
   programName: string;
   batchSession?: string;
   exportDate: string;
+  signerName?: string;
+  signerDesignation?: string;
+  departmentName?: string;
 }
 
-export function SchedulePrintView({ rows, programName, batchSession, exportDate }: Props) {
-  const allSlots = getSlots(rows);
-  const p1Slots = allSlots.slice(0, MAX_P1);
-  const p2Slots = allSlots.slice(MAX_P1, MAX_P1 + MAX_P2);
+export function SchedulePrintView({ rows, programName, batchSession, exportDate, signerName, signerDesignation, departmentName }: Props) {
+  const slots   = getTimeSlots(rows);
+  const lookup  = buildLookup(rows);
+  const nSlots  = slots.length;
+
+  // Column widths (matching print percentages)
+  const DAY_W   = "3.25%";
+  const BATCH_W = "10.1%";
+  const TIME_W  = `${(100 - 3.25 - 10.1) / Math.max(nSlots, 1)}%`;
 
   return (
     <div style={{ fontFamily: "Arial, 'Helvetica Neue', sans-serif", color: "#000", background: "#fff" }}>
@@ -188,46 +250,64 @@ export function SchedulePrintView({ rows, programName, batchSession, exportDate 
         <div>
           <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.02em", lineHeight: 1.1 }}>{programName}</div>
           {batchSession && <div style={{ fontSize: 11, color: "#555", marginTop: 3 }}>Session: {batchSession}</div>}
-          <div style={{ fontSize: 10, color: "#aaa", marginTop: 2 }}>Sync · Weekly Class Schedule</div>
         </div>
         <div style={{ textAlign: "right", fontSize: 10, color: "#777", lineHeight: 1.7 }}>
-          Sync · Class Schedule<br />
+          Loop · Class Schedule<br />
           <strong style={{ color: "#000", fontSize: 11 }}>{exportDate}</strong>
         </div>
       </div>
 
-      {/* Page 1 grid */}
-      <TimetableGrid slots={p1Slots} rows={rows} rowH={P1_ROW_PX} />
+      {/* Timetable */}
+      <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+        <colgroup>
+          <col style={{ width: DAY_W }} />
+          <col style={{ width: BATCH_W }} />
+          {slots.map((s, i) => <col key={i} style={{ width: TIME_W }} />)}
+        </colgroup>
 
-      {/* Page-2 divider — visible on screen only */}
-      {p2Slots.length > 0 && (
-        <div style={{ position: "relative", margin: "20px 0 16px", borderTop: "2px dashed #bbb" }}>
-          <span style={{
-            position: "absolute",
-            top: -10,
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "#f0f0f0",
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            padding: "1px 12px",
-            fontSize: 10,
-            color: "#999",
-            whiteSpace: "nowrap",
-          }}>
-            — Page 2 —
-          </span>
+        <thead>
+          <TimeHeader slots={slots} />
+        </thead>
+
+        <tbody>
+          {DAYS_FULL.map((day, di) => {
+            const batches = getBatchesForDay(rows, day);
+            if (!batches.length) return null;
+            return (
+              <DaySection
+                key={day}
+                day={day}
+                dayAbb={DAYS_ABB[di]}
+                batches={batches}
+                slots={slots}
+                lookup={lookup}
+              />
+            );
+          })}
+        </tbody>
+      </table>
+
+      {/* Signature block */}
+      {(signerName || signerDesignation || departmentName) && (
+        <div style={{ marginTop: 28, display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ minWidth: 220, textAlign: "left" }}>
+            <div style={{ borderTop: "1px solid #000", marginBottom: 6 }} />
+            {signerName && (
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#000", lineHeight: 1.5 }}>{signerName}</div>
+            )}
+            {signerDesignation && (
+              <div style={{ fontSize: 11, color: "#444", lineHeight: 1.4 }}>{signerDesignation}</div>
+            )}
+            {departmentName && (
+              <div style={{ fontSize: 11, color: "#444", lineHeight: 1.4 }}>{departmentName}</div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Page 2 grid */}
-      {p2Slots.length > 0 && (
-        <TimetableGrid slots={p2Slots} rows={rows} rowH={P2_ROW_PX} />
-      )}
-
       {/* Footer */}
-      <div style={{ marginTop: 12, borderTop: "1px solid #e0e0e0", paddingTop: 6, display: "flex", justifyContent: "space-between", fontSize: 10, color: "#ccc" }}>
-        <span>Generated by Sync · Schedule Management System</span>
+      <div style={{ marginTop: 10, borderTop: "1px solid #e0e0e0", paddingTop: 6, display: "flex", justifyContent: "space-between", fontSize: 10, color: "#ccc" }}>
+        <span>Generated by Loop · Schedule Management System</span>
         <span>{exportDate}</span>
       </div>
     </div>

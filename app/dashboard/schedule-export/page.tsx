@@ -9,6 +9,7 @@ interface Program {
   id: number;
   name: string;
   department_name: string;
+  department_full_name: string | null;
 }
 
 interface Batch {
@@ -31,6 +32,9 @@ export default function ScheduleExportPage() {
   const [loadingPrograms, setLoadingPrograms] = useState(true);
   const [loadingSchedule, setLoadingSchedule] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Signature block
+  const [signerName, setSignerName] = useState("");
+  const [signerDesignation, setSignerDesignation] = useState("");
 
   // Fetch programs and all batches on mount
   useEffect(() => {
@@ -94,6 +98,14 @@ export default function ScheduleExportPage() {
   const selectedProgram = programs.find((p) => String(p.id) === selectedProgramId);
   const selectedBatch = batches.find((b) => String(b.id) === selectedBatchId);
 
+  // Full department name for the signature block, prefixed with "Department of" if not already
+  const rawDept = selectedProgram?.department_full_name || selectedProgram?.department_name || "";
+  const deptForSignature = rawDept
+    ? rawDept.toLowerCase().startsWith("department")
+      ? rawDept
+      : `Department of ${rawDept}`
+    : undefined;
+
   const exportDate = new Date().toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -105,7 +117,10 @@ export default function ScheduleExportPage() {
       scheduleRows,
       selectedProgram?.name ?? "",
       selectedBatch?.session,
-      exportDate
+      exportDate,
+      signerName || undefined,
+      signerDesignation || undefined,
+      deptForSignature,
     );
 
     // Create an invisible iframe — no new tab, print dialog appears in place
@@ -229,6 +244,44 @@ export default function ScheduleExportPage() {
             </div>
           </div>
 
+          {/* Signature inputs */}
+          <div className="mt-5 grid gap-5 border-t border-[var(--color-border)] pt-5 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="export-signer-name"
+                className="block text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]"
+              >
+                Authorized Name{" "}
+                <span className="normal-case font-normal text-[10px]">(signature block)</span>
+              </label>
+              <input
+                id="export-signer-name"
+                type="text"
+                value={signerName}
+                onChange={(e) => setSignerName(e.target.value)}
+                placeholder="e.g. Dr. Arif Ahmad"
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3.5 py-2.5 text-sm text-[var(--color-text-primary)] outline-none transition-all placeholder:text-[var(--color-text-muted)] hover:border-white/20 focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="export-signer-designation"
+                className="block text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]"
+              >
+                Designation{" "}
+                <span className="normal-case font-normal text-[10px]">(signature block)</span>
+              </label>
+              <input
+                id="export-signer-designation"
+                type="text"
+                value={signerDesignation}
+                onChange={(e) => setSignerDesignation(e.target.value)}
+                placeholder="e.g. Associate Professor and Head"
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3.5 py-2.5 text-sm text-[var(--color-text-primary)] outline-none transition-all placeholder:text-[var(--color-text-muted)] hover:border-white/20 focus:border-blue-400/50 focus:ring-1 focus:ring-blue-400/30"
+              />
+            </div>
+          </div>
+
           {/* Status row */}
           {selectedProgramId && (
             <div className="mt-4 flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
@@ -293,6 +346,9 @@ export default function ScheduleExportPage() {
                 programName={selectedProgram?.name ?? ""}
                 batchSession={selectedBatch?.session}
                 exportDate={exportDate}
+                signerName={signerName || undefined}
+                signerDesignation={signerDesignation || undefined}
+                departmentName={deptForSignature}
               />
             </div>
           </div>

@@ -1,31 +1,27 @@
 import type { ExportScheduleRow } from "@/components/SchedulePrintView";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Layout constants  (A4 landscape, 10mm margins → 277 × 190 mm content area)
-// ─────────────────────────────────────────────────────────────────────────────
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
-const MAX_P1 = 5;   // max time-slot rows on page 1
-const MAX_P2 = 5;   // max time-slot rows on page 2
+const DAYS_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
+const DAYS_ABB = ["SUN", "MON", "TUE", "WED", "THU"];
 
-// Both pages use the same row height for visual consistency
-//   Page 1: 12 (doc hdr) + 8 (tbl hdr) + 5×32 + 4 (footer) = 184 ≤ 190 ✓
-//   Page 2: 8 (tbl hdr) + 5×32 + 4 (footer) = 172 ≤ 190 ✓
-const P1_ROW_H = 32;  // mm
-const P2_ROW_H = 32;  // mm  — same as P1 for consistent appearance
-const TBL_HDR_H = 8;   // mm  — day-name header row
-const CELL_PAD = 2.5; // mm  — uniform cell padding (border-box)
+interface BatchInfo { session: string; key: string; }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** "08:30" or "08:30:00" → "8:30 AM" */
 function fmt12(t: string): string {
-  const [h, m] = t.split(":").map(Number);
-  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  const [hStr, mStr] = t.slice(0, 5).split(":");
+  const h = parseInt(hStr, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 || 12;
+  return `${h12}:${mStr} ${ampm}`;
 }
 
-function getSlots(rows: ExportScheduleRow[]): { s: string; e: string }[] {
+function getTimeSlots(rows: ExportScheduleRow[]): Array<{ s: string; e: string }> {
   const seen = new Set<string>();
-  const out: { s: string; e: string }[] = [];
+  const out: Array<{ s: string; e: string }> = [];
   for (const r of rows) {
     const k = `${r.start_time}|${r.end_time}`;
     if (!seen.has(k)) { seen.add(k); out.push({ s: r.start_time, e: r.end_time }); }
@@ -33,155 +29,225 @@ function getSlots(rows: ExportScheduleRow[]): { s: string; e: string }[] {
   return out.sort((a, b) => a.s.localeCompare(b.s));
 }
 
-function findEntry(
-  rows: ExportScheduleRow[], day: string, s: string, e: string,
-): ExportScheduleRow | undefined {
-  return rows.find(
-    r => r.day.toLowerCase() === day.toLowerCase()
-      && r.start_time === s
-      && r.end_time === e,
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Cell renderers  (height: fixed mm, overflow: hidden → row height is LOCKED)
-// ─────────────────────────────────────────────────────────────────────────────
-function timeCell(s: string, e: string, rowH: number): string {
-  // Flexbox centering works inside a block div with explicit height
-  return `
-    <div style="
-      height:${rowH}mm; box-sizing:border-box;
-      padding:0 ${CELL_PAD}mm; overflow:hidden;
-      display:flex; flex-direction:column;
-      justify-content:center; align-items:center;
-      background:#ebebeb;
-    ">
-      <span style="font:700 9pt/1.3 'Courier New',monospace;color:#000;text-align:center;">
-        ${fmt12(s)}
-      </span>
-      <span style="font:400 7pt/1 Arial;color:#aaa;margin:1mm 0;text-align:center;">—</span>
-      <span style="font:700 9pt/1.3 'Courier New',monospace;color:#000;text-align:center;">
-        ${fmt12(e)}
-      </span>
-    </div>`;
-}
-
-function dataCell(entry: ExportScheduleRow | undefined, rowH: number): string {
-  if (!entry) {
-    return `<div style="height:${rowH}mm;box-sizing:border-box;background:#f7f7f7;overflow:hidden;"></div>`;
+function getBatchesForDay(rows: ExportScheduleRow[], day: string): BatchInfo[] {
+  const seen = new Set<string>();
+  const out: BatchInfo[] = [];
+  for (const r of rows) {
+    if (r.day.toLowerCase() !== day.toLowerCase()) continue;
+    // Use session as the primary label; key stays unique by session
+    const session = r.batch_session ?? r.batch_name ?? "";
+    const key = `${r.batch_name ?? ""}||${session}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push({ session, key });
+    }
   }
-  return `
-    <div style="
-      height:${rowH}mm; box-sizing:border-box;
-      padding:${CELL_PAD}mm ${CELL_PAD + 0.5}mm;
-      overflow:hidden; background:#fff;
-    ">
-      <div style="font:700 7pt/1.1 'Courier New',monospace;color:#888;margin-bottom:0.4mm;letter-spacing:.02em;">
-        ${entry.course_code}
-      </div>
-      <div style="font:800 10.5pt/1.2 Arial,sans-serif;color:#000;margin-bottom:0.5mm;">
-        ${entry.course_name}
-      </div>
-      <div style="font:400 8.5pt/1.2 Arial,sans-serif;color:#555;margin-bottom:0.4mm;">
-        ${entry.teacher_name}
-      </div>
-      <div style="font:600 7.5pt/1.1 Arial,sans-serif;color:#333;">
-        ${entry.room_number ? `Room&nbsp;${entry.room_number}` : "\u2014"}
-      </div>
-    </div>`;
+  return out.sort((a, b) => a.session.localeCompare(b.session));
+}
+
+function buildLookup(rows: ExportScheduleRow[]): Map<string, ExportScheduleRow> {
+  const map = new Map<string, ExportScheduleRow>();
+  for (const r of rows) {
+    const session = r.batch_session ?? r.batch_name ?? "";
+    const bk = `${r.batch_name ?? ""}||${session}`;
+    const k = `${r.day.toLowerCase()}||${bk}||${r.start_time}||${r.end_time}`;
+    if (!map.has(k)) map.set(k, r);
+  }
+  return map;
+}
+
+function cellText(r: ExportScheduleRow | undefined): string {
+  if (!r) return "";
+  const parts: string[] = [r.course_code];
+  if (r.teacher_short) parts.push(r.teacher_short);
+  if (r.room_number != null) parts.push(`R-${r.room_number}`);
+  return parts.join(", ");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Table builder
+// Column widths (% — adapts to any page width automatically)
+// A4 landscape @ 10mm margins: 277mm.  Day≈9mm, Session≈28mm, rest=time cols.
 // ─────────────────────────────────────────────────────────────────────────────
-function renderTable(
-  slots: { s: string; e: string }[],
-  rows: ExportScheduleRow[],
-  rowH: number,
-): string {
-  if (!slots.length) return "";
-
-  const TH = `
-    height:${TBL_HDR_H}mm; padding:0;
-    background:#111; color:#fff;
-    font:700 9.5pt/1 Arial,sans-serif;
-    text-align:center; vertical-align:middle;
-    border:1pt solid #000; letter-spacing:.06em;`;
-
-  const thead = `
-    <thead>
-      <tr>
-        <th style="${TH} width:10%;">TIME</th>
-        ${DAYS.map(d => `<th style="${TH} width:18%;">${d.toUpperCase()}</th>`).join("")}
-      </tr>
-    </thead>`;
-
-  const tbody = `
-    <tbody>
-      ${slots.map(({ s, e }) => `
-        <tr>
-          <td style="padding:0;border:.75pt solid #bbb;vertical-align:top;">
-            ${timeCell(s, e, rowH)}
-          </td>
-          ${DAYS.map(day => {
-    const entry = findEntry(rows, day, s, e);
-    return `<td style="padding:0;border:.75pt solid #ddd;vertical-align:top;">
-              ${dataCell(entry, rowH)}
-            </td>`;
-  }).join("")}
-        </tr>`).join("")}
-    </tbody>`;
-
-  return `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">${thead}${tbody}</table>`;
+function colWidths(nSlots: number) {
+  const DAY = 3.25;
+  const SESSION = 10.1;
+  const TIME = (100 - DAY - SESSION) / Math.max(nSlots, 1);
+  return { DAY, SESSION, TIME };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Main export
+// HTML generator
 // ─────────────────────────────────────────────────────────────────────────────
 export function generateSchedulePrintHTML(
   rows: ExportScheduleRow[],
   programName: string,
   batchSession?: string,
   exportDate?: string,
+  signerName?: string,
+  signerDesignation?: string,
+  departmentName?: string,
 ): string {
   const date = exportDate
     ?? new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
-  const allSlots = getSlots(rows);
-  const p1Slots = allSlots.slice(0, MAX_P1);
-  const p2Slots = allSlots.slice(MAX_P1, MAX_P1 + MAX_P2);
-  const hasExtra = allSlots.length > MAX_P1 + MAX_P2;
+  if (!rows.length) {
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"/></head>
+<body style="font-family:Arial;padding:20mm;"><p>No schedule data found.</p></body></html>`;
+  }
 
-  const footer = (extra = "") => `
+  const slots = getTimeSlots(rows);
+  const lookup = buildLookup(rows);
+  const cw = colWidths(slots.length);
+
+  // ── Colgroup ──────────────────────────────────────────────────────────────
+  const colgroup = `
+    <colgroup>
+      <col style="width:${cw.DAY}%"/>
+      <col style="width:${cw.SESSION}%"/>
+      ${slots.map(() => `<col style="width:${cw.TIME}%"/>`).join("")}
+    </colgroup>`;
+
+  // ── Header styles — ink-friendly: light gray bg, dark text, no solid black fill
+  const TH = `
+    padding:0 1mm; height:8mm;
+    background:#f0f0f0; color:#000;
+    font:700 7.5pt/1 Arial,sans-serif;
+    text-align:center; vertical-align:middle;
+    border:0.75pt solid #888;
+    letter-spacing:.04em;`;
+
+  const thead = `
+    <thead>
+      <tr>
+        <th style="${TH}">DAY</th>
+        <th style="${TH}text-align:left;padding-left:2mm;">SESSION</th>
+        ${slots.map(s => `
+          <th style="${TH}">
+            ${fmt12(s.s)}<br/>${fmt12(s.e)}
+          </th>`).join("")}
+      </tr>
+    </thead>`;
+
+  // ── Day separator tbody ───────────────────────────────────────────────────
+  const SEP = `
+    <tbody>
+      <tr><td colspan="${2 + slots.length}"
+        style="height:2mm;padding:0;border:none;background:#ddd;"></td></tr>
+    </tbody>`;
+
+  // ── Data rows ─────────────────────────────────────────────────────────────
+  const tbodies: string[] = [];
+
+  for (let di = 0; di < DAYS_FULL.length; di++) {
+    const day = DAYS_FULL[di];
+    const dayAbb = DAYS_ABB[di];
+    const batches = getBatchesForDay(rows, day);
+    if (!batches.length) continue;
+
+    let tbody = `<tbody style="page-break-inside:avoid;">`;
+
+    for (let bi = 0; bi < batches.length; bi++) {
+      const batch = batches[bi];
+      const rowBg = bi % 2 === 0 ? "#ffffff" : "#f7f7f7";
+      const emptyBg = bi % 2 === 0 ? "#f2f2f2" : "#ebebeb";
+
+      tbody += `<tr>`;
+
+      // Day cell — light gray, no black fill
+      if (bi === 0) {
+        tbody += `
+          <td rowspan="${batches.length}" style="
+            padding:0; text-align:center; vertical-align:middle;
+            background:#e8e8e8; color:#000;
+            font:800 8pt/1 Arial,sans-serif;
+            border:0.75pt solid #888;
+            letter-spacing:.06em;
+          ">${dayAbb}</td>`;
+      }
+
+      // Session label
+      tbody += `
+        <td style="padding:0;border:0.5pt solid #bbb;background:${rowBg};">
+          <div style="
+            height:6mm;box-sizing:border-box;padding:0.8mm 1.5mm;
+            overflow:hidden;font:600 6.5pt/1.1 Arial,sans-serif;color:#222;
+          ">${batch.session}</div>
+        </td>`;
+
+      // Time slot cells
+      for (const slot of slots) {
+        const k = `${day.toLowerCase()}||${batch.key}||${slot.s}||${slot.e}`;
+        const entry = lookup.get(k);
+        const text = cellText(entry);
+        const bg = entry ? rowBg : emptyBg;
+
+        tbody += `
+          <td style="padding:0;border:0.5pt solid #ccc;background:${bg};">
+            <div style="
+              height:6mm;box-sizing:border-box;padding:0.8mm 1mm;
+              overflow:hidden;font:400 6.5pt/1.1 'Courier New',monospace;
+              color:${text ? "#000" : "transparent"};
+            ">${text || "."}</div>
+          </td>`;
+      }
+
+      tbody += `</tr>`;
+    }
+
+    tbody += `</tbody>`;
+    tbodies.push(tbody);
+  }
+
+  const table = `
+    <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+      ${colgroup}
+      ${thead}
+      ${tbodies.join(SEP)}
+    </table>`;
+
+  // ── Signature block ───────────────────────────────────────────────────────
+  const hasSignature = signerName || signerDesignation || departmentName;
+  const signatureBlock = hasSignature ? `
     <div style="
-      margin-top:2.5mm; border-top:.5pt solid #ccc; padding-top:1.5mm;
-      display:flex; justify-content:space-between;
-      font:400 6.5pt Arial; color:#ccc;
+      margin-top:8mm;
+      display:flex;
+      justify-content:flex-end;
     ">
-      <span>Sync &middot; Schedule Management System</span>
-      <span>${date}${extra}</span>
+      <div style="min-width:70mm;text-align:left;">
+        <div style="border-top:1pt solid #000;margin-bottom:2mm;"></div>
+        ${signerName
+      ? `<div style="font:700 9pt/1.5 Arial,sans-serif;color:#000;">${signerName}</div>`
+      : ""}
+        ${signerDesignation
+      ? `<div style="font:400 8pt/1.4 Arial,sans-serif;color:#333;">${signerDesignation}</div>`
+      : ""}
+        ${departmentName
+      ? `<div style="font:400 8pt/1.4 Arial,sans-serif;color:#333;">${departmentName}</div>`
+      : ""}
+      </div>
+    </div>` : "";
+
+  // ── Footer ────────────────────────────────────────────────────────────────
+  const footer = `
+    <div style="
+      margin-top:3mm;border-top:.5pt solid #ccc;padding-top:1.5mm;
+      display:flex;justify-content:space-between;font:400 6pt Arial;color:#bbb;
+    ">
+      <span>Loop &middot; Schedule Management System</span>
+      <span>${date}</span>
     </div>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>${programName} \u2014 Schedule</title>
+  <title>${programName} \u2014 Class Schedule</title>
   <style>
-    @page {
-      size: A4 landscape;
-      margin: 10mm;
-    }
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    @page { size: A4 landscape; margin: 10mm; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
-      /* NO fixed width \u2014 let @page determine the printable width */
       font-family: Arial, 'Helvetica Neue', sans-serif;
-      background: #fff;
-      color: #000;
+      background: #fff; color: #000;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -189,44 +255,26 @@ export function generateSchedulePrintHTML(
 </head>
 <body>
 
-  <!-- ===== PAGE 1 ===== -->
-
-  <!-- Document header (12 mm) -->
+  <!-- Document header -->
   <div style="
     display:flex; justify-content:space-between; align-items:flex-end;
-    border-bottom:2pt solid #000;
-    padding-bottom:2.5mm; margin-bottom:3mm;
+    border-bottom:1.5pt solid #000; padding-bottom:2.5mm; margin-bottom:3mm;
   ">
     <div>
-      <div style="font:900 13pt/1.1 Arial,sans-serif;letter-spacing:-.02em;">
-        ${programName}
-      </div>
+      <div style="font:900 13pt/1.1 Arial,sans-serif;letter-spacing:-.02em;">${programName}</div>
       ${batchSession
-      ? `<div style="font:600 8pt/1.4 Arial;color:#555;margin-top:1.5mm;">Session: ${batchSession}</div>`
+      ? `<div style="font:400 8pt Arial;color:#555;margin-top:1mm;">Session: ${batchSession}</div>`
       : ""}
     </div>
-    <div style="text-align:right;font:400 8pt/1.6 Arial;color:#666;">
-      Sync &middot; Class Schedule<br>
-      <strong style="color:#000;font-size:8.5pt;">${date}</strong>
+    <div style="text-align:right;font:400 7.5pt Arial;color:#777;line-height:1.6;">
+      Loop &middot; Class Routine<br/>
+      <strong style="color:#000;font-size:8pt;">${date}</strong>
     </div>
   </div>
 
-  <!-- Grid (page 1) -->
-  ${renderTable(p1Slots, rows, P1_ROW_H)}
-
-  ${p2Slots.length === 0 ? footer() : ""}
-
-  <!-- ===== PAGE 2 (if needed) ===== -->
-  ${p2Slots.length > 0 ? `
-  <div style="page-break-before:always;">
-    ${renderTable(p2Slots, rows, P2_ROW_H)}
-    ${hasExtra
-        ? `<div style="margin-top:2mm;font:400 7pt Arial;color:#c00;">
-           \u26a0 Some time slots exceeded the 2-page limit and are not shown.
-         </div>`
-        : ""}
-    ${footer(" \u2014 Page 2")}
-  </div>` : ""}
+  ${table}
+  ${signatureBlock}
+  ${footer}
 
 </body>
 </html>`;

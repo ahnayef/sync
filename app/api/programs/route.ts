@@ -9,7 +9,8 @@ export async function GET(req: NextRequest) {
 
     let query = `
       SELECT p.id, p.department_id, p.name, p.sheet_link, p.sync_enabled, p.last_sync_at,
-             d.name as department_name
+             d.name as department_name,
+             d.full_name as department_full_name
       FROM programs p
       JOIN departments d ON p.department_id = d.id
     `;
