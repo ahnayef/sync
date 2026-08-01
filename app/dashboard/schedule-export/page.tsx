@@ -123,15 +123,19 @@ export default function ScheduleExportPage() {
       deptForSignature,
     );
 
-    // 1. Create a dedicated container for printing
+    // 1. Clean up any previous print containers so we don't stack them
+    document.getElementById("native-print-container")?.remove();
+    document.getElementById("native-print-style")?.remove();
+
+    // 2. Create a dedicated container for printing
     const printContainer = document.createElement("div");
     printContainer.id = "native-print-container";
     printContainer.innerHTML = html;
     
-    // 2. Create a global print stylesheet to hide the ENTIRE web app 
+    // 3. Create a global print stylesheet to hide the ENTIRE web app 
     //    and show ONLY the print container when printing. 
-    //    This completely fixes the "prints entire webpage on mobile" bug.
     const printStyle = document.createElement("style");
+    printStyle.id = "native-print-style";
     printStyle.innerHTML = `
       @media print {
         body > *:not(#native-print-container) { display: none !important; }
@@ -139,6 +143,7 @@ export default function ScheduleExportPage() {
         @page { size: A4 landscape; margin: 6mm; }
       }
       @media screen {
+        /* Hides the container from the user perfectly when not printing */
         #native-print-container { display: none !important; }
       }
     `;
@@ -146,19 +151,13 @@ export default function ScheduleExportPage() {
     document.head.appendChild(printStyle);
     document.body.appendChild(printContainer);
 
-    // 3. Trigger print dialog after a brief timeout to allow DOM to paint
+    // 4. Trigger print dialog after a brief timeout to allow DOM to paint.
+    //    We intentionally DO NOT clean this up using window.afterprint! 
+    //    Mobile browsers fire afterprint prematurely when users change settings 
+    //    (like paper size), causing the schedule to vanish during settings tweaks.
+    //    Because it's hidden by @media screen, leaving it in the DOM is 100% safe.
     setTimeout(() => {
       window.print();
-      
-      // 4. Cleanup safely for mobile (where window.print is non-blocking)
-      const cleanup = () => {
-        if (document.body.contains(printContainer)) document.body.removeChild(printContainer);
-        if (document.head.contains(printStyle)) document.head.removeChild(printStyle);
-        window.removeEventListener("afterprint", cleanup);
-      };
-      
-      // Listen for the native print dialog closing
-      window.addEventListener("afterprint", cleanup);
     }, 250);
   };
 
