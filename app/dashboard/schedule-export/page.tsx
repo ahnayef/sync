@@ -150,12 +150,16 @@ export default function ScheduleExportPage() {
     setTimeout(() => {
       window.print();
       
-      // 4. Cleanup after the print dialog resolves
-      setTimeout(() => {
+      // 4. Cleanup safely for mobile (where window.print is non-blocking)
+      const cleanup = () => {
         if (document.body.contains(printContainer)) document.body.removeChild(printContainer);
         if (document.head.contains(printStyle)) document.head.removeChild(printStyle);
-      }, 500);
-    }, 100);
+        window.removeEventListener("afterprint", cleanup);
+      };
+      
+      // Listen for the native print dialog closing
+      window.addEventListener("afterprint", cleanup);
+    }, 250);
   };
 
   return (
