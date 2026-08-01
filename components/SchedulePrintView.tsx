@@ -18,13 +18,13 @@ export interface ExportScheduleRow {
 
 // ─────────────────────────────────────────────────────────────────────────────
 const DAYS_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
-const DAYS_ABB  = ["SUN",    "MON",    "TUE",     "WED",       "THU"    ];
+const DAYS_ABB = ["SUN", "MON", "TUE", "WED", "THU"];
 
-const ROW_H_PX  = 32;
-const HDR_H_PX  = 40;
-const CELL_PX   = 10;
+const ROW_H_PX = 38;
+const HDR_H_PX = 36;
+const CELL_PX = 8;
 
-interface BatchInfo { session: string; key: string; }
+interface BatchInfo { name: string; session: string; key: string; }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -32,9 +32,9 @@ interface BatchInfo { session: string; key: string; }
 /** "08:30" → "8:30 AM" */
 function fmt12(t: string): string {
   const [hStr, mStr] = t.slice(0, 5).split(":");
-  const h    = parseInt(hStr, 10);
+  const h = parseInt(hStr, 10);
   const ampm = h >= 12 ? "PM" : "AM";
-  const h12  = h % 12 || 12;
+  const h12 = h % 12 || 12;
   return `${h12}:${mStr} ${ampm}`;
 }
 
@@ -48,38 +48,94 @@ function getTimeSlots(rows: ExportScheduleRow[]): Array<{ s: string; e: string }
   return out.sort((a, b) => a.s.localeCompare(b.s));
 }
 
+/**
+ * Parse session string like "Fall 26", "Fall-26", "Spring 2025" → [fullYear, termPriority]
+ */
+function parseBatchSortKey(session: string): [number, number] {
+  const termOrder: Record<string, number> = { fall: 1, spring: 2, summer: 3, winter: 4 };
+  const m = session.trim().match(/^(\w+)[\s-](\d{2,4})/i);
+  if (m) {
+    const term = m[1].toLowerCase();
+    let year = parseInt(m[2], 10);
+    if (year < 100) year += 2000;
+    return [year, termOrder[term] ?? 99];
+  }
+  return [0, 99];
+}
+
+/** "Fall 26" → "Fall-26" */
+function formatSession(s: string): string {
+  return s.trim().replace(/^(\w+)\s+(\d+)$/, '$1-$2');
+}
+
 function getBatchesForDay(rows: ExportScheduleRow[], day: string): BatchInfo[] {
   const seen = new Set<string>();
   const out: BatchInfo[] = [];
   for (const r of rows) {
     if (r.day.toLowerCase() !== day.toLowerCase()) continue;
-    const session = r.batch_session ?? r.batch_name ?? "";
-    const key = `${r.batch_name ?? ""}||${session}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      out.push({ session, key });
-    }
+    const name = r.batch_name ?? "";
+    const session = r.batch_session ?? name;
+    const key = `${name}||${session}`;
+    if (!seen.has(key)) { seen.add(key); out.push({ name, session, key }); }
   }
-  return out.sort((a, b) => a.session.localeCompare(b.session));
+  return out.sort((a, b) => {
+    const [ya, ta] = parseBatchSortKey(a.session);
+    const [yb, tb] = parseBatchSortKey(b.session);
+    if (yb !== ya) return yb - ya;
+    return ta - tb;
+  });
 }
 
 function buildLookup(rows: ExportScheduleRow[]): Map<string, ExportScheduleRow> {
   const map = new Map<string, ExportScheduleRow>();
   for (const r of rows) {
-    const session = r.batch_session ?? r.batch_name ?? "";
-    const bk = `${r.batch_name ?? ""}||${session}`;
-    const k  = `${r.day.toLowerCase()}||${bk}||${r.start_time}||${r.end_time}`;
+    const name = r.batch_name ?? "";
+    const session = r.batch_session ?? name;
+    const bk = `${name}||${session}`;
+    const k = `${r.day.toLowerCase()}||${bk}||${r.start_time}||${r.end_time}`;
     if (!map.has(k)) map.set(k, r);
   }
   return map;
 }
 
-function cellText(r: ExportScheduleRow | undefined): string {
-  if (!r) return "";
-  const parts: string[] = [r.course_code];
-  if (r.teacher_short) parts.push(r.teacher_short);
-  if (r.room_number != null) parts.push(`R-${r.room_number}`);
-  return parts.join(", ");
+function buildBatchLabels(rows: ExportScheduleRow[]): Map<string, string> {
+  const seen = new Set<string>();
+  const all: BatchInfo[] = [];
+  for (const r of rows) {
+    const name = r.batch_name ?? "";
+    const session = r.batch_session ?? name;
+    const key = `${name}||${session}`;
+    if (!seen.has(key)) { seen.add(key); all.push({ name, session, key }); }
+  }
+  all.sort((a, b) => {
+    const [ya, ta] = parseBatchSortKey(a.session);
+    const [yb, tb] = parseBatchSortKey(b.session);
+    if (yb !== ya) return yb - ya;
+    return ta - tb;
+  });
+  const yearOrder: number[] = [];
+  const yearMap = new Map<number, BatchInfo[]>();
+  for (const b of all) {
+    const [yr] = parseBatchSortKey(b.session);
+    if (!yearMap.has(yr)) { yearMap.set(yr, []); yearOrder.push(yr); }
+    yearMap.get(yr)!.push(b);
+  }
+  const labelMap = new Map<string, string>();
+  yearOrder.forEach((yr, yi) => {
+    yearMap.get(yr)!.forEach((b, si) => {
+      labelMap.set(b.key, `${formatSession(b.session)} (${yi + 1}/${si + 1})`);
+    });
+  });
+  return labelMap;
+}
+
+/** Returns [line1, line2] for a cell: course code / teacher+room */
+function cellLines(r: ExportScheduleRow | undefined): [string, string] {
+  if (!r) return ["", ""];
+  const line2Parts: string[] = [];
+  if (r.teacher_short) line2Parts.push(r.teacher_short);
+  if (r.room_number != null) line2Parts.push(`R-${r.room_number}`);
+  return [r.course_code, line2Parts.join(", ")];
 }
 
 
@@ -120,18 +176,20 @@ function DaySection({
   batches,
   slots,
   lookup,
+  batchLabels,
 }: {
   day: string;
   dayAbb: string;
   batches: BatchInfo[];
   slots: Array<{ s: string; e: string }>;
   lookup: Map<string, ExportScheduleRow>;
+  batchLabels: Map<string, string>;
 }) {
   return (
     <>
       {batches.map((batch, bi) => {
         const isFirst = bi === 0;
-        const rowBg   = bi % 2 === 0 ? "#ffffff" : "#f5f5f5";
+        const rowBg = bi % 2 === 0 ? "#ffffff" : "#f5f5f5";
         const emptyBg = bi % 2 === 0 ? "#f2f2f2" : "#ebebeb";
 
         return (
@@ -157,29 +215,32 @@ function DaySection({
               </td>
             )}
 
-            {/* Batch session label */}
+            {/* Session label — "Fall-26 (1/1)" */}
             <td style={{ padding: 0, border: "1px solid #bbb", background: rowBg }}>
               <div style={{
                 height: ROW_H_PX,
                 boxSizing: "border-box",
                 padding: `${CELL_PX / 2}px ${CELL_PX}px`,
                 overflow: "hidden",
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: 600,
                 color: "#333",
                 lineHeight: 1.3,
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
               }}>
-                {batch.session}
+                {batchLabels.get(batch.key) ?? formatSession(batch.session)}
               </div>
             </td>
 
             {/* Time slot cells */}
             {slots.map(slot => {
-              const k     = `${day.toLowerCase()}||${batch.key}||${slot.s}||${slot.e}`;
+              const k = `${day.toLowerCase()}||${batch.key}||${slot.s}||${slot.e}`;
               const entry = lookup.get(k);
-              const text  = cellText(entry);
+              const [ln1, ln2] = cellLines(entry);
 
               return (
                 <td key={`${slot.s}-${slot.e}`} style={{
@@ -193,13 +254,17 @@ function DaySection({
                     padding: `${CELL_PX / 2}px ${CELL_PX / 2 + 2}px`,
                     overflow: "hidden",
                     fontFamily: "'Courier New', monospace",
-                    fontSize: 9.5,
-                    color: text ? "#000" : "transparent",
-                    lineHeight: 1.3,
+                    fontSize: 9,
+                    color: ln1 ? "#000" : "transparent",
+                    lineHeight: 1.35,
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
                   }}>
-                    {text || "."}
+                    <span>{ln1 || "."}</span>
+                    {ln2 && <span>{ln2}</span>}
                   </div>
                 </td>
               );
@@ -212,7 +277,7 @@ function DaySection({
       <tr>
         <td
           colSpan={2 + slots.length}
-          style={{ height: 6, padding: 0, background: "#d8d8d8", border: "none" }}
+          style={{ height: 6, padding: 0, background: "#fff", border: "none" }}
         />
       </tr>
     </>
@@ -233,14 +298,15 @@ interface Props {
 }
 
 export function SchedulePrintView({ rows, programName, batchSession, exportDate, signerName, signerDesignation, departmentName }: Props) {
-  const slots   = getTimeSlots(rows);
-  const lookup  = buildLookup(rows);
-  const nSlots  = slots.length;
+  const slots = getTimeSlots(rows);
+  const lookup = buildLookup(rows);
+  const batchLabels = buildBatchLabels(rows);
+  const nSlots = slots.length;
 
   // Column widths (matching print percentages)
-  const DAY_W   = "3.25%";
-  const BATCH_W = "10.1%";
-  const TIME_W  = `${(100 - 3.25 - 10.1) / Math.max(nSlots, 1)}%`;
+  const DAY_W = "3.25%";
+  const BATCH_W = "7.5%";
+  const TIME_W = `${(100 - 3.25 - 7.5) / Math.max(nSlots, 1)}%`;
 
   return (
     <div style={{ fontFamily: "Arial, 'Helvetica Neue', sans-serif", color: "#000", background: "#fff" }}>
@@ -252,7 +318,7 @@ export function SchedulePrintView({ rows, programName, batchSession, exportDate,
           {batchSession && <div style={{ fontSize: 11, color: "#555", marginTop: 3 }}>Session: {batchSession}</div>}
         </div>
         <div style={{ textAlign: "right", fontSize: 10, color: "#777", lineHeight: 1.7 }}>
-          Loop · Class Schedule<br />
+          Sync · Class Schedule<br />
           <strong style={{ color: "#000", fontSize: 11 }}>{exportDate}</strong>
         </div>
       </div>
@@ -281,6 +347,7 @@ export function SchedulePrintView({ rows, programName, batchSession, exportDate,
                 batches={batches}
                 slots={slots}
                 lookup={lookup}
+                batchLabels={batchLabels}
               />
             );
           })}
@@ -307,7 +374,7 @@ export function SchedulePrintView({ rows, programName, batchSession, exportDate,
 
       {/* Footer */}
       <div style={{ marginTop: 10, borderTop: "1px solid #e0e0e0", paddingTop: 6, display: "flex", justifyContent: "space-between", fontSize: 10, color: "#ccc" }}>
-        <span>Generated by Loop · Schedule Management System</span>
+        <span>Generated by Sync · Schedule Management System</span>
         <span>{exportDate}</span>
       </div>
     </div>

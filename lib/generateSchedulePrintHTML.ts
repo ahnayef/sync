@@ -4,7 +4,7 @@ import type { ExportScheduleRow } from "@/components/SchedulePrintView";
 const DAYS_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 const DAYS_ABB = ["SUN", "MON", "TUE", "WED", "THU"];
 
-interface BatchInfo { session: string; key: string; }
+interface BatchInfo { name: string; session: string; key: string; }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -29,51 +29,124 @@ function getTimeSlots(rows: ExportScheduleRow[]): Array<{ s: string; e: string }
   return out.sort((a, b) => a.s.localeCompare(b.s));
 }
 
+/**
+ * Parse session string like "Fall 26", "Fall-26", "Spring 2025" → [fullYear, termPriority]
+ * Term priority: Fall=1, Spring=2, Summer=3, Winter=4
+ */
+function parseBatchSortKey(session: string): [number, number] {
+  const termOrder: Record<string, number> = { fall: 1, spring: 2, summer: 3, winter: 4 };
+  const m = session.trim().match(/^(\w+)[\s-](\d{2,4})/i);
+  if (m) {
+    const term = m[1].toLowerCase();
+    let year = parseInt(m[2], 10);
+    if (year < 100) year += 2000; // "26" → 2026
+    return [year, termOrder[term] ?? 99];
+  }
+  return [0, 99];
+}
+
+/** "Fall 26" → "Fall-26",  "Spring 2025" → "Spring-2025" */
+function formatSession(s: string): string {
+  return s.trim().replace(/^(\w+)\s+(\d+)$/, '$1-$2');
+}
+
 function getBatchesForDay(rows: ExportScheduleRow[], day: string): BatchInfo[] {
   const seen = new Set<string>();
   const out: BatchInfo[] = [];
   for (const r of rows) {
     if (r.day.toLowerCase() !== day.toLowerCase()) continue;
-    // Use session as the primary label; key stays unique by session
-    const session = r.batch_session ?? r.batch_name ?? "";
-    const key = `${r.batch_name ?? ""}||${session}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      out.push({ session, key });
-    }
+    const name = r.batch_name ?? "";
+    const session = r.batch_session ?? name;
+    const key = `${name}||${session}`;
+    if (!seen.has(key)) { seen.add(key); out.push({ name, session, key }); }
   }
-  return out.sort((a, b) => a.session.localeCompare(b.session));
+  // Sort by session's year DESC, then term order
+  return out.sort((a, b) => {
+    const [ya, ta] = parseBatchSortKey(a.session);
+    const [yb, tb] = parseBatchSortKey(b.session);
+    if (yb !== ya) return yb - ya;
+    return ta - tb;
+  });
 }
 
 function buildLookup(rows: ExportScheduleRow[]): Map<string, ExportScheduleRow> {
   const map = new Map<string, ExportScheduleRow>();
   for (const r of rows) {
-    const session = r.batch_session ?? r.batch_name ?? "";
-    const bk = `${r.batch_name ?? ""}||${session}`;
+    const name = r.batch_name ?? "";
+    const session = r.batch_session ?? name;
+    const bk = `${name}||${session}`;
     const k = `${r.day.toLowerCase()}||${bk}||${r.start_time}||${r.end_time}`;
     if (!map.has(k)) map.set(k, r);
   }
   return map;
 }
 
-function cellText(r: ExportScheduleRow | undefined): string {
+/**
+ * Builds a label map for every batch key → "Fall-26 (1/1)".
+ * Collects all batches, sorts globally by year DESC + term, groups by calendar year,
+ * then assigns (yearNum/semNum) automatically.
+ */
+function buildBatchLabels(rows: ExportScheduleRow[]): Map<string, string> {
+  const seen = new Set<string>();
+  const all: BatchInfo[] = [];
+  for (const r of rows) {
+    const name = r.batch_name ?? "";
+    const session = r.batch_session ?? name;
+    const key = `${name}||${session}`;
+    if (!seen.has(key)) { seen.add(key); all.push({ name, session, key }); }
+  }
+
+  all.sort((a, b) => {
+    const [ya, ta] = parseBatchSortKey(a.session);
+    const [yb, tb] = parseBatchSortKey(b.session);
+    if (yb !== ya) return yb - ya;
+    return ta - tb;
+  });
+
+  // Group by calendar year (derived from session)
+  const yearOrder: number[] = [];
+  const yearMap = new Map<number, BatchInfo[]>();
+  for (const b of all) {
+    const [yr] = parseBatchSortKey(b.session);
+    if (!yearMap.has(yr)) { yearMap.set(yr, []); yearOrder.push(yr); }
+    yearMap.get(yr)!.push(b);
+  }
+
+  const labelMap = new Map<string, string>();
+  yearOrder.forEach((yr, yi) => {
+    const yearNum = yi + 1;
+    yearMap.get(yr)!.forEach((b, si) => {
+      labelMap.set(b.key, `${formatSession(b.session)} (${yearNum}/${si + 1})`);
+    });
+  });
+  return labelMap;
+}
+
+/**
+ * Returns 2-line HTML for a cell:
+ *   Line 1: course code
+ *   Line 2: teacher short, R-room
+ */
+function cellHTML(r: ExportScheduleRow | undefined): string {
   if (!r) return "";
-  const parts: string[] = [r.course_code];
-  if (r.teacher_short) parts.push(r.teacher_short);
-  if (r.room_number != null) parts.push(`R-${r.room_number}`);
-  return parts.join(", ");
+  const line1 = r.course_code;
+  const line2Parts: string[] = [];
+  if (r.teacher_short) line2Parts.push(r.teacher_short);
+  if (r.room_number != null) line2Parts.push(`R-${r.room_number}`);
+  const line2 = line2Parts.join(", ");
+  return line2 ? `${line1}<br/>${line2}` : line1;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Column widths (% — adapts to any page width automatically)
-// A4 landscape @ 10mm margins: 277mm.  Day≈9mm, Session≈28mm, rest=time cols.
+// Column widths (%)
 // ─────────────────────────────────────────────────────────────────────────────
 function colWidths(nSlots: number) {
   const DAY = 3.25;
-  const SESSION = 10.1;
+  const SESSION = 7.5;
   const TIME = (100 - DAY - SESSION) / Math.max(nSlots, 1);
   return { DAY, SESSION, TIME };
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HTML generator
@@ -98,6 +171,7 @@ export function generateSchedulePrintHTML(
   const slots = getTimeSlots(rows);
   const lookup = buildLookup(rows);
   const cw = colWidths(slots.length);
+  const batchLabels = buildBatchLabels(rows); // "Fall-26 (1/1)" labels for every batch
 
   // ── Colgroup ──────────────────────────────────────────────────────────────
   const colgroup = `
@@ -109,12 +183,12 @@ export function generateSchedulePrintHTML(
 
   // ── Header styles — ink-friendly: light gray bg, dark text, no solid black fill
   const TH = `
-    padding:0 1mm; height:8mm;
+    padding:0 0.5mm; height:7mm;
     background:#f0f0f0; color:#000;
-    font:700 7.5pt/1 Arial,sans-serif;
+    font:700 7pt/1 Arial,sans-serif;
     text-align:center; vertical-align:middle;
     border:0.75pt solid #888;
-    letter-spacing:.04em;`;
+    letter-spacing:.03em;`;
 
   const thead = `
     <thead>
@@ -132,7 +206,7 @@ export function generateSchedulePrintHTML(
   const SEP = `
     <tbody>
       <tr><td colspan="${2 + slots.length}"
-        style="height:2mm;padding:0;border:none;background:#ddd;"></td></tr>
+        style="height:5mm;padding:0;border:none;background:#fff;"></td></tr>
     </tbody>`;
 
   // ── Data rows ─────────────────────────────────────────────────────────────
@@ -165,29 +239,32 @@ export function generateSchedulePrintHTML(
           ">${dayAbb}</td>`;
       }
 
-      // Session label
+      // Session label — formatted "Fall-26 (1/1)"
+      const label = batchLabels.get(batch.key) ?? formatSession(batch.session);
       tbody += `
         <td style="padding:0;border:0.5pt solid #bbb;background:${rowBg};">
           <div style="
-            height:6mm;box-sizing:border-box;padding:0.8mm 1.5mm;
-            overflow:hidden;font:600 6.5pt/1.1 Arial,sans-serif;color:#222;
-          ">${batch.session}</div>
+            height:6.5mm;box-sizing:border-box;padding:0.5mm 0.8mm;
+            overflow:hidden;font:600 6.5pt/1.2 Arial,sans-serif;color:#222;
+            display:flex;align-items:center;justify-content:center;text-align:center;
+          ">${label}</div>
         </td>`;
 
       // Time slot cells
       for (const slot of slots) {
         const k = `${day.toLowerCase()}||${batch.key}||${slot.s}||${slot.e}`;
         const entry = lookup.get(k);
-        const text = cellText(entry);
+        const html = cellHTML(entry);
         const bg = entry ? rowBg : emptyBg;
 
         tbody += `
           <td style="padding:0;border:0.5pt solid #ccc;background:${bg};">
             <div style="
-              height:6mm;box-sizing:border-box;padding:0.8mm 1mm;
-              overflow:hidden;font:400 6.5pt/1.1 'Courier New',monospace;
-              color:${text ? "#000" : "transparent"};
-            ">${text || "."}</div>
+              height:6.5mm;box-sizing:border-box;padding:0.5mm 0.5mm;
+              overflow:hidden;font:400 6.5pt/1.3 'Courier New',monospace;
+              color:${html ? "#000" : "transparent"};
+              text-align:center;
+            ">${html || "."}</div>
           </td>`;
       }
 
@@ -209,7 +286,7 @@ export function generateSchedulePrintHTML(
   const hasSignature = signerName || signerDesignation || departmentName;
   const signatureBlock = hasSignature ? `
     <div style="
-      margin-top:8mm;
+      margin-top:15mm;
       display:flex;
       justify-content:flex-end;
     ">
@@ -233,7 +310,7 @@ export function generateSchedulePrintHTML(
       margin-top:3mm;border-top:.5pt solid #ccc;padding-top:1.5mm;
       display:flex;justify-content:space-between;font:400 6pt Arial;color:#bbb;
     ">
-      <span>Loop &middot; Schedule Management System</span>
+      <span>Sync &middot; Schedule Management System</span>
       <span>${date}</span>
     </div>`;
 
@@ -243,7 +320,7 @@ export function generateSchedulePrintHTML(
   <meta charset="UTF-8"/>
   <title>${programName} \u2014 Class Schedule</title>
   <style>
-    @page { size: A4 landscape; margin: 10mm; }
+    @page { size: A4 landscape; margin: 6mm; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       font-family: Arial, 'Helvetica Neue', sans-serif;
@@ -257,18 +334,18 @@ export function generateSchedulePrintHTML(
 
   <!-- Document header -->
   <div style="
-    display:flex; justify-content:space-between; align-items:flex-end;
-    border-bottom:1.5pt solid #000; padding-bottom:2.5mm; margin-bottom:3mm;
+    display:flex; justify-content:space-between; align-items:center;
+    border-bottom:1pt solid #000; padding-bottom:1.5mm; margin-bottom:2mm;
   ">
     <div>
-      <div style="font:900 13pt/1.1 Arial,sans-serif;letter-spacing:-.02em;">${programName}</div>
+      <div style="font:900 11pt/1.1 Arial,sans-serif;letter-spacing:-.02em;">${programName}</div>
       ${batchSession
-      ? `<div style="font:400 8pt Arial;color:#555;margin-top:1mm;">Session: ${batchSession}</div>`
+      ? `<div style="font:400 7pt Arial;color:#555;margin-top:0.5mm;">Session: ${batchSession}</div>`
       : ""}
     </div>
-    <div style="text-align:right;font:400 7.5pt Arial;color:#777;line-height:1.6;">
-      Loop &middot; Class Routine<br/>
-      <strong style="color:#000;font-size:8pt;">${date}</strong>
+    <div style="text-align:right;font:400 6.5pt Arial;color:#777;line-height:1.5;">
+      Sync &middot; Class Routine &middot;
+      <strong style="color:#000;">${date}</strong>
     </div>
   </div>
 
