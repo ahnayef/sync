@@ -123,27 +123,39 @@ export default function ScheduleExportPage() {
       deptForSignature,
     );
 
-    // Create an invisible iframe — no new tab, print dialog appears in place
-    const iframe = document.createElement("iframe");
-    iframe.style.cssText =
-      "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;";
-    document.body.appendChild(iframe);
+    // 1. Create a dedicated container for printing
+    const printContainer = document.createElement("div");
+    printContainer.id = "native-print-container";
+    printContainer.innerHTML = html;
+    
+    // 2. Create a global print stylesheet to hide the ENTIRE web app 
+    //    and show ONLY the print container when printing. 
+    //    This completely fixes the "prints entire webpage on mobile" bug.
+    const printStyle = document.createElement("style");
+    printStyle.innerHTML = `
+      @media print {
+        body > *:not(#native-print-container) { display: none !important; }
+        #native-print-container { display: block !important; width: 100%; margin: 0; padding: 0; }
+        @page { size: A4 landscape; margin: 6mm; }
+      }
+      @media screen {
+        #native-print-container { display: none !important; }
+      }
+    `;
 
-    const doc = iframe.contentDocument ?? iframe.contentWindow?.document;
-    if (!doc) { document.body.removeChild(iframe); return; }
+    document.head.appendChild(printStyle);
+    document.body.appendChild(printContainer);
 
-    doc.open();
-    doc.write(html);
-    doc.close();
-
-    iframe.onload = () => {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-      // Remove iframe after the print dialog has had time to open
+    // 3. Trigger print dialog after a brief timeout to allow DOM to paint
+    setTimeout(() => {
+      window.print();
+      
+      // 4. Cleanup after the print dialog resolves
       setTimeout(() => {
-        if (document.body.contains(iframe)) document.body.removeChild(iframe);
-      }, 2000);
-    };
+        if (document.body.contains(printContainer)) document.body.removeChild(printContainer);
+        if (document.head.contains(printStyle)) document.head.removeChild(printStyle);
+      }, 500);
+    }, 100);
   };
 
   return (

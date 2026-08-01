@@ -20,8 +20,8 @@ export interface ExportScheduleRow {
 const DAYS_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 const DAYS_ABB = ["SUN", "MON", "TUE", "WED", "THU"];
 
-const ROW_H_PX = 38;
-const HDR_H_PX = 36;
+const ROW_H_PX = 32;
+const HDR_H_PX = 30;
 const CELL_PX = 8;
 
 interface BatchInfo { name: string; session: string; key: string; }
@@ -149,8 +149,8 @@ function cellLines(r: ExportScheduleRow | undefined): [string, string] {
   if (!r) return ["", ""];
   const line2Parts: string[] = [];
   if (r.teacher_short) line2Parts.push(r.teacher_short);
-  if (r.room_number != null) line2Parts.push(`R-${r.room_number}`);
-  return [r.course_code, line2Parts.join(", ")];
+  const line2 = line2Parts.join(", ");
+  return [r.course_code, line2];
 }
 
 
@@ -159,8 +159,7 @@ function cellLines(r: ExportScheduleRow | undefined): [string, string] {
 // ─────────────────────────────────────────────────────────────────────────────
 function TimeHeader({ slots }: { slots: Array<{ s: string; e: string }> }) {
   const thBase: React.CSSProperties = {
-    height: HDR_H_PX,
-    padding: "0 6px",
+    padding: "4px 2px",
     background: "#f0f0f0",
     color: "#000",
     fontSize: 10,
@@ -178,7 +177,7 @@ function TimeHeader({ slots }: { slots: Array<{ s: string; e: string }> }) {
       {slots.map(s => (
         <th key={`${s.s}-${s.e}`} style={thBase}>
           <div>{fmt12(s.s)}</div>
-          <div>{fmt12(s.e)}</div>
+          <div style={{ marginTop: 2 }}>{fmt12(s.e)}</div>
         </th>
       ))}
     </tr>
@@ -231,21 +230,13 @@ function DaySection({
             )}
 
             {/* Session label — "Fall-26 (1/1)" */}
-            <td style={{ padding: 0, border: "1px solid #bbb", background: rowBg }}>
+            <td style={{ padding: 2, border: "1px solid #bbb", background: rowBg, textAlign: "center", verticalAlign: "middle", height: ROW_H_PX }}>
               <div style={{
-                height: ROW_H_PX,
                 boxSizing: "border-box",
-                padding: `${CELL_PX / 2}px ${CELL_PX}px`,
-                overflow: "hidden",
                 fontSize: 9,
                 fontWeight: 600,
                 color: "#333",
-                lineHeight: 1.3,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                textAlign: "center",
+                lineHeight: 1.1,
               }}>
                 {batchLabels.get(batch.key) ?? formatSession(batch.session)}
               </div>
@@ -271,28 +262,27 @@ function DaySection({
                 const [ln1, ln2] = cellLines(entry);
 
                 cells.push(
-                  <td key={`${slot.s}-${colspan}`} colSpan={colspan} style={{
-                    padding: 0,
-                    border: "1px solid #ddd",
+                  <td key={k} colSpan={colspan} style={{
+                    padding: 2,
+                    border: "1px solid #ccc",
                     background: entry ? rowBg : emptyBg,
+                    textAlign: "center",
+                    verticalAlign: "middle",
+                    height: ROW_H_PX,
                   }}>
                     <div style={{
-                      height: ROW_H_PX,
                       boxSizing: "border-box",
-                      padding: `${CELL_PX / 2}px ${CELL_PX / 2 + 2}px`,
-                      overflow: "hidden",
                       fontFamily: "'Courier New', monospace",
                       fontSize: 9,
                       color: ln1 ? "#000" : "transparent",
-                      lineHeight: 1.35,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      textAlign: "center",
+                      lineHeight: 1.1,
                     }}>
-                      <span>{ln1 || "."}</span>
-                      {ln2 && <span>{ln2}</span>}
+                      {ln1 ? (
+                        <>
+                          <div style={{ marginBottom: 1 }}>{ln1}</div>
+                          <div>{ln2}</div>
+                        </>
+                      ) : "."}
                     </div>
                   </td>
                 );

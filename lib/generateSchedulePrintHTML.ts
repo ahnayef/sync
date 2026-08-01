@@ -153,7 +153,9 @@ function cellHTML(r: ExportScheduleRow | undefined): string {
   if (r.teacher_short) line2Parts.push(r.teacher_short);
   if (r.room_number != null) line2Parts.push(`R-${r.room_number}`);
   const line2 = line2Parts.join(", ");
-  return line2 ? `${line1}<br/>${line2}` : line1;
+  return line2
+    ? `<div style="margin-bottom:1px;">${line1}</div><div>${line2}</div>`
+    : `<div>${line1}</div>`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -202,9 +204,9 @@ export function generateSchedulePrintHTML(
 
   // ── Header styles — ink-friendly: light gray bg, dark text, no solid black fill
   const TH = `
-    padding:0 0.5mm; height:7mm;
+    padding:2px;
     background:#f0f0f0; color:#000;
-    font:700 7pt/1 Arial,sans-serif;
+    font:700 7pt/1.2 Arial,sans-serif;
     text-align:center; vertical-align:middle;
     border:0.75pt solid #888;
     letter-spacing:.03em;`;
@@ -216,7 +218,8 @@ export function generateSchedulePrintHTML(
         <th style="${TH}text-align:left;padding-left:2mm;">SESSION</th>
         ${slots.map(s => `
           <th style="${TH}">
-            ${fmt12(s.s)}<br/>${fmt12(s.e)}
+            <div>${fmt12(s.s)}</div>
+            <div style="margin-top:2px;">${fmt12(s.e)}</div>
           </th>`).join("")}
       </tr>
     </thead>`;
@@ -225,7 +228,7 @@ export function generateSchedulePrintHTML(
   const SEP = `
     <tbody>
       <tr><td colspan="${2 + slots.length}"
-        style="height:5mm;padding:0;border:none;background:#fff;"></td></tr>
+        style="height:3mm;padding:0;border:none;background:#fff;"></td></tr>
     </tbody>`;
 
   // ── Data rows ─────────────────────────────────────────────────────────────
@@ -261,12 +264,10 @@ export function generateSchedulePrintHTML(
       // Session label — formatted "Fall-26 (1/1)"
       const label = batchLabels.get(batch.key) ?? formatSession(batch.session);
       tbody += `
-        <td style="padding:0;border:0.5pt solid #bbb;background:${rowBg};">
-          <div style="
-            height:6.5mm;box-sizing:border-box;padding:0.5mm 0.8mm;
-            overflow:hidden;font:600 6.5pt/1.2 Arial,sans-serif;color:#222;
-            display:flex;align-items:center;justify-content:center;text-align:center;
-          ">${label}</div>
+        <td style="padding:0 2px;border:0.5pt solid #bbb;background:${rowBg};text-align:center;vertical-align:middle;height:24px;">
+          <div style="box-sizing:border-box;font:600 6.5pt/1.1 Arial,sans-serif;color:#222;">
+            ${label}
+          </div>
         </td>`;
 
       // Time slot cells
@@ -288,12 +289,12 @@ export function generateSchedulePrintHTML(
         const bg = entry ? rowBg : emptyBg;
 
         tbody += `
-          <td colspan="${colspan}" style="padding:0;border:0.5pt solid #ccc;background:${bg};">
+          <td colspan="${colspan}" style="padding:0 2px;border:0.5pt solid #ccc;background:${bg};text-align:center;vertical-align:middle;height:24px;">
             <div style="
-              height:7mm;box-sizing:border-box;padding:1mm 0.5mm;
-              overflow:hidden;font:400 6.5pt/1.3 'Courier New',monospace;
+              box-sizing:border-box;
+              font:400 6.5pt/1.1 'Courier New',monospace;
+              padding: 3px;
               color:${html ? "#000" : "transparent"};
-              text-align:center;
             ">${html || "."}</div>
           </td>`;
 
@@ -346,23 +347,11 @@ export function generateSchedulePrintHTML(
       <span>${date}</span>
     </div>`;
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <title>${programName} \u2014 Class Schedule</title>
+  return `<div id="schedule-pdf-wrapper" style="background: #ffffff; color: #000000; font-family: Arial, 'Helvetica Neue', sans-serif; width: 100%; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
   <style>
     @page { size: A4 landscape; margin: 6mm; }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      font-family: Arial, 'Helvetica Neue', sans-serif;
-      background: #fff; color: #000;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
+    #schedule-pdf-wrapper *, #schedule-pdf-wrapper *::before, #schedule-pdf-wrapper *::after { box-sizing: border-box; margin: 0; padding: 0; }
   </style>
-</head>
-<body>
 
   <!-- Document header -->
   <div style="
@@ -384,7 +373,5 @@ export function generateSchedulePrintHTML(
   ${table}
   ${signatureBlock}
   ${footer}
-
-</body>
-</html>`;
+</div>`;
 }
