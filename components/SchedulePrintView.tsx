@@ -39,26 +39,28 @@ function fmt12(t: string): string {
 }
 
 function getTimeSlots(rows: ExportScheduleRow[]): Array<{ s: string; e: string }> {
-  const pairs = new Set<string>();
-  const boundaries = new Set<string>();
+  const boundaries = new Set<string>([
+    "08:30", "10:00", "11:30", "13:00", "14:30", "16:00", "17:30"
+  ]);
 
   for (const r of rows) {
-    const s = r.start_time.slice(0, 5);
-    const e = r.end_time.slice(0, 5);
-    pairs.add(`${s}|${e}`);
-    boundaries.add(s);
-    boundaries.add(e);
+    boundaries.add(r.start_time.slice(0, 5));
+    boundaries.add(r.end_time.slice(0, 5));
   }
 
   const bList = [...boundaries].sort();
-
   const atomic: Array<{ s: string; e: string }> = [];
-  for (const p of pairs) {
-    const [s, e] = p.split("|");
-    if (!bList.some(b => b > s && b < e)) atomic.push({ s, e });
+
+  for (let i = 0; i < bList.length - 1; i++) {
+    const s = bList[i];
+    const e = bList[i + 1];
+    const covered = rows.some(r => r.start_time.slice(0, 5) <= s && r.end_time.slice(0, 5) >= e);
+    if (covered) {
+      atomic.push({ s, e });
+    }
   }
 
-  return atomic.sort((a, b) => a.s.localeCompare(b.s));
+  return atomic;
 }
 
 /**
