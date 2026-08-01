@@ -20,13 +20,27 @@ function fmt12(t: string): string {
 }
 
 function getTimeSlots(rows: ExportScheduleRow[]): Array<{ s: string; e: string }> {
-  const seen = new Set<string>();
-  const out: Array<{ s: string; e: string }> = [];
+  const pairs = new Set<string>();
+  const boundaries = new Set<string>();
+
   for (const r of rows) {
-    const k = `${r.start_time}|${r.end_time}`;
-    if (!seen.has(k)) { seen.add(k); out.push({ s: r.start_time, e: r.end_time }); }
+    const s = r.start_time.slice(0, 5);
+    const e = r.end_time.slice(0, 5);
+    pairs.add(`${s}|${e}`);
+    boundaries.add(s);
+    boundaries.add(e);
   }
-  return out.sort((a, b) => a.s.localeCompare(b.s));
+
+  const bList = [...boundaries].sort();
+
+  // Keep only ATOMIC slots: no other class boundary falls strictly inside [s, e]
+  const atomic: Array<{ s: string; e: string }> = [];
+  for (const p of pairs) {
+    const [s, e] = p.split("|");
+    if (!bList.some(b => b > s && b < e)) atomic.push({ s, e });
+  }
+
+  return atomic.sort((a, b) => a.s.localeCompare(b.s));
 }
 
 /**
@@ -75,7 +89,8 @@ function buildLookup(rows: ExportScheduleRow[]): Map<string, ExportScheduleRow> 
     const name = r.batch_name ?? "";
     const session = r.batch_session ?? name;
     const bk = `${name}||${session}`;
-    const k = `${r.day.toLowerCase()}||${bk}||${r.start_time}||${r.end_time}`;
+    // Key by start_time only — end_time is handled via colspan at render time
+    const k = `${r.day.toLowerCase()}||${bk}||${r.start_time.slice(0, 5)}`;
     if (!map.has(k)) map.set(k, r);
   }
   return map;
@@ -251,21 +266,34 @@ export function generateSchedulePrintHTML(
         </td>`;
 
       // Time slot cells
-      for (const slot of slots) {
-        const k = `${day.toLowerCase()}||${batch.key}||${slot.s}||${slot.e}`;
+      let si = 0;
+      while (si < slots.length) {
+        const slot = slots[si];
+        const k = `${day.toLowerCase()}||${batch.key}||${slot.s}`;
         const entry = lookup.get(k);
+
+        let colspan = 1;
+        if (entry) {
+          const eTime = entry.end_time.slice(0, 5);
+          while (si + colspan < slots.length && slots[si + colspan - 1].e < eTime) {
+            colspan++;
+          }
+        }
+
         const html = cellHTML(entry);
         const bg = entry ? rowBg : emptyBg;
 
         tbody += `
-          <td style="padding:0;border:0.5pt solid #ccc;background:${bg};">
+          <td colspan="${colspan}" style="padding:0;border:0.5pt solid #ccc;background:${bg};">
             <div style="
-              height:6.5mm;box-sizing:border-box;padding:0.5mm 0.5mm;
+              height:7mm;box-sizing:border-box;padding:1mm 0.5mm;
               overflow:hidden;font:400 6.5pt/1.3 'Courier New',monospace;
               color:${html ? "#000" : "transparent"};
               text-align:center;
             ">${html || "."}</div>
           </td>`;
+
+        si += colspan;
       }
 
       tbody += `</tr>`;

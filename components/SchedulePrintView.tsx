@@ -39,13 +39,26 @@ function fmt12(t: string): string {
 }
 
 function getTimeSlots(rows: ExportScheduleRow[]): Array<{ s: string; e: string }> {
-  const seen = new Set<string>();
-  const out: Array<{ s: string; e: string }> = [];
+  const pairs = new Set<string>();
+  const boundaries = new Set<string>();
+
   for (const r of rows) {
-    const k = `${r.start_time}|${r.end_time}`;
-    if (!seen.has(k)) { seen.add(k); out.push({ s: r.start_time, e: r.end_time }); }
+    const s = r.start_time.slice(0, 5);
+    const e = r.end_time.slice(0, 5);
+    pairs.add(`${s}|${e}`);
+    boundaries.add(s);
+    boundaries.add(e);
   }
-  return out.sort((a, b) => a.s.localeCompare(b.s));
+
+  const bList = [...boundaries].sort();
+
+  const atomic: Array<{ s: string; e: string }> = [];
+  for (const p of pairs) {
+    const [s, e] = p.split("|");
+    if (!bList.some(b => b > s && b < e)) atomic.push({ s, e });
+  }
+
+  return atomic.sort((a, b) => a.s.localeCompare(b.s));
 }
 
 /**
@@ -92,7 +105,7 @@ function buildLookup(rows: ExportScheduleRow[]): Map<string, ExportScheduleRow> 
     const name = r.batch_name ?? "";
     const session = r.batch_session ?? name;
     const bk = `${name}||${session}`;
-    const k = `${r.day.toLowerCase()}||${bk}||${r.start_time}||${r.end_time}`;
+    const k = `${r.day.toLowerCase()}||${bk}||${r.start_time.slice(0, 5)}`;
     if (!map.has(k)) map.set(k, r);
   }
   return map;
@@ -237,38 +250,54 @@ function DaySection({
             </td>
 
             {/* Time slot cells */}
-            {slots.map(slot => {
-              const k = `${day.toLowerCase()}||${batch.key}||${slot.s}||${slot.e}`;
-              const entry = lookup.get(k);
-              const [ln1, ln2] = cellLines(entry);
+            {(() => {
+              const cells = [];
+              let si = 0;
+              while (si < slots.length) {
+                const slot = slots[si];
+                const k = `${day.toLowerCase()}||${batch.key}||${slot.s}`;
+                const entry = lookup.get(k);
 
-              return (
-                <td key={`${slot.s}-${slot.e}`} style={{
-                  padding: 0,
-                  border: "1px solid #ddd",
-                  background: entry ? rowBg : emptyBg,
-                }}>
-                  <div style={{
-                    height: ROW_H_PX,
-                    boxSizing: "border-box",
-                    padding: `${CELL_PX / 2}px ${CELL_PX / 2 + 2}px`,
-                    overflow: "hidden",
-                    fontFamily: "'Courier New', monospace",
-                    fontSize: 9,
-                    color: ln1 ? "#000" : "transparent",
-                    lineHeight: 1.35,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
+                let colspan = 1;
+                if (entry) {
+                  const eTime = entry.end_time.slice(0, 5);
+                  while (si + colspan < slots.length && slots[si + colspan - 1].e < eTime) {
+                    colspan++;
+                  }
+                }
+
+                const [ln1, ln2] = cellLines(entry);
+
+                cells.push(
+                  <td key={`${slot.s}-${colspan}`} colSpan={colspan} style={{
+                    padding: 0,
+                    border: "1px solid #ddd",
+                    background: entry ? rowBg : emptyBg,
                   }}>
-                    <span>{ln1 || "."}</span>
-                    {ln2 && <span>{ln2}</span>}
-                  </div>
-                </td>
-              );
-            })}
+                    <div style={{
+                      height: ROW_H_PX,
+                      boxSizing: "border-box",
+                      padding: `${CELL_PX / 2}px ${CELL_PX / 2 + 2}px`,
+                      overflow: "hidden",
+                      fontFamily: "'Courier New', monospace",
+                      fontSize: 9,
+                      color: ln1 ? "#000" : "transparent",
+                      lineHeight: 1.35,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                    }}>
+                      <span>{ln1 || "."}</span>
+                      {ln2 && <span>{ln2}</span>}
+                    </div>
+                  </td>
+                );
+                si += colspan;
+              }
+              return cells;
+            })()}
           </tr>
         );
       })}
