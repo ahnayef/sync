@@ -35,6 +35,8 @@ export default function UserNavbar() {
               <LogoIcon />
             </div>
 
+
+
             {/* Avatar → opens drawer */}
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -52,6 +54,9 @@ export default function UserNavbar() {
                   {session?.user?.name?.[0]?.toUpperCase() || "U"}
                 </div>
               )}
+              <span className="truncate px-1 text-[13px] font-medium text-white/90 max-w-[90px]">
+                {session?.user?.name || "User"}
+              </span>
               {isOpen
                 ? <FiX size={11} className="text-white/50" />
                 : <FiMenu size={11} className="text-white/50" />}
