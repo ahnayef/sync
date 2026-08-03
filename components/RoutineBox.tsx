@@ -98,6 +98,13 @@ export function RoutineBox({
               </span>
             )}
 
+            {/* Batch Session */}
+            {schedule.batch_session && (
+              <span className="rounded-full bg-[#0369a1] px-1.5 py-0.5 text-[8.5px] font-bold text-white sm:px-3 sm:py-1 sm:text-[11px]">
+                {schedule.batch_session}
+              </span>
+            )}
+
             {/* Lab */}
             {schedule.is_lab && (
               <span className="rounded-full bg-gradient-to-br from-[#4f8ef7] to-[#6f6bf7] px-2.5 py-0.5 text-[9.5px] font-bold text-white sm:px-3.5 sm:py-1 sm:text-[11px]">

@@ -15,6 +15,7 @@ interface RoutineRow extends RowDataPacket {
   day: string;
   is_lab: number | boolean;
   section: string;
+  batch_session: string | null;
 }
 
 export async function GET() {
@@ -39,11 +40,13 @@ export async function GET() {
         r.number as room_number, 
         s.day, 
         c.is_lab, 
-        s.section
+        s.section,
+        GROUP_CONCAT(DISTINCT b.session SEPARATOR ', ') as batch_session
       FROM schedules s
       JOIN courses c ON s.course_id = c.id
       JOIN teachers t ON s.teacher_id = t.id
       JOIN rooms r ON s.room_id = r.id
+      LEFT JOIN batches b ON s.batch_id = b.id
       JOIN student_courses sc ON (s.course_id = sc.course_id AND s.teacher_id = sc.teacher_id)
       JOIN users u ON sc.student_id = u.id
       WHERE u.email = ?

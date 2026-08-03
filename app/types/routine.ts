@@ -9,4 +9,5 @@ export interface RoutineSchema {
   day: string;
   is_lab: boolean;
   section: string;
+  batch_session: string | null;
 }
