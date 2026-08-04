@@ -55,6 +55,10 @@ export function RoutineBox({
     currentMinutes >= start &&
     currentMinutes < end;
 
+  const isPast =
+    schedule.day.toLowerCase() === currentDay &&
+    currentMinutes >= end;
+
   const progress = isActive
     ? Math.min(100, Math.round(((currentMinutes - start) / (end - start)) * 100))
     : 0;
@@ -70,7 +74,7 @@ export function RoutineBox({
         tabIndex={0}
         role="article"
         aria-labelledby={`routine-title-${schedule.id}`}
-        className={`group relative w-full rounded-xl border px-4 py-4 sm:px-5 sm:py-5 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/25 overflow-hidden ${hovered
+        className={`group relative w-full rounded-xl border px-4 py-4 sm:px-5 sm:py-5 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/25 overflow-hidden ${isPast ? "opacity-50" : ""} ${hovered
           ? "border-blue-400/30 bg-blue-500/[0.03] shadow-[0_10px_30px_rgba(79,142,247,0.06)] -translate-y-0.5"
           : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)]"
           }`}
