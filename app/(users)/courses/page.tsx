@@ -266,91 +266,80 @@ export default function CoursesPage() {
               </p>
             </div>
           </div>
-
-          <div className="flex items-center gap-2 w-auto flex-nowrap">
-            <button
-              type="button"
-              onClick={selectAllVisible}
-              aria-label="Select all visible courses"
-              className="inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 h-9 bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]"
-            >
-              <FiCheck className="text-xl" />
-              <span className="text-[11px] text-[var(--color-text-secondary)]">Select All</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={clearSelection}
-              aria-label="Clear selection"
-              disabled={selected.size === 0}
-              className={`inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 h-9 ${selected.size === 0 ? "opacity-50 cursor-not-allowed" : "bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-surface)]"} text-[var(--color-text-secondary)]`}
-            >
-              <FiX className="text-xl" />
-              <span className="text-[11px] text-[var(--color-text-secondary)]">Clear</span>
-            </button>
-
-            <button
-              id="courses-save"
-              type="button"
-              aria-label="Save routine selections"
-              disabled={saving}
-              onClick={saveSelections}
-              className={[
-                "inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 h-9 text-sm font-medium",
-                saved
-                  ? "border-green-500/30 bg-green-500/15 text-green-500"
-                  : "border-[var(--color-border)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] active:scale-95",
-                saving ? "opacity-50 cursor-not-allowed" : "",
-              ].join(" ")}
-            >
-              {saving ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  <span className="text-[11px] text-[var(--color-text-secondary)]">Saving</span>
-                </>
-              ) : saved ? (
-                <>
-                  <FiCheck className="text-xl" />
-                  <span className="text-[11px] text-green-500">Saved</span>
-                </>
-              ) : (
-                <>
-                  <FiSave className="opacity-70 text-xl" />
-                  <span className="text-[11px] text-[var(--color-text-secondary)]">Save</span>
-                </>
-              )}
-            </button>
-          </div>
         </div>
 
-        {/* Quick Batch Filter Pills */}
-        <div className="mb-2 w-full overflow-x-auto pb-2 scrollbar-hide">
-          <div className="flex gap-2 w-max">
-            {sessionOptions.slice(0, 6).map(({ sess }) => (
+        {/* Sticky Top Action Bar */}
+        <div className="sticky top-0 z-40 -mx-4 px-4 py-3 sm:-mx-6 sm:px-6 mb-6 bg-[var(--color-bg-base)]/90 backdrop-blur-xl border-b border-white/10 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col gap-1 w-full sm:w-auto">
+            <div className="flex items-center gap-3">
+              <span className="text-sm sm:text-base font-bold text-white">
+                {selectedCount} Selected
+              </span>
+              {hasUnsavedChanges && (
+                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-orange-400 font-medium">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                  </span>
+                  Unsaved changes
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
               <button
-                key={sess}
-                onClick={() => {
-                  setFilterSession(sess);
-                  setShowFilters(true);
-                }}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${
-                  filterSession === sess
-                    ? "border-blue-500 bg-blue-500/20 text-blue-300"
-                    : "border-white/10 bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:border-white/30 hover:text-white"
+                type="button"
+                onClick={selectAllVisible}
+                aria-label="Select all visible courses"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+              >
+                <FiCheck className="text-sm" />
+                Select All Visible
+              </button>
+              <button
+                type="button"
+                onClick={clearSelection}
+                aria-label="Clear selection"
+                disabled={selected.size === 0}
+                className={`inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium transition-colors ${
+                  selected.size === 0 
+                    ? "bg-white/5 text-white/30 cursor-not-allowed" 
+                    : "bg-white/5 text-white/90 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {sess}
+                <FiX className="text-sm" />
+                Clear
               </button>
-            ))}
-            {sessionOptions.length > 6 && (
-              <button
-                onClick={() => setShowFilters(true)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-full border border-white/10 bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:border-white/30 hover:text-white"
-              >
-                View all...
-              </button>
-            )}
+            </div>
           </div>
+          <button
+            onClick={saveSelections}
+            disabled={saving}
+            id="courses-save"
+            className={`flex shrink-0 w-full sm:w-auto justify-center items-center gap-2 rounded-xl px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-bold text-white shadow-lg transition-all ${
+              saving 
+                ? "bg-blue-600/50 cursor-not-allowed" 
+                : saved && !hasUnsavedChanges
+                  ? "bg-green-600 hover:bg-green-500"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 hover:shadow-blue-500/25 active:scale-95"
+            }`}
+          >
+            {saving ? (
+              <>
+                <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Saving...
+              </>
+            ) : saved && !hasUnsavedChanges ? (
+              <>
+                <FiCheck className="text-lg" />
+                Saved Routine
+              </>
+            ) : (
+              <>
+                <FiSave className="text-lg" />
+                Save & View Routine &rarr;
+              </>
+            )}
+          </button>
         </div>
 
         {/* Dynamic Filtering and Sorting Controls Container */}
@@ -402,6 +391,36 @@ export default function CoursesPage() {
                 </span>
               )}
             </button>
+          </div>
+
+          {/* Quick Batch Filter Pills */}
+          <div className="w-full overflow-x-auto pb-1 scrollbar-hide">
+            <div className="flex gap-2 w-max">
+              {sessionOptions.slice(0, 6).map(({ sess }) => (
+                <button
+                  key={sess}
+                  onClick={() => {
+                    setFilterSession(sess);
+                    setShowFilters(true);
+                  }}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${
+                    filterSession === sess
+                      ? "border-blue-500 bg-blue-500/20 text-blue-300"
+                      : "border-white/10 bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:border-white/30 hover:text-white"
+                  }`}
+                >
+                  {sess}
+                </button>
+              ))}
+              {sessionOptions.length > 6 && (
+                <button
+                  onClick={() => setShowFilters(true)}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-full border border-white/10 bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:border-white/30 hover:text-white"
+                >
+                  View all...
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Collapsible Filters & Sorting Panel */}
@@ -642,48 +661,7 @@ export default function CoursesPage() {
         )}
       </main>
 
-      {/* Floating Sticky Save Bar */}
-      {(hasUnsavedChanges || selectedCount > 0) && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-[500px] animate-in slide-in-from-bottom-10 fade-in duration-300">
-          <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[rgba(15,23,36,0.95)] backdrop-blur-xl p-3 sm:p-4 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
-            <div className="flex flex-col">
-              <span className="text-sm sm:text-base font-bold text-white">
-                {selectedCount} Courses Selected
-              </span>
-              {hasUnsavedChanges && (
-                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-orange-400 font-medium">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                  </span>
-                  Unsaved changes
-                </span>
-              )}
-            </div>
-            <button
-              onClick={saveSelections}
-              disabled={saving}
-              className={`flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-bold text-white shadow-lg transition-all ${
-                saving 
-                  ? "bg-blue-600/50 cursor-not-allowed" 
-                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 hover:shadow-blue-500/25 active:scale-95"
-              }`}
-            >
-              {saving ? (
-                <>
-                  <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Saving
-                </>
-              ) : (
-                <>
-                  <FiSave className="text-lg" />
-                  Save & View Routine &rarr;
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
