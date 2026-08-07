@@ -21,8 +21,16 @@ export default function PwaInstallPrompt() {
 
   useEffect(() => {
     // Check if dismissed previously
-    const hasDismissed = localStorage.getItem("pwa-prompt-dismissed");
-    if (hasDismissed) return;
+    const dismissedAt = localStorage.getItem("pwa-prompt-dismissed");
+    if (dismissedAt) {
+      const dismissedTime = parseInt(dismissedAt, 10);
+      const currentTime = new Date().getTime();
+      const daysPassed = (currentTime - dismissedTime) / (1000 * 60 * 60 * 24);
+      
+      if (daysPassed < 7) {
+        return; // Don't show if dismissed within the last 7 days
+      }
+    }
 
     const checkStandalone = () => {
       const isStandaloneMedia = window.matchMedia("(display-mode: standalone)").matches;
@@ -76,7 +84,7 @@ export default function PwaInstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem("pwa-prompt-dismissed", "true");
+    localStorage.setItem("pwa-prompt-dismissed", Date.now().toString());
   };
 
   if (isStandalone || !showPrompt) {
