@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import posthog from "posthog-js";
 import "@/instrumentation-client";
 import { ToastProvider } from "./Toast";
+import { PwaProvider } from "./PwaProvider";
 
 /**
  * Runs inside SessionProvider so it can access the NextAuth session.
@@ -52,8 +53,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <ToastProvider>
-        <PostHogIdentifier />
-        {children}
+        <PwaProvider>
+          <PostHogIdentifier />
+          {children}
+        </PwaProvider>
       </ToastProvider>
     </SessionProvider>
   );

@@ -1,23 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FiDownload, FiShare } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
-
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[];
-  readonly userChoice: Promise<{
-    outcome: "accepted" | "dismissed";
-    platform: string;
-  }>;
-  prompt(): Promise<void>;
-}
+import { usePwa } from "./PwaProvider";
 
 export default function PwaInstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const { deferredPrompt, isStandalone, isIOS, clearPrompt } = usePwa();
   const [showPrompt, setShowPrompt] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(true);
 
   useEffect(() => {
     // Check if dismissed previously
@@ -32,43 +22,15 @@ export default function PwaInstallPrompt() {
       }
     }
 
-    const checkStandalone = () => {
-      const isStandaloneMedia = window.matchMedia("(display-mode: standalone)").matches;
-      // @ts-ignore
-      const isStandaloneNavigator = !!window.navigator.standalone;
-      const isStandaloneNow = isStandaloneMedia || isStandaloneNavigator;
-      setIsStandalone(isStandaloneNow);
-      
-      if (!isStandaloneNow) {
-        const userAgent = window.navigator.userAgent.toLowerCase();
-        const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
-        setIsIOS(isIosDevice);
-        
-        if (isIosDevice) {
-          setShowPrompt(true);
-        }
-      }
-    };
-    
-    checkStandalone();
-
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setShowPrompt(true);
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    
-    window.addEventListener("appinstalled", () => {
-      setShowPrompt(false);
-      setDeferredPrompt(null);
-    });
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    };
-  }, []);
+    if (!isStandalone) {
+      // Show prompt if we are on iOS or if we have a valid deferredPrompt
+      // Wait for a small delay to ensure deferredPrompt is captured if available
+      const timer = setTimeout(() => {
+        setShowPrompt(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isStandalone]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
@@ -79,7 +41,7 @@ export default function PwaInstallPrompt() {
     if (outcome === "accepted") {
       setShowPrompt(false);
     }
-    setDeferredPrompt(null);
+    clearPrompt();
   };
 
   const handleDismiss = () => {
