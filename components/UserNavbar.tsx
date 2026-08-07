@@ -6,6 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import { LogoIcon } from "./Icon";
 import { useState } from "react";
 import { FiArrowRight, FiMenu, FiX, FiLogOut } from "react-icons/fi";
+import NavbarInstallButton from "./NavbarInstallButton";
 
 export default function UserNavbar() {
   const pathname = usePathname();
@@ -130,6 +131,7 @@ export default function UserNavbar() {
           </div>
 
           <div className="flex items-center gap-3 justify-self-end">
+            <NavbarInstallButton />
             <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2">
               {session?.user?.image ? (
                 <img src={session.user.image} alt="Avatar" className="h-[34px] w-[34px] shrink-0 rounded-full object-cover ring-1 ring-white/10" />

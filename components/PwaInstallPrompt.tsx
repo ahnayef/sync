@@ -58,6 +58,10 @@ export default function PwaInstallPrompt() {
       setShowPrompt(true);
     };
 
+    if (window.pwaDeferredPrompt) {
+      handleBeforeInstallPrompt(window.pwaDeferredPrompt);
+    }
+
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     
     window.addEventListener("appinstalled", () => {

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { LogoIcon } from "./Icon";
 import { useState } from "react";
 import { FiArrowRight, FiMenu, FiX } from "react-icons/fi";
+import NavbarInstallButton from "./NavbarInstallButton";
 
 const publicLinks = [
   { href: "/", label: "Home" },
@@ -64,10 +65,8 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 lg:flex">
-          {/* <div className="rounded-full border border-emerald-400/15 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300">
-            Live schedule sync
-          </div> */}
-
+          <NavbarInstallButton />
+          
           {status === "loading" ? (
             <div className="h-9 w-28 animate-pulse rounded-full bg-white/5" />
           ) : session ? (

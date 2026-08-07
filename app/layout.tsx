@@ -95,6 +95,19 @@ export default function RootLayout({
         backgroundColor: "#080c10",
       }}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.pwaDeferredPrompt = null;
+              window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                window.pwaDeferredPrompt = e;
+              });
+            `,
+          }}
+        />
+      </head>
       <body
         style={{
           backgroundColor: "#080c10",
