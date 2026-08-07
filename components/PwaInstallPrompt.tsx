@@ -84,40 +84,43 @@ export default function PwaInstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:w-96 bg-[#121820] border border-[#2a3441] rounded-2xl p-4 shadow-2xl z-50 flex flex-col gap-3 animate-in slide-in-from-bottom-5">
-      <div className="flex justify-between items-start">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center shrink-0">
-            <FiDownload size={24} />
-          </div>
-          <div>
-            <h3 className="font-semibold text-white">Install Sync</h3>
-            <p className="text-sm text-gray-400">Add to your home screen for quick access.</p>
-          </div>
+    <div className="fixed top-0 left-0 right-0 bg-[#121820]/95 backdrop-blur-md border-b border-[#2a3441] px-4 py-3 shadow-lg z-50 flex items-center justify-between animate-in slide-in-from-top-2">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+          {/* Using next/image would be better, but img is fine for a 192x192 icon */}
+          <img src="/icons/192.png" alt="Sync App Icon" className="w-full h-full object-cover" />
         </div>
+        
+        <div className="flex flex-col">
+          <span className="font-semibold text-white text-sm leading-tight">Install Sync</span>
+          <span className="text-xs text-gray-400">Add to home screen</span>
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-2 md:gap-3">
+        {isIOS ? (
+          <div className="flex items-center gap-1.5 text-xs text-gray-300 bg-[#1a222d] px-2 py-1.5 rounded-lg border border-[#2a3441]">
+            <span>Tap</span>
+            <span className="p-0.5 bg-gray-800 rounded text-white"><FiShare size={12} /></span>
+            <span className="hidden sm:inline">then <strong>Add to Home Screen</strong></span>
+          </div>
+        ) : (
+          <button
+            onClick={handleInstallClick}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors"
+          >
+            Install
+          </button>
+        )}
+        
         <button 
           onClick={handleDismiss}
-          className="text-gray-400 hover:text-white transition-colors p-1"
+          className="text-gray-400 hover:text-white transition-colors p-1 rounded-md"
           aria-label="Close"
         >
           <IoClose size={20} />
         </button>
       </div>
-      
-      {isIOS ? (
-        <div className="bg-[#1a222d] rounded-xl p-3 text-sm text-gray-300 flex items-center gap-2">
-          <span>Tap</span>
-          <span className="p-1.5 bg-gray-800 rounded-md text-white"><FiShare size={14} /></span>
-          <span>and then <strong className="text-white">"Add to Home Screen"</strong></span>
-        </div>
-      ) : (
-        <button
-          onClick={handleInstallClick}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl transition-colors mt-1"
-        >
-          Install App
-        </button>
-      )}
     </div>
   );
 }
