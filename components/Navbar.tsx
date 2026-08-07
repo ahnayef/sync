@@ -123,6 +123,11 @@ export default function Navbar() {
       {isOpen && (
         <div className="border-t border-white/10 bg-[rgba(8,12,16,0.96)] shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-2xl md:hidden animate-in slide-in-from-top duration-300 ease-out">
           <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-4 py-5 sm:px-6">
+            
+            <div className="flex justify-center">
+              <NavbarInstallButton />
+            </div>
+
             {/* Navigation Links */}
             <div className="rounded-[20px] border border-white/10 bg-white/[0.03] p-2">
               {publicLinks.map((link) => {

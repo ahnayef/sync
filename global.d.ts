@@ -2,7 +2,6 @@ export {};
 
 declare global {
   interface Window {
-    pwaDeferredPrompt?: any;
     toast: {
       success: (message: string, duration?: number) => void;
       info: (message: string, duration?: number) => void;
