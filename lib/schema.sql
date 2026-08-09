@@ -122,17 +122,19 @@ CREATE TABLE `student_batches` (
 );
 
 -- ─── 9. STUDENT–COURSE ASSIGNMENTS ──────────────────────────
--- Links a student user to a specific course and teacher.
+-- Links a student user to a specific course, teacher, and batch.
 CREATE TABLE `student_courses` (
   `id`          int       PRIMARY KEY AUTO_INCREMENT,
   `student_id`  int       NOT NULL,
   `course_id`   int       NOT NULL,
   `teacher_id`  int       NOT NULL,
+  `batch_id`    int,
   `created_at`  timestamp DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY `uq_student_course_teacher` (`student_id`, `course_id`, `teacher_id`),
+  UNIQUE KEY `uq_student_course_teacher_batch` (`student_id`, `course_id`, `teacher_id`, `batch_id`),
   FOREIGN KEY (`student_id`) REFERENCES `users`(`id`)    ON DELETE CASCADE,
   FOREIGN KEY (`course_id`)  REFERENCES `courses`(`id`)  ON DELETE CASCADE,
-  FOREIGN KEY (`teacher_id`) REFERENCES `teachers`(`id`) ON DELETE CASCADE
+  FOREIGN KEY (`teacher_id`) REFERENCES `teachers`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`batch_id`)   REFERENCES `batches`(`id`)  ON DELETE CASCADE
 );
 
 -- ─── 10. SESSIONS ───────────────────────────────────────────

@@ -9,11 +9,13 @@ async function migrate() {
         student_id int NOT NULL,
         course_id int NOT NULL,
         teacher_id int NOT NULL,
+        batch_id int,
         created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY uq_student_course_teacher (student_id, course_id, teacher_id),
+        UNIQUE KEY uq_student_course_teacher_batch (student_id, course_id, teacher_id, batch_id),
         FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-        FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
+        FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE,
+        FOREIGN KEY (batch_id) REFERENCES batches(id) ON DELETE CASCADE
       )
     `);
     console.log("✅ student_courses table created successfully");

@@ -33,27 +33,28 @@ export async function GET() {
         t.name as teacherName,
         d.name as deptName,
         p.name as programName,
-        GROUP_CONCAT(DISTINCT b.name ORDER BY b.name SEPARATOR ', ') as batchNames,
-        GROUP_CONCAT(DISTINCT b.session ORDER BY b.session SEPARATOR ', ') as batchSessions
+        b.id as batchId,
+        b.name as batchNames,
+        b.session as batchSessions
       FROM schedules s
       JOIN courses c ON s.course_id = c.id
       JOIN teachers t ON s.teacher_id = t.id
       LEFT JOIN batches b ON s.batch_id = b.id
       LEFT JOIN programs p ON s.program_id = p.id
       LEFT JOIN departments d ON p.department_id = d.id
-      GROUP BY c.id, c.code, c.name, c.is_lab, t.id, t.name, d.name, p.name
+      GROUP BY c.id, c.code, c.name, c.is_lab, t.id, t.name, b.id, b.name, b.session, d.name, p.name
       ORDER BY c.code ASC, t.name ASC
     `);
 
     // 3. Fetch user's currently followed courses
     const [followedRows] = await db.execute<RowDataPacket[]>(
-      "SELECT course_id, teacher_id FROM student_courses WHERE student_id = ?",
+      "SELECT course_id, teacher_id, batch_id FROM student_courses WHERE student_id = ?",
       [userId]
     );
 
     return NextResponse.json({
       available: availableRows,
-      followed: followedRows.map(f => `${f.course_id}-${f.teacher_id}`)
+      followed: followedRows.map(f => `${f.course_id}-${f.teacher_id}-${f.batch_id || 'null'}`)
     });
   } catch (error) {
     console.error("GET /api/user/courses error:", error);
@@ -89,12 +90,13 @@ export async function POST(req: NextRequest) {
 
     if (selections.length > 0) {
       const values = selections.map(s => {
-        const [courseId, teacherId] = s.split("-").map(Number);
-        return [userId, courseId, teacherId];
+        const [courseId, teacherId, batchIdStr] = s.split("-");
+        const batchId = batchIdStr === "null" ? null : Number(batchIdStr);
+        return [userId, Number(courseId), Number(teacherId), batchId];
       });
 
       // Bulk insert
-      const query = "INSERT INTO student_courses (student_id, course_id, teacher_id) VALUES ?";
+      const query = "INSERT INTO student_courses (student_id, course_id, teacher_id, batch_id) VALUES ?";
       await db.query(query, [values]);
     }
 

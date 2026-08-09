@@ -19,6 +19,7 @@ interface CourseTeacher {
   teacherName: string;
   deptName: string | null;
   programName: string | null;
+  batchId: number | null;
   batchNames: string | null;
   batchSessions: string | null;
 }
@@ -146,9 +147,9 @@ export default function CoursesPage() {
 
     // 3. Selection Status filter
     if (filterStatus === "selected") {
-      result = result.filter((c) => selected.has(`${c.courseId}-${c.teacherId}`));
+      result = result.filter((c) => selected.has(`${c.courseId}-${c.teacherId}-${c.batchId ?? 'null'}`));
     } else if (filterStatus === "unselected") {
-      result = result.filter((c) => !selected.has(`${c.courseId}-${c.teacherId}`));
+      result = result.filter((c) => !selected.has(`${c.courseId}-${c.teacherId}-${c.batchId ?? 'null'}`));
     }
 
     
@@ -233,7 +234,7 @@ export default function CoursesPage() {
   const selectAllVisible = () => {
     setSelected((prev) => {
       const next = new Set(prev);
-      filtered.forEach((c) => next.add(`${c.courseId}-${c.teacherId}`));
+      filtered.forEach((c) => next.add(`${c.courseId}-${c.teacherId}-${c.batchId ?? 'null'}`));
       return next;
     });
     setSaved(false);
@@ -579,7 +580,7 @@ export default function CoursesPage() {
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             {filtered.map((course) => {
-              const compoundId = `${course.courseId}-${course.teacherId}`;
+              const compoundId = `${course.courseId}-${course.teacherId}-${course.batchId ?? 'null'}`;
               const isSelected = selected.has(compoundId);
               return (
                 <li key={compoundId} className="h-full">

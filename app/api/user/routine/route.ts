@@ -47,7 +47,7 @@ export async function GET() {
       JOIN teachers t ON s.teacher_id = t.id
       JOIN rooms r ON s.room_id = r.id
       LEFT JOIN batches b ON s.batch_id = b.id
-      JOIN student_courses sc ON (s.course_id = sc.course_id AND s.teacher_id = sc.teacher_id)
+      JOIN student_courses sc ON (s.course_id = sc.course_id AND s.teacher_id = sc.teacher_id AND (s.batch_id = sc.batch_id OR (s.batch_id IS NULL AND sc.batch_id IS NULL)))
       JOIN users u ON sc.student_id = u.id
       WHERE u.email = ?
       GROUP BY c.id, t.id, s.day, s.start_time, s.end_time, r.id, s.section
