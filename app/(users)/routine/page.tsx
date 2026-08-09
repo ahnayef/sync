@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { FiInbox, FiStar, FiCalendar } from "react-icons/fi";
 import posthog from "posthog-js";
 import { RoutineBox } from "@/components/RoutineBox";
@@ -235,7 +236,10 @@ export default function RoutinePage() {
             <h3 className="mb-1 text-base font-semibold text-[var(--color-text-primary)] sm:mb-1.5 sm:text-[17px]">
               No classes on {today}
             </h3>
-            <p className="text-xs text-[var(--color-text-secondary)] sm:text-sm">Nothing scheduled for this day.</p>
+            <p className="text-xs text-[var(--color-text-secondary)] sm:text-sm mb-5 sm:mb-6">Nothing scheduled for this day. Have you selected all your courses?</p>
+            <Link href="/courses" className="inline-flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.05)] px-5 py-2.5 text-sm font-medium text-[var(--color-text-primary)] hover:bg-[rgba(255,255,255,0.1)] transition-colors border border-[var(--color-border)]">
+              Select Courses
+            </Link>
           </div>
         ) : (
           <div className="flex flex-col">
