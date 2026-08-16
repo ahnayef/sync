@@ -58,14 +58,25 @@ export default function RoutinePage() {
   const [routines, setRoutines] = useState<RoutineSchema[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch routine from backend
+  // Fetch routine from backend and support offline caching
   useEffect(() => {
+    const cached = localStorage.getItem("cachedRoutine");
+    if (cached) {
+      try {
+        setRoutines(JSON.parse(cached));
+        setLoading(false); // Stop loading skeleton instantly if we have cached data
+      } catch (e) {
+        console.error("Failed to parse cached routine", e);
+      }
+    }
+
     const fetchRoutine = async () => {
       try {
-        const res = await fetch("/api/user/routine");
+        const res = await fetch(`/api/user/routine?_t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           setRoutines(data);
+          localStorage.setItem("cachedRoutine", JSON.stringify(data));
         }
       } catch (err) {
         console.error("Failed to fetch routine:", err);

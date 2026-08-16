@@ -4,6 +4,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import db from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 
+export const dynamic = "force-dynamic";
+
 interface RoutineRow extends RowDataPacket {
   id: number;
   course_code: string;

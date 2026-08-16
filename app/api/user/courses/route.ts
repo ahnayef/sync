@@ -4,6 +4,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import db from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/user/courses
 // Returns available unique course-teacher combinations and the user's followed courses
 export async function GET() {

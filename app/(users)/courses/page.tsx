@@ -62,7 +62,7 @@ export default function CoursesPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/user/courses");
+        const res = await fetch(`/api/user/courses?_t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           setCourses(data.available);
