@@ -1,11 +1,5 @@
-const CACHE_NAME = "sync-pwa-cache-v2";
+const CACHE_NAME = "sync-pwa-cache-v3";
 const STATIC_ASSETS = [
-  "/",
-  "/about",
-  "/contact",
-  "/routine",
-  "/courses",
-  "/profile",
   "/manifest.json",
   "/icons/48.png",
   "/icons/72.png",
@@ -56,7 +50,9 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          if (response.status === 200) {
+          // Do not cache responses that were redirected, 
+          // to prevent caching a redirect destination under the wrong URL (e.g. / cached as /courses)
+          if (response.status === 200 && !response.redirected) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
           }
@@ -64,6 +60,10 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => {
           console.log("[Service Worker] Offline fallback for:", requestUrl.pathname);
+          // If offline and accessing root, redirect to /routine to use its cache
+          if (requestUrl.pathname === "/") {
+            return Response.redirect("/routine", 302);
+          }
           return caches.match(event.request);
         })
     );
